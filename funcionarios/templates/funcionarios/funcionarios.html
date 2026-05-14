@@ -1,0 +1,1148 @@
+{% extends 'main.html' %}
+{% load static %}
+{% block content %}
+
+<style>
+    /* Animações e transições suaves */
+    .fade-in {
+        animation: fadeIn 0.4s ease-out;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .slide-in {
+        animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+        from { opacity: 0; transform: translateX(-20px); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+
+    /* Transição suave para troca de tema */
+    * {
+        transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .card-hover {
+        transition: all 0.3s ease;
+    }
+
+    .card-hover:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
+    }
+
+    .dark .card-hover:hover {
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+    }
+
+    .status-badge {
+        transition: all 0.2s;
+    }
+
+    .status-badge:hover {
+        transform: scale(1.05);
+    }
+
+    .modal {
+        transition: all 0.3s ease;
+    }
+
+    .modal.hidden {
+        display: none;
+    }
+
+    .toast {
+        animation: slideIn 0.3s ease-out;
+    }
+
+    .avatar-initials {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+    }
+</style>
+
+<!-- Main Content -->
+<main class="flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+    <!-- Top Bar -->
+    <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10 shadow-sm transition-colors duration-200">
+        <div class="px-8 py-4 flex justify-between items-center">
+            <div>
+                <h2 class="text-2xl font-semibold text-gray-800 dark:text-white">Funcionários</h2>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Gerencie os funcionários e suas permissões</p>
+            </div>
+            <button id="newFuncionarioBtn"
+                    class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-5 py-2.5 rounded-lg flex items-center space-x-2 shadow-lg transition transform hover:scale-105">
+                <i class="ri-add-line text-xl"></i>
+                <span>Novo Funcionário</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="p-8 fade-in">
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-6 mb-6">
+            <div class="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border-l-4 border-blue-500 transition-colors duration-200">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-gray-500 dark:text-gray-400 text-sm">Total Funcionários</p>
+                        <p class="text-2xl font-bold text-gray-800 dark:text-white" id="totalFuncionarios">0</p>
+                    </div>
+                    <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
+                        <i class="ri-group-line text-blue-600 dark:text-blue-400 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border-l-4 border-green-500 transition-colors duration-200">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-gray-500 dark:text-gray-400 text-sm">Ativos</p>
+                        <p class="text-2xl font-bold text-gray-800 dark:text-white" id="ativosCount">0</p>
+                    </div>
+                    <div class="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
+                        <i class="ri-user-star-line text-green-600 dark:text-green-400 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border-l-4 border-red-500 transition-colors duration-200">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-gray-500 dark:text-gray-400 text-sm">Inativos</p>
+                        <p class="text-2xl font-bold text-gray-800 dark:text-white" id="inativosCount">0</p>
+                    </div>
+                    <div class="w-10 h-10 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center">
+                        <i class="ri-user-forbid-line text-red-600 dark:text-red-400 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border-l-4 border-purple-500 transition-colors duration-200">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-gray-500 dark:text-gray-400 text-sm">Gerentes</p>
+                        <p class="text-2xl font-bold text-gray-800 dark:text-white" id="gerentesCount">0</p>
+                    </div>
+                    <div class="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center">
+                        <i class="ri-shield-star-line text-purple-600 dark:text-purple-400 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border-l-4 border-yellow-500 transition-colors duration-200">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-gray-500 dark:text-gray-400 text-sm">Caixas</p>
+                        <p class="text-2xl font-bold text-gray-800 dark:text-white" id="caixasCount">0</p>
+                    </div>
+                    <div class="w-10 h-10 bg-yellow-100 dark:bg-yellow-900/30 rounded-full flex items-center justify-center">
+                        <i class="ri-cash-line text-yellow-600 dark:text-yellow-400 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm mb-6 transition-colors duration-200">
+            <div class="grid grid-cols-1 md:grid-cols-6 gap-4">
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Buscar</label>
+                    <div class="relative">
+                        <i class="ri-search-line absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500"></i>
+                        <input type="text" id="searchFuncionario"
+                               placeholder="Nome, email ou telefone..."
+                               class="w-full border border-gray-300 dark:border-gray-600 rounded-lg pl-10 pr-3 py-2
+                                      bg-white dark:bg-gray-700 text-gray-800 dark:text-white
+                                      focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                                      transition-colors duration-200">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Cargo</label>
+                    <select id="cargoFilter"
+                            class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2
+                                   bg-white dark:bg-gray-700 text-gray-800 dark:text-white
+                                   focus:ring-2 focus:ring-blue-500 transition-colors duration-200">
+                        <option value="all">Todos</option>
+                        <option value="gerente">Gerente</option>
+                        <option value="caixa">Caixa</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Status</label>
+                    <select id="statusFilter"
+                            class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2
+                                   bg-white dark:bg-gray-700 text-gray-800 dark:text-white
+                                   focus:ring-2 focus:ring-blue-500 transition-colors duration-200">
+                        <option value="all">Todos</option>
+                        <option value="active">Ativos</option>
+                        <option value="inactive">Inativos</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Lavandaria</label>
+                    <select id="lavandariaFilter"
+                            class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2
+                                   bg-white dark:bg-gray-700 text-gray-800 dark:text-white
+                                   focus:ring-2 focus:ring-blue-500 transition-colors duration-200">
+                        <option value="all">Todas</option>
+                        <option value="1">PowerWash Central</option>
+                        <option value="2">PowerWash Matola</option>
+                        <option value="3">PowerWash Beira</option>
+                    </select>
+                </div>
+                <div class="flex items-end">
+                    <button id="resetFilters"
+                            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
+                                   text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700
+                                   transition-colors duration-200">
+                        <i class="ri-refresh-line"></i> Limpar Filtros
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Funcionários Grid -->
+        <div id="funcionariosGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <!-- Cards serão inseridos via JS -->
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="hidden text-center py-12">
+            <div class="w-24 h-24 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="ri-group-line text-4xl text-gray-400 dark:text-gray-600"></i>
+            </div>
+            <h3 class="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">Nenhum funcionário encontrado</h3>
+            <p class="text-gray-500 dark:text-gray-400 mb-4">Comece cadastrando um novo funcionário</p>
+            <button onclick="document.getElementById('newFuncionarioBtn').click()"
+                    class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg inline-flex items-center space-x-2">
+                <i class="ri-add-line"></i>
+                <span>Novo Funcionário</span>
+            </button>
+        </div>
+
+        <!-- Pagination -->
+        <div class="mt-6 flex justify-between items-center">
+            <p class="text-sm text-gray-600 dark:text-gray-400" id="paginationInfo">Mostrando 0 resultados</p>
+            <div class="flex space-x-2" id="paginationButtons"></div>
+        </div>
+    </div>
+</main>
+
+<!-- Modal Criar/Editar Funcionário -->
+<div id="funcionarioModal" class="modal hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto transition-colors duration-200">
+        <div class="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex justify-between items-center">
+            <h3 class="text-xl font-semibold text-gray-800 dark:text-white" id="modalTitle">Novo Funcionário</h3>
+            <button onclick="closeFuncionarioModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                <i class="ri-close-line text-2xl"></i>
+            </button>
+        </div>
+
+        <div class="p-6">
+            <form id="funcionarioForm" onsubmit="saveFuncionario(event)">
+                <input type="hidden" id="funcionarioId">
+                <input type="hidden" id="funcionarioUserId">
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Coluna Esquerda - Dados Pessoais -->
+                    <div class="space-y-4">
+                        <h4 class="font-semibold text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700 pb-2">Dados Pessoais</h4>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nome Completo *</label>
+                            <input type="text" id="funcionarioNome" required
+                                   class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2
+                                          bg-white dark:bg-gray-700 text-gray-800 dark:text-white
+                                          focus:ring-2 focus:ring-blue-500 transition-colors duration-200"
+                                   placeholder="Ex: Maria Silva">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email *</label>
+                            <input type="email" id="funcionarioEmail" required
+                                   class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2
+                                          bg-white dark:bg-gray-700 text-gray-800 dark:text-white
+                                          focus:ring-2 focus:ring-blue-500 transition-colors duration-200"
+                                   placeholder="email@empresa.com">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Telefone</label>
+                            <input type="tel" id="funcionarioTelefone"
+                                   class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2
+                                          bg-white dark:bg-gray-700 text-gray-800 dark:text-white
+                                          focus:ring-2 focus:ring-blue-500 transition-colors duration-200"
+                                   placeholder="84 1234-5678">
+                        </div>
+                    </div>
+
+                    <!-- Coluna Direita - Configurações -->
+                    <div class="space-y-4">
+                        <h4 class="font-semibold text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700 pb-2">Configurações</h4>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Cargo *</label>
+                            <select id="funcionarioCargo" required
+                                    class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2
+                                           bg-white dark:bg-gray-700 text-gray-800 dark:text-white
+                                           focus:ring-2 focus:ring-blue-500 transition-colors duration-200">
+                                <option value="">Selecione um cargo</option>
+                                <option value="gerente">👔 Gerente</option>
+                                <option value="caixa">💰 Caixa</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Lavandaria *</label>
+                            <select id="funcionarioLavandaria" required
+                                    class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2
+                                           bg-white dark:bg-gray-700 text-gray-800 dark:text-white
+                                           focus:ring-2 focus:ring-blue-500 transition-colors duration-200">
+                                <option value="">Selecione uma lavandaria</option>
+                                <option value="1">PowerWash Central - Maputo</option>
+                                <option value="2">PowerWash Matola - Matola</option>
+                                <option value="3">PowerWash Beira - Beira</option>
+                                <option value="4">PowerWash Nampula - Nampula</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Senha Temporária</label>
+                            <div class="relative">
+                                <input type="password" id="funcionarioSenha"
+                                       class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2
+                                              bg-white dark:bg-gray-700 text-gray-800 dark:text-white
+                                              focus:ring-2 focus:ring-blue-500 transition-colors duration-200"
+                                       placeholder="Deixe em branco para gerar automaticamente">
+                                <button type="button" onclick="generatePassword()"
+                                        class="absolute right-2 top-1/2 transform -translate-y-1/2 text-blue-600 dark:text-blue-400 text-sm hover:underline">
+                                    Gerar
+                                </button>
+                            </div>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Mínimo 8 caracteres</p>
+                        </div>
+
+                        <div class="flex items-center justify-between pt-2">
+                            <div>
+                                <p class="font-medium text-gray-700 dark:text-gray-300">Funcionário Ativo</p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">Permitir acesso ao sistema</p>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="funcionarioAtivo" class="sr-only peer" checked>
+                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Permissões do Cargo -->
+                <div class="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <h4 class="font-semibold text-gray-700 dark:text-gray-300 mb-3 flex items-center">
+                        <i class="ri-key-2-line mr-2 text-blue-600 dark:text-blue-400"></i>
+                        Permissões do Cargo
+                    </h4>
+                    <div id="permissoesPreview" class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4 text-sm text-gray-600 dark:text-gray-400">
+                        <p class="flex items-center"><i class="ri-information-line mr-2"></i> Selecione um cargo para ver as permissões</p>
+                    </div>
+                </div>
+
+                <!-- Botões -->
+                <div class="flex justify-end space-x-3 mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <button type="button" onclick="closeFuncionarioModal()"
+                            class="px-6 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
+                                   text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700
+                                   transition-colors duration-200">
+                        Cancelar
+                    </button>
+                    <button type="submit"
+                            class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition">
+                        Salvar Funcionário
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Ver Detalhes -->
+<div id="detailsModal" class="modal hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl max-w-2xl w-full max-h-[80vh] overflow-y-auto transition-colors duration-200">
+        <div class="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex justify-between items-center">
+            <h3 class="text-xl font-semibold text-gray-800 dark:text-white" id="detailsTitle">Detalhes do Funcionário</h3>
+            <button onclick="closeDetailsModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                <i class="ri-close-line text-2xl"></i>
+            </button>
+        </div>
+        <div class="p-6" id="detailsContent">
+            <!-- Conteúdo será inserido via JS -->
+        </div>
+    </div>
+</div>
+
+<!-- Modal Resetar Senha -->
+<div id="resetPasswordModal" class="modal hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full p-6 transition-colors duration-200">
+        <div class="text-center mb-4">
+            <div class="w-16 h-16 bg-yellow-100 dark:bg-yellow-900/30 rounded-full flex items-center justify-center mx-auto mb-3">
+                <i class="ri-lock-password-line text-2xl text-yellow-600 dark:text-yellow-400"></i>
+            </div>
+            <h3 class="text-xl font-semibold text-gray-800 dark:text-white">Resetar Senha</h3>
+            <p class="text-gray-500 dark:text-gray-400 text-sm mt-1" id="resetPasswordMessage">Tem certeza que deseja resetar a senha deste funcionário?</p>
+        </div>
+        <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 mb-4">
+            <p class="text-sm text-blue-800 dark:text-blue-300 flex items-center">
+                <i class="ri-information-line mr-2"></i>
+                Uma nova senha temporária será gerada e enviada por email.
+            </p>
+        </div>
+        <div class="flex space-x-3">
+            <button onclick="closeResetPasswordModal()"
+                    class="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
+                           text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
+                Cancelar
+            </button>
+            <button id="confirmResetBtn"
+                    class="flex-1 bg-yellow-600 hover:bg-yellow-700 text-white py-2 rounded-lg transition">
+                Resetar Senha
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Excluir -->
+<div id="deleteModal" class="modal hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full p-6 text-center transition-colors duration-200">
+        <div class="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="ri-delete-bin-line text-2xl text-red-600 dark:text-red-400"></i>
+        </div>
+        <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-2">Confirmar Exclusão</h3>
+        <p class="text-gray-600 dark:text-gray-400 mb-4" id="deleteMessage">Tem certeza que deseja excluir este funcionário?</p>
+        <p class="text-sm text-red-600 dark:text-red-400 mb-6">⚠️ Esta ação não pode ser desfeita.</p>
+        <div class="flex space-x-3">
+            <button onclick="closeDeleteModal()"
+                    class="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
+                           text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
+                Cancelar
+            </button>
+            <button id="confirmDeleteBtn"
+                    class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg transition">
+                Excluir
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Container -->
+<div id="toastContainer" class="fixed bottom-4 right-4 z-50 space-y-2"></div>
+
+<script>
+    // Dados mockados - Em produção, viriam da API
+    let funcionarios = [
+        {
+            id: 1,
+            user_id: 101,
+            nome: 'Maria Silva',
+            email: 'maria.silva@powerwash.co.mz',
+            telefone: '84 9999-8888',
+            cargo: 'gerente',
+            lavandaria_id: 1,
+            lavandaria_nome: 'PowerWash Central',
+            ativo: true,
+            ultimo_acesso: '2024-01-15 08:30:00',
+            criado_em: '2024-01-10',
+            permissoes: ['view_funcionario', 'add_itemservico', 'change_itemservico', 'delete_itemservico',
+                        'view_itemservico', 'add_servico', 'change_servico', 'delete_servico', 'view_servico',
+                        'add_pedido', 'change_pedido', 'delete_pedido', 'view_pedido', 'add_cliente',
+                        'change_cliente', 'delete_cliente', 'view_cliente', 'add_itempedido', 'change_itempedido',
+                        'delete_itempedido', 'view_itempedido', 'add_pagamentopedido', 'change_pagamentopedido',
+                        'delete_pagamentopedido', 'view_pagamentopedido']
+        },
+        {
+            id: 2,
+            user_id: 102,
+            nome: 'João Santos',
+            email: 'joao.santos@powerwash.co.mz',
+            telefone: '84 8888-7777',
+            cargo: 'caixa',
+            lavandaria_id: 1,
+            lavandaria_nome: 'PowerWash Central',
+            ativo: true,
+            ultimo_acesso: '2024-01-15 09:15:00',
+            criado_em: '2024-01-12',
+            permissoes: ['add_pedido', 'change_pedido', 'delete_pedido', 'view_pedido', 'add_cliente',
+                        'change_cliente', 'delete_cliente', 'view_cliente', 'add_itempedido', 'change_itempedido',
+                        'delete_itempedido', 'view_itempedido']
+        },
+        {
+            id: 3,
+            user_id: 103,
+            nome: 'Ana Costa',
+            email: 'ana.costa@powerwash.co.mz',
+            telefone: '84 7777-6666',
+            cargo: 'caixa',
+            lavandaria_id: 2,
+            lavandaria_nome: 'PowerWash Matola',
+            ativo: true,
+            ultimo_acesso: '2024-01-14 17:30:00',
+            criado_em: '2024-01-15',
+            permissoes: ['add_pedido', 'change_pedido', 'delete_pedido', 'view_pedido', 'add_cliente',
+                        'change_cliente', 'delete_cliente', 'view_cliente', 'add_itempedido', 'change_itempedido',
+                        'delete_itempedido', 'view_itempedido']
+        },
+        {
+            id: 4,
+            user_id: 104,
+            nome: 'Carlos Mendes',
+            email: 'carlos.mendes@powerwash.co.mz',
+            telefone: '84 6666-5555',
+            cargo: 'gerente',
+            lavandaria_id: 2,
+            lavandaria_nome: 'PowerWash Matola',
+            ativo: false,
+            ultimo_acesso: '2024-01-10 10:00:00',
+            criado_em: '2024-01-20',
+            permissoes: ['view_funcionario', 'add_itemservico', 'change_itemservico', 'delete_itemservico',
+                        'view_itemservico', 'add_servico', 'change_servico', 'delete_servico', 'view_servico',
+                        'add_pedido', 'change_pedido', 'delete_pedido', 'view_pedido', 'add_cliente',
+                        'change_cliente', 'delete_cliente', 'view_cliente', 'add_itempedido', 'change_itempedido',
+                        'delete_itempedido', 'view_itempedido', 'add_pagamentopedido', 'change_pagamentopedido',
+                        'delete_pagamentopedido', 'view_pagamentopedido']
+        }
+    ];
+
+    let currentPage = 1;
+    let itemsPerPage = 8;
+    let funcionarioToDelete = null;
+    let funcionarioToReset = null;
+
+    // Permissões por cargo
+    const permissoesPorCargo = {
+        'gerente': [
+            '👥 Visualizar Funcionários',
+            '👕 Gerenciar Artigos (CRUD completo)',
+            '🔧 Gerenciar Serviços (CRUD completo)',
+            '📦 Gerenciar Pedidos (CRUD completo)',
+            '👤 Gerenciar Clientes (CRUD completo)',
+            '📋 Gerenciar Itens de Pedido',
+            '💰 Gerenciar Pagamentos'
+        ],
+        'caixa': [
+            '📦 Visualizar e gerenciar Pedidos',
+            '👤 Visualizar e gerenciar Clientes',
+            '📋 Gerenciar Itens de Pedido'
+        ]
+    };
+
+    // Formatar data
+    function formatDate(dateString) {
+        if (!dateString) return '—';
+        const date = new Date(dateString);
+        return date.toLocaleDateString('pt-PT');
+    }
+
+    function formatDateTime(dateTimeString) {
+        if (!dateTimeString) return 'Nunca';
+        const date = new Date(dateTimeString);
+        return date.toLocaleString('pt-PT');
+    }
+
+    // Obter iniciais do nome
+    function getInitials(name) {
+        return name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+    }
+
+    // Obter cor do avatar baseada no nome
+    function getAvatarColor(name) {
+        const colors = [
+            'bg-red-500', 'bg-blue-500', 'bg-green-500', 'bg-yellow-500',
+            'bg-purple-500', 'bg-pink-500', 'bg-indigo-500', 'bg-teal-500'
+        ];
+        const index = name.length % colors.length;
+        return colors[index];
+    }
+
+    // Atualizar estatísticas
+    function updateStats() {
+        const total = funcionarios.length;
+        const ativos = funcionarios.filter(f => f.ativo === true).length;
+        const inativos = total - ativos;
+        const gerentes = funcionarios.filter(f => f.cargo === 'gerente').length;
+        const caixas = funcionarios.filter(f => f.cargo === 'caixa').length;
+
+        document.getElementById('totalFuncionarios').textContent = total;
+        document.getElementById('ativosCount').textContent = ativos;
+        document.getElementById('inativosCount').textContent = inativos;
+        document.getElementById('gerentesCount').textContent = gerentes;
+        document.getElementById('caixasCount').textContent = caixas;
+    }
+
+    // Filtrar funcionários
+    function getFilteredFuncionarios() {
+        const searchTerm = document.getElementById('searchFuncionario').value.toLowerCase();
+        const cargoFilter = document.getElementById('cargoFilter').value;
+        const statusFilter = document.getElementById('statusFilter').value;
+        const lavandariaFilter = document.getElementById('lavandariaFilter').value;
+
+        let filtered = [...funcionarios];
+
+        if (searchTerm) {
+            filtered = filtered.filter(f =>
+                f.nome.toLowerCase().includes(searchTerm) ||
+                f.email.toLowerCase().includes(searchTerm) ||
+                (f.telefone && f.telefone.includes(searchTerm))
+            );
+        }
+
+        if (cargoFilter !== 'all') {
+            filtered = filtered.filter(f => f.cargo === cargoFilter);
+        }
+
+        if (statusFilter !== 'all') {
+            filtered = filtered.filter(f => statusFilter === 'active' ? f.ativo : !f.ativo);
+        }
+
+        if (lavandariaFilter !== 'all') {
+            filtered = filtered.filter(f => f.lavandaria_id == lavandariaFilter);
+        }
+
+        return filtered;
+    }
+
+    // Atualizar preview de permissões
+    function updatePermissoesPreview() {
+        const cargo = document.getElementById('funcionarioCargo').value;
+        const container = document.getElementById('permissoesPreview');
+
+        if (!cargo) {
+            container.innerHTML = '<p class="flex items-center"><i class="ri-information-line mr-2"></i> Selecione um cargo para ver as permissões</p>';
+            return;
+        }
+
+        const permissoes = permissoesPorCargo[cargo] || [];
+        container.innerHTML = `
+            <div class="space-y-1">
+                <p class="font-medium text-gray-700 dark:text-gray-300 mb-2">Permissões do cargo ${cargo === 'gerente' ? 'Gerente' : 'Caixa'}:</p>
+                ${permissoes.map(p => `<p class="text-sm flex items-center"><i class="ri-checkbox-circle-line text-green-500 mr-2"></i> ${p}</p>`).join('')}
+            </div>
+        `;
+    }
+
+    // Renderizar grid
+    function renderGrid(funcionariosList) {
+        const container = document.getElementById('funcionariosGrid');
+        const emptyState = document.getElementById('emptyState');
+
+        if (funcionariosList.length === 0) {
+            container.classList.add('hidden');
+            emptyState.classList.remove('hidden');
+            return;
+        }
+
+        container.classList.remove('hidden');
+        emptyState.classList.add('hidden');
+
+        container.innerHTML = funcionariosList.map(func => {
+            const avatarColor = getAvatarColor(func.nome);
+            const initials = getInitials(func.nome);
+
+            return `
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden card-hover slide-in transition-colors duration-200">
+                    <div class="p-5">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-12 h-12 rounded-xl ${avatarColor} flex items-center justify-center text-white font-bold text-lg">
+                                    ${initials}
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-gray-800 dark:text-white">${func.nome}</h3>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">${func.email}</p>
+                                </div>
+                            </div>
+                            <div class="flex space-x-1">
+                                <button onclick="viewDetails(${func.id})"
+                                        class="p-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition"
+                                        title="Ver detalhes">
+                                    <i class="ri-eye-line"></i>
+                                </button>
+                                <button onclick="editFuncionario(${func.id})"
+                                        class="p-1.5 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30 rounded-lg transition"
+                                        title="Editar">
+                                    <i class="ri-edit-line"></i>
+                                </button>
+                                <button onclick="openResetPasswordModal(${func.id})"
+                                        class="p-1.5 text-yellow-600 dark:text-yellow-400 hover:bg-yellow-50 dark:hover:bg-yellow-900/30 rounded-lg transition"
+                                        title="Resetar senha">
+                                    <i class="ri-lock-password-line"></i>
+                                </button>
+                                <button onclick="openDeleteModal(${func.id})"
+                                        class="p-1.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition"
+                                        title="Excluir">
+                                    <i class="ri-delete-bin-line"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="space-y-2 mb-4">
+                            <p class="text-sm text-gray-600 dark:text-gray-400 flex items-center">
+                                <i class="ri-phone-line mr-2 text-gray-400"></i>
+                                ${func.telefone || '—'}
+                            </p>
+                            <p class="text-sm text-gray-600 dark:text-gray-400 flex items-center">
+                                <i class="ri-store-line mr-2 text-gray-400"></i>
+                                ${func.lavandaria_nome}
+                            </p>
+                        </div>
+
+                        <div class="flex justify-between items-center pt-3 border-t border-gray-100 dark:border-gray-700">
+                            <span class="status-badge px-2 py-1 text-xs rounded-full ${func.cargo === 'gerente' ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400' : 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'}">
+                                <i class="ri-${func.cargo === 'gerente' ? 'shield-star-line' : 'cash-line'} mr-1"></i>
+                                ${func.cargo === 'gerente' ? 'Gerente' : 'Caixa'}
+                            </span>
+                            <span class="status-badge px-2 py-1 text-xs rounded-full ${func.ativo ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400'}">
+                                ${func.ativo ? '✓ Ativo' : '✗ Inativo'}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    // Renderizar com paginação
+    function render() {
+        const filtered = getFilteredFuncionarios();
+        const totalItems = filtered.length;
+        const totalPages = Math.ceil(totalItems / itemsPerPage);
+
+        if (currentPage > totalPages && totalPages > 0) {
+            currentPage = totalPages;
+        }
+
+        const start = (currentPage - 1) * itemsPerPage;
+        const paginated = filtered.slice(start, start + itemsPerPage);
+
+        const startNum = totalItems === 0 ? 0 : start + 1;
+        document.getElementById('paginationInfo').innerHTML =
+            `Mostrando ${startNum} a ${Math.min(start + itemsPerPage, totalItems)} de ${totalItems} resultados`;
+
+        renderGrid(paginated);
+
+        // Renderizar paginação
+        const paginationDiv = document.getElementById('paginationButtons');
+        if (totalPages <= 1) {
+            paginationDiv.innerHTML = '';
+            return;
+        }
+
+        let paginationHtml = `
+            <button onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}
+                    class="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg
+                           hover:bg-gray-50 dark:hover:bg-gray-700
+                           ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''}
+                           transition-colors duration-200">
+                <i class="ri-arrow-left-s-line"></i>
+            </button>
+        `;
+
+        const maxButtons = 5;
+        let startPage = Math.max(1, currentPage - Math.floor(maxButtons / 2));
+        let endPage = Math.min(totalPages, startPage + maxButtons - 1);
+
+        if (endPage - startPage < maxButtons - 1) {
+            startPage = Math.max(1, endPage - maxButtons + 1);
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+            paginationHtml += `
+                <button onclick="changePage(${i})"
+                        class="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg
+                               ${currentPage === i ? 'bg-blue-600 text-white border-blue-600' : 'hover:bg-gray-50 dark:hover:bg-gray-700'}
+                               transition-colors duration-200">
+                    ${i}
+                </button>
+            `;
+        }
+
+        paginationHtml += `
+            <button onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}
+                    class="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg
+                           hover:bg-gray-50 dark:hover:bg-gray-700
+                           ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''}
+                           transition-colors duration-200">
+                <i class="ri-arrow-right-s-line"></i>
+            </button>
+        `;
+
+        paginationDiv.innerHTML = paginationHtml;
+
+        updateStats();
+    }
+
+    function changePage(page) {
+        if (page < 1) return;
+        currentPage = page;
+        render();
+    }
+
+    // Gerar senha aleatória
+    function generatePassword() {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%';
+        let password = '';
+        for (let i = 0; i < 10; i++) {
+            password += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        document.getElementById('funcionarioSenha').value = password;
+        showToast('Senha gerada automaticamente', 'info');
+    }
+
+    // CRUD Operations
+    function openNovoFuncionarioModal() {
+        document.getElementById('modalTitle').textContent = 'Novo Funcionário';
+        document.getElementById('funcionarioForm').reset();
+        document.getElementById('funcionarioId').value = '';
+        document.getElementById('funcionarioUserId').value = '';
+        document.getElementById('funcionarioAtivo').checked = true;
+        updatePermissoesPreview();
+        document.getElementById('funcionarioModal').classList.remove('hidden');
+    }
+
+    function editFuncionario(id) {
+        const func = funcionarios.find(f => f.id === id);
+        if (func) {
+            document.getElementById('modalTitle').textContent = 'Editar Funcionário';
+            document.getElementById('funcionarioId').value = func.id;
+            document.getElementById('funcionarioUserId').value = func.user_id || '';
+            document.getElementById('funcionarioNome').value = func.nome;
+            document.getElementById('funcionarioEmail').value = func.email;
+            document.getElementById('funcionarioTelefone').value = func.telefone || '';
+            document.getElementById('funcionarioCargo').value = func.cargo;
+            document.getElementById('funcionarioLavandaria').value = func.lavandaria_id;
+            document.getElementById('funcionarioAtivo').checked = func.ativo;
+            document.getElementById('funcionarioSenha').value = '';
+            document.getElementById('funcionarioSenha').placeholder = 'Deixe em branco para manter a mesma';
+            updatePermissoesPreview();
+            document.getElementById('funcionarioModal').classList.remove('hidden');
+        }
+    }
+
+    function saveFuncionario(event) {
+        event.preventDefault();
+
+        const id = document.getElementById('funcionarioId').value;
+        const nome = document.getElementById('funcionarioNome').value;
+        const email = document.getElementById('funcionarioEmail').value;
+        const telefone = document.getElementById('funcionarioTelefone').value;
+        const cargo = document.getElementById('funcionarioCargo').value;
+        const lavandaria_id = parseInt(document.getElementById('funcionarioLavandaria').value);
+        const ativo = document.getElementById('funcionarioAtivo').checked;
+        const senha = document.getElementById('funcionarioSenha').value;
+
+        if (!nome || !email || !cargo || !lavandaria_id) {
+            showToast('Preencha todos os campos obrigatórios', 'error');
+            return;
+        }
+
+        const lavandariaMap = {
+            1: 'PowerWash Central',
+            2: 'PowerWash Matola',
+            3: 'PowerWash Beira',
+            4: 'PowerWash Nampula'
+        };
+
+        if (id) {
+            // Editar
+            const index = funcionarios.findIndex(f => f.id == id);
+            if (index !== -1) {
+                funcionarios[index] = {
+                    ...funcionarios[index],
+                    nome,
+                    email,
+                    telefone,
+                    cargo,
+                    lavandaria_id,
+                    lavandaria_nome: lavandariaMap[lavandaria_id],
+                    ativo
+                };
+                if (senha) {
+                    showToast('Senha alterada! O funcionário deve usar a nova senha no próximo login.', 'info');
+                }
+                showToast('Funcionário atualizado com sucesso!', 'success');
+            }
+        } else {
+            // Criar novo
+            const newId = Math.max(...funcionarios.map(f => f.id), 0) + 1;
+            const newUserId = Math.max(...funcionarios.map(f => f.user_id || 0), 0) + 1;
+            const hoje = new Date().toISOString().split('T')[0];
+
+            funcionarios.push({
+                id: newId,
+                user_id: newUserId,
+                nome,
+                email,
+                telefone,
+                cargo,
+                lavandaria_id,
+                lavandaria_nome: lavandariaMap[lavandaria_id],
+                ativo,
+                ultimo_acesso: null,
+                criado_em: hoje,
+                permissoes: cargo === 'gerente' ? permissoesPorCargo.gerente : permissoesPorCargo.caixa
+            });
+
+            const senhaGerada = senha || 'temp123456';
+            showToast(`Funcionário criado com sucesso! Senha: ${senhaGerada}`, 'success');
+        }
+
+        closeFuncionarioModal();
+        render();
+    }
+
+    function viewDetails(id) {
+        const func = funcionarios.find(f => f.id === id);
+        if (func) {
+            document.getElementById('detailsTitle').textContent = func.nome;
+            document.getElementById('detailsContent').innerHTML = `
+                <div class="space-y-4">
+                    <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-16 h-16 rounded-xl ${getAvatarColor(func.nome)} flex items-center justify-center text-white font-bold text-xl">
+                                ${getInitials(func.nome)}
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-gray-800 dark:text-white text-lg">${func.nome}</h4>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">${func.email}</p>
+                                <div class="flex items-center space-x-2 mt-1">
+                                    <span class="status-badge px-2 py-0.5 text-xs rounded-full ${func.cargo === 'gerente' ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400' : 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'}">
+                                        ${func.cargo === 'gerente' ? 'Gerente' : 'Caixa'}
+                                    </span>
+                                    <span class="status-badge px-2 py-0.5 text-xs rounded-full ${func.ativo ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400'}">
+                                        ${func.ativo ? 'Ativo' : 'Inativo'}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="flex items-start space-x-2">
+                            <i class="ri-phone-line text-gray-400 mt-0.5"></i>
+                            <div>
+                                <p class="text-sm font-medium text-gray-700 dark:text-gray-300">Telefone</p>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">${func.telefone || '—'}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-2">
+                            <i class="ri-store-line text-gray-400 mt-0.5"></i>
+                            <div>
+                                <p class="text-sm font-medium text-gray-700 dark:text-gray-300">Lavandaria</p>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">${func.lavandaria_nome}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-2">
+                            <i class="ri-calendar-line text-gray-400 mt-0.5"></i>
+                            <div>
+                                <p class="text-sm font-medium text-gray-700 dark:text-gray-300">Cadastrado em</p>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">${formatDate(func.criado_em)}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-2">
+                            <i class="ri-login-circle-line text-gray-400 mt-0.5"></i>
+                            <div>
+                                <p class="text-sm font-medium text-gray-700 dark:text-gray-300">Último acesso</p>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">${formatDateTime(func.ultimo_acesso)}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="border-t border-gray-200 dark:border-gray-700 pt-4">
+                        <h5 class="font-medium text-gray-800 dark:text-white mb-3">Permissões</h5>
+                        <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
+                            <div class="space-y-1">
+                                ${func.permissoes && func.permissoes.length > 0 ?
+                                    func.permissoes.map(p => `<p class="text-sm text-gray-600 dark:text-gray-400 flex items-center"><i class="ri-checkbox-circle-line text-green-500 mr-2"></i> ${p}</p>`).join('') :
+                                    '<p class="text-sm text-gray-500">Carregando permissões...</p>'
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end space-x-3 pt-4">
+                        <button onclick="closeDetailsModal(); editFuncionario(${func.id})"
+                                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                            <i class="ri-edit-line"></i> Editar
+                        </button>
+                        <button onclick="closeDetailsModal(); openResetPasswordModal(${func.id})"
+                                class="px-4 py-2 border border-yellow-600 text-yellow-600 rounded-lg hover:bg-yellow-50 dark:hover:bg-yellow-900/20">
+                            <i class="ri-lock-password-line"></i> Resetar Senha
+                        </button>
+                    </div>
+                </div>
+            `;
+            document.getElementById('detailsModal').classList.remove('hidden');
+        }
+    }
+
+    function openResetPasswordModal(id) {
+        const func = funcionarios.find(f => f.id === id);
+        if (func) {
+            funcionarioToReset = id;
+            document.getElementById('resetPasswordMessage').innerHTML = `Tem certeza que deseja resetar a senha de <strong>${func.nome}</strong>?`;
+            document.getElementById('resetPasswordModal').classList.remove('hidden');
+        }
+    }
+
+    function closeResetPasswordModal() {
+        funcionarioToReset = null;
+        document.getElementById('resetPasswordModal').classList.add('hidden');
+    }
+
+    function confirmResetPassword() {
+        if (funcionarioToReset) {
+            const novaSenha = Math.random().toString(36).slice(-10) + '!@';
+            showToast(`Senha resetada! Nova senha temporária: ${novaSenha}`, 'info');
+            closeResetPasswordModal();
+        }
+    }
+
+    function openDeleteModal(id) {
+        const func = funcionarios.find(f => f.id === id);
+        if (func) {
+            funcionarioToDelete = id;
+            document.getElementById('deleteMessage').innerHTML = `Tem certeza que deseja excluir <strong>${func.nome}</strong>?`;
+            document.getElementById('deleteModal').classList.remove('hidden');
+        }
+    }
+
+    function closeDeleteModal() {
+        funcionarioToDelete = null;
+        document.getElementById('deleteModal').classList.add('hidden');
+    }
+
+    function closeFuncionarioModal() {
+        document.getElementById('funcionarioModal').classList.add('hidden');
+    }
+
+    function closeDetailsModal() {
+        document.getElementById('detailsModal').classList.add('hidden');
+    }
+
+    function confirmDelete() {
+        if (funcionarioToDelete) {
+            const index = funcionarios.findIndex(f => f.id === funcionarioToDelete);
+            if (index !== -1) {
+                const func = funcionarios[index];
+                funcionarios.splice(index, 1);
+                showToast(`"${func.nome}" foi excluído com sucesso!`, 'info');
+
+                const filtered = getFilteredFuncionarios();
+                const totalPages = Math.ceil(filtered.length / itemsPerPage);
+                if (currentPage > totalPages && totalPages > 0) {
+                    currentPage = totalPages;
+                }
+
+                render();
+            }
+            closeDeleteModal();
+        }
+    }
+
+    // Toast Notifications
+    function showToast(message, type = 'info') {
+        const container = document.getElementById('toastContainer');
+        const toast = document.createElement('div');
+
+        const icons = {
+            success: 'ri-checkbox-circle-fill',
+            error: 'ri-error-warning-fill',
+            warning: 'ri-alert-fill',
+            info: 'ri-information-fill'
+        };
+
+        const colors = {
+            success: 'bg-green-500',
+            error: 'bg-red-500',
+            warning: 'bg-yellow-500',
+            info: 'bg-blue-500'
+        };
+
+        toast.className = `toast ${colors[type]} text-white px-4 py-3 rounded-lg shadow-lg flex items-center space-x-3 min-w-[280px]`;
+        toast.innerHTML = `
+            <i class="${icons[type]} text-xl"></i>
+            <span class="flex-1 text-sm">${message}</span>
+            <button onclick="this.parentElement.remove()" class="hover:opacity-80">
+                <i class="ri-close-line"></i>
+            </button>
+        `;
+
+        container.appendChild(toast);
+
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateX(100%)';
+            toast.style.transition = 'all 0.3s ease';
+            setTimeout(() => toast.remove(), 300);
+        }, 4000);
+    }
+
+    // Event Listeners
+    document.getElementById('newFuncionarioBtn').onclick = openNovoFuncionarioModal;
+    document.getElementById('confirmResetBtn').onclick = confirmResetPassword;
+    document.getElementById('confirmDeleteBtn').onclick = confirmDelete;
+
+    document.getElementById('searchFuncionario').addEventListener('input', () => {
+        currentPage = 1;
+        render();
+    });
+
+    document.getElementById('cargoFilter').addEventListener('change', () => {
+        currentPage = 1;
+        render();
+    });
+
+    document.getElementById('statusFilter').addEventListener('change', () => {
+        currentPage = 1;
+        render();
+    });
+
+    document.getElementById('lavandariaFilter').addEventListener('change', () => {
+        currentPage = 1;
+        render();
+    });
+
+    document.getElementById('resetFilters').onclick = () => {
+        document.getElementById('searchFuncionario').value = '';
+        document.getElementById('cargoFilter').value = 'all';
+        document.getElementById('statusFilter').value = 'all';
+        document.getElementById('lavandariaFilter').value = 'all';
+        currentPage = 1;
+        render();
+    };
+
+    document.getElementById('funcionarioCargo').addEventListener('change', updatePermissoesPreview);
+
+    // Fechar modais clicando fora
+    window.onclick = (event) => {
+        const funcModal = document.getElementById('funcionarioModal');
+        const delModal = document.getElementById('deleteModal');
+        const detModal = document.getElementById('detailsModal');
+        const resetModal = document.getElementById('resetPasswordModal');
+
+        if (event.target === funcModal) closeFuncionarioModal();
+        if (event.target === delModal) closeDeleteModal();
+        if (event.target === detModal) closeDetailsModal();
+        if (event.target === resetModal) closeResetPasswordModal();
+    };
+
+    // Inicializar
+    render();
+</script>
+
+{% endblock %}

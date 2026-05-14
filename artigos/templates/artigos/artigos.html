@@ -1,0 +1,901 @@
+{% extends 'main.html' %}
+{% block content %}
+
+
+        <!-- Main Content -->
+        <main class="flex-1 overflow-y-auto">
+            <!-- Top Bar -->
+            <div class="bg-white dark:bg-gray-800 border-b dark:border-gray-700 sticky top-0 z-10 shadow-sm">
+                <div class="px-8 py-4 flex justify-between items-center">
+                    <div>
+                        <h2 class="text-2xl font-semibold text-gray-800 dark:text-white">Artigos</h2>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Gerencie os tipos de artigos e seus preços</p>
+                    </div>
+                    <button id="newArtigoBtn"
+                        class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-5 py-2.5 rounded-lg flex items-center space-x-2 hover:shadow-lg transition transform hover:scale-105">
+                        <i class="ri-add-line text-xl"></i>
+                        <span>Novo Artigo</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="p-8 fade-in">
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+                    <div class="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border-l-4 border-blue-500 transition-all duration-300">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-gray-500 dark:text-gray-400 text-sm">Total Artigos</p>
+                                <p class="text-2xl font-bold text-gray-800 dark:text-white" id="totalArtigos">0</p>
+                            </div>
+                            <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
+                                <i class="ri-shirt-line text-blue-600 dark:text-blue-400 text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border-l-4 border-green-500 transition-all duration-300">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-gray-500 dark:text-gray-400 text-sm">Disponíveis</p>
+                                <p class="text-2xl font-bold text-gray-800 dark:text-white" id="ativosCount">0</p>
+                            </div>
+                            <div class="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
+                                <i class="ri-checkbox-circle-line text-green-600 dark:text-green-400 text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border-l-4 border-red-500 transition-all duration-300">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-gray-500 dark:text-gray-400 text-sm">Indisponíveis</p>
+                                <p class="text-2xl font-bold text-gray-800 dark:text-white" id="inativosCount">0</p>
+                            </div>
+                            <div class="w-10 h-10 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center">
+                                <i class="ri-close-circle-line text-red-600 dark:text-red-400 text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border-l-4 border-purple-500 transition-all duration-300">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-gray-500 dark:text-gray-400 text-sm">Preço Médio</p>
+                                <p class="text-2xl font-bold text-gray-800 dark:text-white" id="precoMedio">0 MT</p>
+                            </div>
+                            <div class="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center">
+                                <i class="ri-money-dollar-circle-line text-purple-600 dark:text-purple-400 text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filters -->
+                <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm mb-6 transition-all duration-300">
+                    <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Buscar</label>
+                            <div class="relative">
+                                <i class="ri-search-line absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500"></i>
+                                <input type="text" id="searchArtigo" placeholder="Nome do artigo..."
+                                    class="w-full border border-gray-300 dark:border-gray-600 rounded-lg pl-10 pr-3 py-2 focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-800 dark:text-white">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Filtrar por Status</label>
+                            <select id="statusFilter" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500">
+                                <option value="all">Todos</option>
+                                <option value="disponivel">Disponíveis</option>
+                                <option value="indisponivel">Indisponíveis</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Ordenar por</label>
+                            <select id="sortBy" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500">
+                                <option value="nome">Nome (A-Z)</option>
+                                <option value="nome_desc">Nome (Z-A)</option>
+                                <option value="preco_asc">Preço (menor maior)</option>
+                                <option value="preco_desc">Preço (maior menor)</option>
+                                <option value="recente">Mais Recente</option>
+                            </select>
+                        </div>
+                        <div class="flex items-end">
+                            <button id="resetFilters"
+                                class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                                <i class="ri-refresh-line"></i> Limpar Filtros
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bulk Actions -->
+                <div id="bulkActions" class="hidden bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 mb-4 flex justify-between items-center">
+                    <div class="flex items-center space-x-3">
+                        <i class="ri-checkbox-multiple-line text-blue-600 dark:text-blue-400"></i>
+                        <span class="text-sm text-blue-700 dark:text-blue-300" id="selectedCount">0</span>
+                        <span class="text-sm text-blue-700 dark:text-blue-300">selecionados</span>
+                    </div>
+                    <button id="bulkDeleteBtn" class="px-3 py-1 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
+                        <i class="ri-delete-bin-line"></i> Excluir Selecionados
+                    </button>
+                </div>
+
+                <!-- Artigos Grid / Table View -->
+                <div class="flex justify-end mb-4 space-x-2">
+                    <button id="gridViewBtn" class="p-2 rounded-lg bg-blue-600 text-white transition">
+                        <i class="ri-layout-grid-line text-xl"></i>
+                    </button>
+                    <button id="tableViewBtn" class="p-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400 transition">
+                        <i class="ri-table-line text-xl"></i>
+                    </button>
+                </div>
+
+                <!-- Grid View (Cards) -->
+                <div id="gridView" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    <div class="col-span-full text-center py-12">
+                        <i class="ri-loader-4-line text-4xl text-gray-400 animate-spin"></i>
+                        <p class="text-gray-500 dark:text-gray-400 mt-2">Carregando artigos...</p>
+                    </div>
+                </div>
+
+                <!-- Table View -->
+                <div id="tableView" class="hidden bg-white dark:bg-gray-800 rounded-2xl shadow-sm overflow-hidden transition-all duration-300">
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead class="bg-gray-50 dark:bg-gray-700">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                        <input type="checkbox" id="selectAll" class="rounded dark:bg-gray-600">
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                        Artigo</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                        Preço</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                        Status</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                        Criado em</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                        Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBody" class="divide-y divide-gray-200 dark:divide-gray-700">
+                                <!-- Linhas via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Pagination -->
+                <div class="mt-6 flex justify-between items-center">
+                    <p class="text-sm text-gray-600 dark:text-gray-400" id="paginationInfo">Mostrando 0 resultados</p>
+                    <div class="flex space-x-2" id="paginationButtons"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal Criar/Editar Artigo -->
+    <div id="artigoModal" class="modal hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-md fade-in-up">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-semibold text-gray-800 dark:text-white" id="modalTitle">Novo Artigo</h3>
+                    <button onclick="closeArtigoModal()" class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300">
+                        <i class="ri-close-line text-2xl"></i>
+                    </button>
+                </div>
+
+                <form id="artigoForm">
+                    {% csrf_token %}
+                    <input type="hidden" id="artigoId">
+
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nome do Artigo *</label>
+                            <input type="text" id="artigoNome" required
+                                class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-800 dark:text-white"
+                                placeholder="Ex: Calça Jeans, Camisa Social...">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Preço Base (MT) *</label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400">MT</span>
+                                <input type="number" id="artigoPreco" required step="0.01" min="0"
+                                    class="w-full border border-gray-300 dark:border-gray-600 rounded-lg pl-12 pr-3 py-2 focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-800 dark:text-white"
+                                    placeholder="0.00">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="flex items-center space-x-3 cursor-pointer">
+                                <input type="checkbox" id="artigoDisponivel" checked class="w-4 h-4 text-blue-600 rounded dark:bg-gray-700">
+                                <span class="text-sm text-gray-700 dark:text-gray-300">Disponível para pedidos</span>
+                            </label>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Artigos indisponíveis não aparecem na criação de pedidos</p>
+                        </div>
+
+                        <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3">
+                            <div class="flex items-center space-x-2 text-sm text-blue-800 dark:text-blue-300">
+                                <i class="ri-information-line"></i>
+                                <span>Preço formatado: <strong id="previewPreco">0.00 MT</strong></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex space-x-3 mt-6">
+                        <button type="button" onclick="closeArtigoModal()"
+                            class="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                            Cancelar
+                        </button>
+                        <button type="submit"
+                            class="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition">
+                            Salvar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Excluir -->
+    <div id="deleteModal" class="modal hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full p-6 text-center">
+            <div class="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="ri-delete-bin-line text-2xl text-red-600 dark:text-red-400"></i>
+            </div>
+            <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-2">Confirmar Exclusão</h3>
+            <p class="text-gray-600 dark:text-gray-300 mb-4" id="deleteMessage">Tem certeza que deseja excluir este artigo?</p>
+            <p class="text-sm text-red-600 dark:text-red-400 mb-6" id="deleteWarning">⚠️ Esta ação não pode ser desfeita.</p>
+            <div class="flex space-x-3">
+                <button onclick="closeDeleteModal()"
+                    class="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition">
+                    Cancelar
+                </button>
+                <button id="confirmDeleteBtn" class="flex-1 bg-red-600 text-white py-2 rounded-lg hover:bg-red-700 transition">
+                    Excluir
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toastContainer" class="fixed bottom-4 right-4 z-50 space-y-2"></div>
+
+    <script>
+        // CSRF Token setup
+        function getCSRFToken() {
+            return document.querySelector('[name=csrfmiddlewaretoken]')?.value ||
+                   document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
+        }
+
+        // Dark Mode Toggle
+        function initDarkMode() {
+            const darkModeToggle = document.getElementById('darkModeToggle');
+            const darkModeIcon = document.getElementById('darkModeIcon');
+            const htmlElement = document.documentElement;
+
+            let isDark = localStorage.getItem('darkMode') === 'true';
+
+            if (localStorage.getItem('darkMode') === null) {
+                isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            }
+
+            function applyDarkMode(enabled) {
+                if (enabled) {
+                    htmlElement.classList.add('dark');
+                    if (darkModeIcon) {
+                        darkModeIcon.classList.remove('ri-moon-line');
+                        darkModeIcon.classList.add('ri-sun-line');
+                    }
+                } else {
+                    htmlElement.classList.remove('dark');
+                    if (darkModeIcon) {
+                        darkModeIcon.classList.remove('ri-sun-line');
+                        darkModeIcon.classList.add('ri-moon-line');
+                    }
+                }
+            }
+
+            applyDarkMode(isDark);
+
+            if (darkModeToggle) {
+                darkModeToggle.addEventListener('click', function() {
+                    isDark = !isDark;
+                    localStorage.setItem('darkMode', isDark);
+                    applyDarkMode(isDark);
+                });
+            }
+        }
+
+        let artigos = [];
+        let currentView = 'grid';
+        let currentPage = 1;
+        let itemsPerPage = 12;
+        let artigoToDelete = null;
+        let selectedArtigos = new Set();
+
+        function formatPrice(price) {
+            return new Intl.NumberFormat('pt-MZ', { style: 'currency', currency: 'MZN' }).format(price);
+        }
+
+        // API Calls
+        async function loadArtigos() {
+            try {
+                const response = await fetch('/api/artigos/');
+                const data = await response.json();
+                if (data.success) {
+                    artigos = data.artigos;
+                    render();
+                } else {
+                    showToast('Erro ao carregar artigos', 'error');
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+                showToast('Erro ao conectar com o servidor', 'error');
+            }
+        }
+
+        async function saveArtigoAPI(artigoData) {
+            const isEdit = artigoData.id;
+            const url = isEdit ? `/api/artigos/editar/${artigoData.id}/` : '/api/artigos/criar/';
+            const method = isEdit ? 'PUT' : 'POST';
+
+            try {
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCSRFToken()
+                    },
+                    body: JSON.stringify(artigoData)
+                });
+                const data = await response.json();
+                if (data.success) {
+                    showToast(isEdit ? 'Artigo atualizado!' : 'Artigo criado!', 'success');
+                    loadArtigos();
+                    return true;
+                } else {
+                    showToast(data.error || 'Erro ao salvar', 'error');
+                    return false;
+                }
+            } catch (error) {
+                showToast('Erro ao salvar', 'error');
+                return false;
+            }
+        }
+
+        async function toggleStatusAPI(id) {
+            try {
+                const response = await fetch(`/api/artigos/toggle/${id}/`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCSRFToken()
+                    }
+                });
+                const data = await response.json();
+                if (data.success) {
+                    showToast(data.message, 'success');
+                    loadArtigos();
+                } else {
+                    showToast(data.error || 'Erro ao alterar status', 'error');
+                }
+            } catch (error) {
+                showToast('Erro ao alterar status', 'error');
+            }
+        }
+
+        async function deleteArtigoAPI(id) {
+            try {
+                const response = await fetch(`/api/artigos/excluir/${id}/`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRFToken': getCSRFToken()
+                    }
+                });
+                const data = await response.json();
+                if (data.success) {
+                    showToast(data.message, 'success');
+                    loadArtigos();
+                    return true;
+                } else {
+                    showToast(data.error || 'Erro ao excluir', 'error');
+                    return false;
+                }
+            } catch (error) {
+                showToast('Erro ao excluir', 'error');
+                return false;
+            }
+        }
+
+        async function deleteMultipleArtigosAPI(ids) {
+            try {
+                const response = await fetch('/api/artigos/excluir-multiplos/', {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCSRFToken()
+                    },
+                    body: JSON.stringify({ ids: ids })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    showToast(data.message, 'success');
+                    loadArtigos();
+                    return true;
+                } else {
+                    showToast(data.error || 'Erro ao excluir', 'error');
+                    return false;
+                }
+            } catch (error) {
+                showToast('Erro ao excluir', 'error');
+                return false;
+            }
+        }
+
+        // Render functions
+        function renderGridView(artigosList) {
+            const container = document.getElementById('gridView');
+
+            if (artigosList.length === 0) {
+                container.innerHTML = `
+                <div class="col-span-full text-center py-12">
+                    <i class="ri-inbox-line text-6xl text-gray-300 dark:text-gray-600 mb-4"></i>
+                    <p class="text-gray-500 dark:text-gray-400">Nenhum artigo encontrado</p>
+                    <button onclick="document.getElementById('newArtigoBtn').click()"
+                            class="mt-4 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300">
+                        <i class="ri-add-line"></i> Criar primeiro artigo
+                    </button>
+                </div>
+            `;
+                return;
+            }
+
+            container.innerHTML = artigosList.map(artigo => `
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden card-hover slide-in transition-all duration-300">
+                <div class="p-5">
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="w-12 h-12 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-500 flex items-center justify-center">
+                            <i class="ri-shirt-line text-white text-xl"></i>
+                        </div>
+                        <div class="flex space-x-1">
+                            <button onclick="editArtigo(${artigo.id})"
+                                    class="p-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition">
+                                <i class="ri-edit-line"></i>
+                            </button>
+                            <button onclick="openDeleteModal(${artigo.id})"
+                                    class="p-1.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition">
+                                <i class="ri-delete-bin-line"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <h3 class="font-semibold text-gray-800 dark:text-white text-lg mb-1">${escapeHtml(artigo.nome)}</h3>
+                    <p class="text-2xl font-bold text-blue-600 dark:text-blue-400 mb-3">${formatPrice(artigo.preco_base)}</p>
+
+                    <div class="flex justify-between items-center pt-3 border-t border-gray-100 dark:border-gray-700">
+                        <span class="status-badge px-2 py-1 text-xs rounded-full ${artigo.disponivel ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400'}">
+                            ${artigo.disponivel ? '✓ Disponível' : '✗ Indisponível'}
+                        </span>
+                        <span class="text-xs text-gray-400 dark:text-gray-500">
+                            <i class="ri-calendar-line"></i> ${artigo.criado_em || 'N/A'}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+        }
+
+        function renderTableView(artigosList) {
+            const tbody = document.getElementById('tableBody');
+
+            if (artigosList.length === 0) {
+                tbody.innerHTML = `
+                <tr>
+                    <td colspan="6" class="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
+                        <i class="ri-inbox-line text-4xl mb-2 block"></i>
+                        Nenhum artigo encontrado
+                    </td>
+                </tr>
+            `;
+                return;
+            }
+
+            tbody.innerHTML = artigosList.map(artigo => `
+            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                <td class="px-6 py-4">
+                    <input type="checkbox" class="rounded dark:bg-gray-600 artigo-checkbox" value="${artigo.id}" ${selectedArtigos.has(artigo.id) ? 'checked' : ''}>
+                </td>
+                <td class="px-6 py-4">
+                    <div class="flex items-center">
+                        <div class="w-8 h-8 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-500 flex items-center justify-center mr-3">
+                            <i class="ri-shirt-line text-white text-sm"></i>
+                        </div>
+                        <span class="font-medium text-gray-900 dark:text-white">${escapeHtml(artigo.nome)}</span>
+                    </div>
+                </td>
+                <td class="px-6 py-4 font-semibold text-blue-600 dark:text-blue-400">${formatPrice(artigo.preco_base)}</td>
+                <td class="px-6 py-4">
+                    <span class="status-badge px-2 py-1 text-xs rounded-full ${artigo.disponivel ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400'}">
+                        ${artigo.disponivel ? 'Disponível' : 'Indisponível'}
+                    </span>
+                </table>
+                <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">${artigo.criado_em || 'N/A'}</td>
+                <td class="px-6 py-4">
+                    <div class="flex space-x-2">
+                        <button onclick="editArtigo(${artigo.id})"
+                                class="p-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition" title="Editar">
+                            <i class="ri-edit-line"></i>
+                        </button>
+                        <button onclick="toggleStatus(${artigo.id})"
+                                class="p-1.5 text-yellow-600 dark:text-yellow-400 hover:bg-yellow-50 dark:hover:bg-yellow-900/30 rounded-lg transition" title="${artigo.disponivel ? 'Desativar' : 'Ativar'}">
+                            <i class="ri-${artigo.disponivel ? 'eye-off-line' : 'eye-line'}"></i>
+                        </button>
+                        <button onclick="openDeleteModal(${artigo.id})"
+                                class="p-1.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition" title="Excluir">
+                            <i class="ri-delete-bin-line"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function getFilteredArtigos() {
+            const searchTerm = document.getElementById('searchArtigo').value.toLowerCase();
+            const statusFilter = document.getElementById('statusFilter').value;
+
+            let filtered = [...artigos];
+
+            if (searchTerm) {
+                filtered = filtered.filter(a => a.nome.toLowerCase().includes(searchTerm));
+            }
+
+            if (statusFilter === 'disponivel') {
+                filtered = filtered.filter(a => a.disponivel === true);
+            } else if (statusFilter === 'indisponivel') {
+                filtered = filtered.filter(a => a.disponivel === false);
+            }
+
+            const sortBy = document.getElementById('sortBy').value;
+            switch (sortBy) {
+                case 'nome':
+                    filtered.sort((a, b) => a.nome.localeCompare(b.nome));
+                    break;
+                case 'nome_desc':
+                    filtered.sort((a, b) => b.nome.localeCompare(a.nome));
+                    break;
+                case 'preco_asc':
+                    filtered.sort((a, b) => a.preco_base - b.preco_base);
+                    break;
+                case 'preco_desc':
+                    filtered.sort((a, b) => b.preco_base - a.preco_base);
+                    break;
+                case 'recente':
+                    filtered.sort((a, b) => new Date(b.criado_em) - new Date(a.criado_em));
+                    break;
+            }
+
+            return filtered;
+        }
+
+        function updateStats() {
+            const total = artigos.length;
+            const ativos = artigos.filter(a => a.disponivel === true).length;
+            const inativos = total - ativos;
+            const precoMedio = total > 0 ? artigos.reduce((sum, a) => sum + a.preco_base, 0) / total : 0;
+
+            document.getElementById('totalArtigos').textContent = total;
+            document.getElementById('ativosCount').textContent = ativos;
+            document.getElementById('inativosCount').textContent = inativos;
+            document.getElementById('precoMedio').textContent = formatPrice(precoMedio);
+        }
+
+        function render() {
+            const filtered = getFilteredArtigos();
+            const totalItems = filtered.length;
+            const totalPages = Math.ceil(totalItems / itemsPerPage);
+
+            if (currentPage > totalPages && totalPages > 0) {
+                currentPage = totalPages;
+            }
+
+            const start = (currentPage - 1) * itemsPerPage;
+            const paginated = filtered.slice(start, start + itemsPerPage);
+
+            document.getElementById('paginationInfo').innerHTML =
+                `Mostrando ${start + 1} a ${Math.min(start + itemsPerPage, totalItems)} de ${totalItems} resultados`;
+
+            if (currentView === 'grid') {
+                document.getElementById('gridView').classList.remove('hidden');
+                document.getElementById('tableView').classList.add('hidden');
+                renderGridView(paginated);
+            } else {
+                document.getElementById('gridView').classList.add('hidden');
+                document.getElementById('tableView').classList.remove('hidden');
+                renderTableView(paginated);
+            }
+
+            const paginationDiv = document.getElementById('paginationButtons');
+            if (totalPages <= 1) {
+                paginationDiv.innerHTML = '';
+                return;
+            }
+
+            let paginationHtml = `
+            <button onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}
+                    class="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''}">
+                <i class="ri-arrow-left-s-line"></i>
+            </button>
+        `;
+
+            const maxButtons = 5;
+            let startPage = Math.max(1, currentPage - Math.floor(maxButtons / 2));
+            let endPage = Math.min(totalPages, startPage + maxButtons - 1);
+
+            if (endPage - startPage < maxButtons - 1) {
+                startPage = Math.max(1, endPage - maxButtons + 1);
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                paginationHtml += `
+                <button onclick="changePage(${i})"
+                        class="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg ${currentPage === i ? 'bg-blue-600 text-white border-blue-600' : 'hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'} transition">
+                    ${i}
+                </button>
+            `;
+            }
+
+            paginationHtml += `
+            <button onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}
+                    class="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''}">
+                <i class="ri-arrow-right-s-line"></i>
+            </button>
+        `;
+
+            paginationDiv.innerHTML = paginationHtml;
+            updateStats();
+            updateBulkActions();
+        }
+
+        function changePage(page) {
+            if (page < 1) return;
+            currentPage = page;
+            render();
+        }
+
+        function updateBulkActions() {
+            const bulkDiv = document.getElementById('bulkActions');
+            const selectedCount = selectedArtigos.size;
+
+            if (selectedCount > 0) {
+                bulkDiv.classList.remove('hidden');
+                document.getElementById('selectedCount').textContent = selectedCount;
+            } else {
+                bulkDiv.classList.add('hidden');
+            }
+        }
+
+        // CRUD Operations
+        function openNovoArtigoModal() {
+            document.getElementById('modalTitle').textContent = 'Novo Artigo';
+            document.getElementById('artigoForm').reset();
+            document.getElementById('artigoId').value = '';
+            document.getElementById('artigoDisponivel').checked = true;
+            document.getElementById('previewPreco').textContent = '0.00 MT';
+            document.getElementById('artigoModal').classList.remove('hidden');
+        }
+
+        function editArtigo(id) {
+            const artigo = artigos.find(a => a.id === id);
+            if (artigo) {
+                document.getElementById('modalTitle').textContent = 'Editar Artigo';
+                document.getElementById('artigoId').value = artigo.id;
+                document.getElementById('artigoNome').value = artigo.nome;
+                document.getElementById('artigoPreco').value = artigo.preco_base;
+                document.getElementById('artigoDisponivel').checked = artigo.disponivel;
+                document.getElementById('previewPreco').textContent = formatPrice(artigo.preco_base);
+                document.getElementById('artigoModal').classList.remove('hidden');
+            }
+        }
+
+        async function saveArtigo(event) {
+            event.preventDefault();
+
+            const id = document.getElementById('artigoId').value;
+            const nome = document.getElementById('artigoNome').value;
+            const preco_base = parseFloat(document.getElementById('artigoPreco').value);
+            const disponivel = document.getElementById('artigoDisponivel').checked;
+
+            if (!nome || isNaN(preco_base) || preco_base < 0) {
+                showToast('Preencha todos os campos corretamente', 'error');
+                return;
+            }
+
+            const artigoData = { nome, preco_base, disponivel };
+            if (id) artigoData.id = parseInt(id);
+
+            await saveArtigoAPI(artigoData);
+            closeArtigoModal();
+        }
+
+        function toggleStatus(id) {
+            toggleStatusAPI(id);
+        }
+
+        function openDeleteModal(id) {
+            const artigo = artigos.find(a => a.id === id);
+            if (artigo) {
+                artigoToDelete = id;
+                document.getElementById('deleteMessage').textContent = `Tem certeza que deseja excluir "${artigo.nome}"?`;
+                document.getElementById('deleteModal').classList.remove('hidden');
+            }
+        }
+
+        function closeDeleteModal() {
+            artigoToDelete = null;
+            document.getElementById('deleteModal').classList.add('hidden');
+        }
+
+        async function confirmDelete() {
+            if (artigoToDelete) {
+                await deleteArtigoAPI(artigoToDelete);
+                closeDeleteModal();
+            }
+        }
+
+        async function bulkDelete() {
+            if (selectedArtigos.size > 0) {
+                const ids = Array.from(selectedArtigos);
+                if (confirm(`Tem certeza que deseja excluir ${ids.length} artigo(s)?`)) {
+                    await deleteMultipleArtigosAPI(ids);
+                    selectedArtigos.clear();
+                    render();
+                }
+            }
+        }
+
+        function closeArtigoModal() {
+            document.getElementById('artigoModal').classList.add('hidden');
+        }
+
+        // Event Listeners setup
+        function setupEventListeners() {
+            document.getElementById('artigoPreco')?.addEventListener('input', (e) => {
+                const valor = parseFloat(e.target.value) || 0;
+                document.getElementById('previewPreco').textContent = formatPrice(valor);
+            });
+
+            document.getElementById('newArtigoBtn').onclick = openNovoArtigoModal;
+            document.getElementById('artigoForm').onsubmit = saveArtigo;
+            document.getElementById('resetFilters').onclick = () => {
+                document.getElementById('searchArtigo').value = '';
+                document.getElementById('statusFilter').value = 'all';
+                document.getElementById('sortBy').value = 'nome';
+                currentPage = 1;
+                render();
+            };
+            document.getElementById('gridViewBtn').onclick = () => setView('grid');
+            document.getElementById('tableViewBtn').onclick = () => setView('table');
+            document.getElementById('confirmDeleteBtn').onclick = confirmDelete;
+            document.getElementById('bulkDeleteBtn').onclick = bulkDelete;
+
+            document.getElementById('searchArtigo').addEventListener('input', () => {
+                currentPage = 1;
+                render();
+            });
+            document.getElementById('statusFilter').addEventListener('change', () => {
+                currentPage = 1;
+                render();
+            });
+            document.getElementById('sortBy').addEventListener('change', () => {
+                currentPage = 1;
+                render();
+            });
+
+            document.getElementById('selectAll')?.addEventListener('change', (e) => {
+                const filtered = getFilteredArtigos();
+                const start = (currentPage - 1) * itemsPerPage;
+                const paginated = filtered.slice(start, start + itemsPerPage);
+
+                if (e.target.checked) {
+                    paginated.forEach(a => selectedArtigos.add(a.id));
+                } else {
+                    paginated.forEach(a => selectedArtigos.delete(a.id));
+                }
+                render();
+            });
+
+            document.addEventListener('change', (e) => {
+                if (e.target.classList && e.target.classList.contains('artigo-checkbox')) {
+                    const id = parseInt(e.target.value);
+                    if (e.target.checked) {
+                        selectedArtigos.add(id);
+                    } else {
+                        selectedArtigos.delete(id);
+                    }
+                    updateBulkActions();
+                }
+            });
+        }
+
+        function setView(view) {
+            currentView = view;
+            const gridBtn = document.getElementById('gridViewBtn');
+            const tableBtn = document.getElementById('tableViewBtn');
+
+            if (view === 'grid') {
+                gridBtn.classList.add('bg-blue-600', 'text-white');
+                gridBtn.classList.remove('bg-gray-200', 'dark:bg-gray-700', 'text-gray-600', 'dark:text-gray-400');
+                tableBtn.classList.add('bg-gray-200', 'dark:bg-gray-700', 'text-gray-600', 'dark:text-gray-400');
+                tableBtn.classList.remove('bg-blue-600', 'text-white');
+            } else {
+                tableBtn.classList.add('bg-blue-600', 'text-white');
+                tableBtn.classList.remove('bg-gray-200', 'dark:bg-gray-700', 'text-gray-600', 'dark:text-gray-400');
+                gridBtn.classList.add('bg-gray-200', 'dark:bg-gray-700', 'text-gray-600', 'dark:text-gray-400');
+                gridBtn.classList.remove('bg-blue-600', 'text-white');
+            }
+
+            currentPage = 1;
+            render();
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+
+            const icons = {
+                success: 'ri-checkbox-circle-fill',
+                error: 'ri-error-warning-fill',
+                warning: 'ri-alert-fill',
+                info: 'ri-information-fill'
+            };
+
+            const colors = {
+                success: 'bg-green-500',
+                error: 'bg-red-500',
+                warning: 'bg-yellow-500',
+                info: 'bg-blue-500'
+            };
+
+            toast.className = `toast ${colors[type]} text-white px-4 py-3 rounded-lg shadow-lg flex items-center space-x-3 min-w-[280px]`;
+            toast.innerHTML = `
+            <i class="${icons[type]} text-xl"></i>
+            <span class="flex-1 text-sm">${message}</span>
+            <button onclick="this.parentElement.remove()" class="hover:opacity-80">
+                <i class="ri-close-line"></i>
+            </button>
+        `;
+
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(100%)';
+                toast.style.transition = 'all 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
+        window.onclick = (event) => {
+            const modal = document.getElementById('artigoModal');
+            const deleteModal = document.getElementById('deleteModal');
+            if (event.target === modal) closeArtigoModal();
+            if (event.target === deleteModal) closeDeleteModal();
+        };
+
+        // Inicialização
+        initDarkMode();
+        setupEventListeners();
+        loadArtigos();
+    </script>
+
+
+
+{% endblock %}

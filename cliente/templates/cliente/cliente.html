@@ -1,0 +1,832 @@
+{% extends 'main.html' %}
+{% block content %}
+<!-- Main Content -->
+<main class="flex-1 overflow-y-auto">
+    <!-- Top Bar -->
+    <div class="bg-white dark:bg-gray-800 border-b dark:border-gray-700 sticky top-0 z-10 shadow-sm">
+        <div class="px-8 py-4 flex justify-between items-center">
+            <div>
+                <h2 class="text-2xl font-semibold text-gray-800 dark:text-white">Clientes</h2>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Gerencie todos os clientes da lavandaria</p>
+            </div>
+            <button id="newCustomerBtn"
+                class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-5 py-2.5 rounded-lg flex items-center space-x-2 hover:shadow-lg transition transform hover:scale-105">
+                <i class="ri-add-line text-xl"></i>
+                <span>Novo Cliente</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="p-8 fade-in">
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+            <div class="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border-l-4 border-blue-500 transition-all duration-300">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-gray-500 dark:text-gray-400 text-sm">Total Clientes</p>
+                        <p class="text-2xl font-bold text-gray-800 dark:text-white" id="totalClientes">0</p>
+                        <p class="text-green-600 dark:text-green-400 text-xs mt-1" id="novosClientesMes">+0 este mês</p>
+                    </div>
+                    <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
+                        <i class="ri-user-line text-blue-600 dark:text-blue-400 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border-l-4 border-yellow-500 transition-all duration-300">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-gray-500 dark:text-gray-400 text-sm">Clientes Ativos</p>
+                        <p class="text-2xl font-bold text-gray-800 dark:text-white" id="clientesAtivos">0</p>
+                        <p class="text-gray-500 dark:text-gray-400 text-xs" id="percentAtivos">0% do total</p>
+                    </div>
+                    <div class="w-10 h-10 bg-yellow-100 dark:bg-yellow-900/30 rounded-full flex items-center justify-center">
+                        <i class="ri-user-star-line text-yellow-600 dark:text-yellow-400 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border-l-4 border-green-500 transition-all duration-300">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-gray-500 dark:text-gray-400 text-sm">Pontos Totais</p>
+                        <p class="text-2xl font-bold text-gray-800 dark:text-white" id="totalPontos">0</p>
+                        <p class="text-green-600 dark:text-green-400 text-xs">Acumulados</p>
+                    </div>
+                    <div class="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
+                        <i class="ri-star-line text-green-600 dark:text-green-400 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border-l-4 border-purple-500 transition-all duration-300">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-gray-500 dark:text-gray-400 text-sm">Gasto Total</p>
+                        <p class="text-2xl font-bold text-gray-800 dark:text-white" id="gastoTotal">0 MT</p>
+                        <p class="text-purple-600 dark:text-purple-400 text-xs">Acumulado</p>
+                    </div>
+                    <div class="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center">
+                        <i class="ri-money-dollar-circle-line text-purple-600 dark:text-purple-400 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm mb-6 transition-all duration-300">
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Buscar</label>
+                    <div class="relative">
+                        <i class="ri-search-line absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500"></i>
+                        <input type="text" id="searchInput" placeholder="Nome, telefone..."
+                            class="w-full border border-gray-300 dark:border-gray-600 rounded-lg pl-10 pr-3 py-2 focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-800 dark:text-white">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Filtrar por Pontos</label>
+                    <select id="pointsFilter" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500">
+                        <option value="all">Todos</option>
+                        <option value="high">Alta pontuação (> 5000)</option>
+                        <option value="medium">Média pontuação (1000-5000)</option>
+                        <option value="low">Baixa pontuação (< 1000)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Ordenar por</label>
+                    <select id="sortBy" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500">
+                        <option value="name">Nome</option>
+                        <option value="points">Pontos</option>
+                        <option value="total_gasto">Total Gasto</option>
+                        <option value="recent">Mais Recente</option>
+                    </select>
+                </div>
+                <div class="flex items-end">
+                    <button id="resetFilters"
+                        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                        <i class="ri-refresh-line"></i> Limpar Filtros
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bulk Actions -->
+        <div id="bulkActions" class="hidden bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 mb-4 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <i class="ri-checkbox-multiple-line text-blue-600 dark:text-blue-400"></i>
+                <span class="text-sm text-blue-700 dark:text-blue-300" id="selectedCount">0</span>
+                <span class="text-sm text-blue-700 dark:text-blue-300">selecionados</span>
+            </div>
+            <button id="bulkDeleteBtn" class="px-3 py-1 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
+                <i class="ri-delete-bin-line"></i> Excluir Selecionados
+            </button>
+        </div>
+
+        <!-- Customers Table -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm overflow-hidden transition-all duration-300">
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50 dark:bg-gray-700">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                <input type="checkbox" id="selectAll" class="rounded dark:bg-gray-600">
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                Cliente</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                Contacto</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                Pontos</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                Total Gasto</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                Pedidos</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="customersTableBody" class="divide-y divide-gray-200 dark:divide-gray-700">
+                        <tr>
+                            <td colspan="8" class="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
+                                <i class="ri-loader-4-line text-4xl animate-spin"></i>
+                                <p class="mt-2">Carregando clientes...</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center">
+                <p class="text-sm text-gray-600 dark:text-gray-400" id="paginationInfo">Mostrando 0 resultados</p>
+                <div class="flex space-x-2" id="paginationButtons"></div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Modal Criar/Editar Cliente -->
+<div id="customerModal" class="modal hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto transition-all duration-300">
+        <div class="sticky top-0 bg-white dark:bg-gray-800 border-b dark:border-gray-700 px-6 py-4 flex justify-between items-center">
+            <h3 class="text-xl font-semibold text-gray-800 dark:text-white" id="modalTitle">Novo Cliente</h3>
+            <button onclick="closeCustomerModal()" class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300">
+                <i class="ri-close-line text-2xl"></i>
+            </button>
+        </div>
+        <div class="p-6">
+            <form id="customerForm">
+                {% csrf_token %}
+                <input type="hidden" id="customerId">
+
+                <div class="grid grid-cols-2 gap-6 mb-6">
+                    <div class="col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nome Completo *</label>
+                        <input type="text" id="customerName" required
+                            class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-800 dark:text-white">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Telefone</label>
+                        <input type="tel" id="customerPhone" placeholder="84 1234-5678"
+                            class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-800 dark:text-white">
+                    </div>
+                    <div class="col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Endereço</label>
+                        <textarea id="customerAddress" rows="2"
+                            class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-800 dark:text-white"></textarea>
+                    </div>
+                </div>
+
+                <!-- Pontuação e Fidelidade -->
+                <div class="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl p-6 mb-6 transition-all duration-300">
+                    <h4 class="font-semibold text-gray-800 dark:text-white mb-4 flex items-center">
+                        <i class="ri-star-line text-yellow-500 mr-2"></i>
+                        Programa de Fidelidade
+                    </h4>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm text-gray-600 dark:text-gray-400 mb-1">Pontos Atuais</label>
+                            <div class="flex items-center space-x-2">
+                                <input type="number" id="customerPoints" readonly
+                                    class="bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 w-full text-gray-800 dark:text-white">
+                                <button type="button" onclick="adjustPoints()"
+                                    class="px-3 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition">
+                                    <i class="ri-add-line"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-600 dark:text-gray-400 mb-1">Total Gasto Acumulado</label>
+                            <input type="text" id="customerTotalGasto" readonly
+                                class="bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 w-full text-gray-800 dark:text-white">
+                        </div>
+                    </div>
+                    <div class="mt-3 text-xs text-gray-500 dark:text-gray-400">
+                        <i class="ri-information-line"></i>
+                        10 pontos por cada 1 MT gasto | 50000 pontos = 250 MT de desconto
+                    </div>
+                </div>
+
+                <!-- Botões -->
+                <div class="flex justify-end space-x-3">
+                    <button type="button" onclick="closeCustomerModal()"
+                        class="px-6 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                        Salvar Cliente
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Ajuste de Pontos -->
+<div id="pointsModal" class="modal hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-md transition-all duration-300">
+        <div class="p-6">
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">Ajustar Pontos</h3>
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Quantidade de Pontos</label>
+                <input type="number" id="pointsAdjust"
+                    class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500">
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Use valores positivos para adicionar, negativos para remover</p>
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Motivo</label>
+                <select id="pointsReason" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500">
+                    <option value="ajuste">Ajuste Manual</option>
+                    <option value="bonus">Bônus</option>
+                    <option value="correcao">Correção</option>
+                    <option value="promocao">Promoção</option>
+                </select>
+            </div>
+            <div class="flex justify-end space-x-3">
+                <button onclick="closePointsModal()" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition">
+                    Cancelar
+                </button>
+                <button onclick="savePointsAdjust()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                    Aplicar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // CSRF Token setup
+    function getCSRFToken() {
+        return document.querySelector('[name=csrfmiddlewaretoken]')?.value ||
+               document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
+    }
+
+    let clientes = [];
+    let currentPage = 1;
+    let itemsPerPage = 10;
+    let currentCustomerForPoints = null;
+    let selectedCustomers = new Set();
+
+    // API Calls
+    async function loadClientes() {
+        try {
+            const response = await fetch('/api/clientes/');
+            const data = await response.json();
+            if (data.success) {
+                clientes = data.clientes;
+                render();
+                loadStats();
+            } else {
+                showNotification('Erro ao carregar clientes', 'error');
+            }
+        } catch (error) {
+            console.error('Erro:', error);
+            showNotification('Erro ao conectar com o servidor', 'error');
+        }
+    }
+
+    async function loadStats() {
+        try {
+            const response = await fetch('/api/clientes/estatisticas/');
+            const data = await response.json();
+            if (data.success) {
+                const stats = data.estatisticas;
+                document.getElementById('totalClientes').textContent = stats.total_clientes;
+                document.getElementById('clientesAtivos').textContent = stats.clientes_ativos;
+                document.getElementById('percentAtivos').textContent = `${stats.percentual_ativos}% do total`;
+                document.getElementById('totalPontos').textContent = stats.total_pontos.toLocaleString();
+                document.getElementById('gastoTotal').textContent = stats.total_gasto.toLocaleString() + ' MT';
+                document.getElementById('novosClientesMes').innerHTML = `+${stats.novos_clientes_mes} este mês`;
+            }
+        } catch (error) {
+            console.error('Erro ao carregar estatísticas:', error);
+        }
+    }
+
+    async function saveClienteAPI(clienteData) {
+        const isEdit = clienteData.id;
+        const url = isEdit ? `/api/clientes/editar/${clienteData.id}/` : '/api/clientes/criar/';
+        const method = isEdit ? 'PUT' : 'POST';
+
+        try {
+            const response = await fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCSRFToken()
+                },
+                body: JSON.stringify(clienteData)
+            });
+            const data = await response.json();
+            if (data.success) {
+                showNotification(isEdit ? 'Cliente atualizado!' : 'Cliente criado!', 'success');
+                loadClientes();
+                return true;
+            } else {
+                showNotification(data.error || 'Erro ao salvar', 'error');
+                return false;
+            }
+        } catch (error) {
+            showNotification('Erro ao salvar', 'error');
+            return false;
+        }
+    }
+
+    async function ajustarPontosAPI(id, pontos, motivo) {
+        try {
+            const response = await fetch(`/api/clientes/ajustar-pontos/${id}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCSRFToken()
+                },
+                body: JSON.stringify({ pontos: pontos, motivo: motivo })
+            });
+            const data = await response.json();
+            if (data.success) {
+                showNotification(data.message, 'success');
+                loadClientes();
+                return true;
+            } else {
+                showNotification(data.error || 'Erro ao ajustar pontos', 'error');
+                return false;
+            }
+        } catch (error) {
+            showNotification('Erro ao ajustar pontos', 'error');
+            return false;
+        }
+    }
+
+    async function deleteClienteAPI(id) {
+        try {
+            const response = await fetch(`/api/clientes/excluir/${id}/`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRFToken': getCSRFToken()
+                }
+            });
+            const data = await response.json();
+            if (data.success) {
+                showNotification(data.message, 'success');
+                loadClientes();
+                return true;
+            } else {
+                showNotification(data.error || 'Erro ao excluir', 'error');
+                return false;
+            }
+        } catch (error) {
+            showNotification('Erro ao excluir', 'error');
+            return false;
+        }
+    }
+
+    async function deleteMultipleClientesAPI(ids) {
+        try {
+            const response = await fetch('/api/clientes/excluir-multiplos/', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCSRFToken()
+                },
+                body: JSON.stringify({ ids: ids })
+            });
+            const data = await response.json();
+            if (data.success) {
+                showNotification(data.message, 'success');
+                loadClientes();
+                return true;
+            } else {
+                showNotification(data.error || 'Erro ao excluir', 'error');
+                return false;
+            }
+        } catch (error) {
+            showNotification('Erro ao excluir', 'error');
+            return false;
+        }
+    }
+
+    // Render functions
+    function getFilteredClientes() {
+        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+        const pointsFilter = document.getElementById('pointsFilter').value;
+
+        let filtered = [...clientes];
+
+        if (searchTerm) {
+            filtered = filtered.filter(c =>
+                c.nome.toLowerCase().includes(searchTerm) ||
+                (c.telefone && c.telefone.includes(searchTerm))
+            );
+        }
+
+        if (pointsFilter === 'high') {
+            filtered = filtered.filter(c => c.pontos > 5000);
+        } else if (pointsFilter === 'medium') {
+            filtered = filtered.filter(c => c.pontos >= 1000 && c.pontos <= 5000);
+        } else if (pointsFilter === 'low') {
+            filtered = filtered.filter(c => c.pontos < 1000);
+        }
+
+        const sortBy = document.getElementById('sortBy').value;
+        switch (sortBy) {
+            case 'name':
+                filtered.sort((a, b) => a.nome.localeCompare(b.nome));
+                break;
+            case 'points':
+                filtered.sort((a, b) => b.pontos - a.pontos);
+                break;
+            case 'total_gasto':
+                filtered.sort((a, b) => b.total_gasto - a.total_gasto);
+                break;
+            case 'recent':
+                filtered.sort((a, b) => new Date(b.criado_em) - new Date(a.criado_em));
+                break;
+        }
+
+        return filtered;
+    }
+
+    function renderCustomersTable(filtered) {
+        const tbody = document.getElementById('customersTableBody');
+        const totalItems = filtered.length;
+        const totalPages = Math.ceil(totalItems / itemsPerPage);
+
+        if (currentPage > totalPages && totalPages > 0) {
+            currentPage = totalPages;
+        }
+
+        const start = (currentPage - 1) * itemsPerPage;
+        const paginated = filtered.slice(start, start + itemsPerPage);
+
+        document.getElementById('paginationInfo').innerHTML =
+            `Mostrando ${filtered.length === 0 ? 0 : start + 1} a ${Math.min(start + itemsPerPage, totalItems)} de ${totalItems} resultados`;
+
+        renderPaginationButtons(totalPages);
+
+        if (paginated.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="8" class="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
+                        <i class="ri-inbox-line text-4xl mb-2 block"></i>
+                        Nenhum cliente encontrado
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        tbody.innerHTML = paginated.map(cliente => `
+            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                <td class="px-6 py-4">
+                    <input type="checkbox" class="rounded dark:bg-gray-600 customer-checkbox" value="${cliente.id}" ${selectedCustomers.has(cliente.id) ? 'checked' : ''}>
+                </td>
+                <td class="px-6 py-4">
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 flex items-center justify-center text-white font-semibold">
+                            ${cliente.nome.charAt(0).toUpperCase()}
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm font-medium text-gray-900 dark:text-white">${escapeHtml(cliente.nome)}</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">ID: #${cliente.id.toString().padStart(6, '0')}</p>
+                        </div>
+                    </div>
+                </td>
+                <td class="px-6 py-4">
+                    <p class="text-sm text-gray-600 dark:text-gray-300">${cliente.telefone || '—'}</p>
+                    ${cliente.endereco ? `<p class="text-xs text-gray-400 dark:text-gray-500">${cliente.endereco.substring(0, 30)}${cliente.endereco.length > 30 ? '...' : ''}</p>` : ''}
+                </td>
+                <td class="px-6 py-4">
+                    <div class="flex items-center space-x-2">
+                        <span class="text-sm font-semibold text-yellow-600 dark:text-yellow-400">${cliente.pontos.toLocaleString()}</span>
+                        <button onclick="openPointsModal(${cliente.id})"
+                                class="text-blue-500 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition">
+                            <i class="ri-add-line"></i>
+                        </button>
+                    </div>
+                </td>
+                <td class="px-6 py-4">
+                    <span class="text-sm font-medium text-gray-900 dark:text-white">${cliente.total_gasto.toLocaleString()} MT</span>
+                </td>
+                <td class="px-6 py-4">
+                    <span class="text-sm text-gray-600 dark:text-gray-300">${cliente.total_pedidos} pedidos</span>
+                </td>
+                <td class="px-6 py-4">
+                    ${cliente.status === 'active'
+                        ? '<span class="px-2 py-1 text-xs rounded-full bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400">Ativo</span>'
+                        : '<span class="px-2 py-1 text-xs rounded-full bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-400">Inativo</span>'
+                    }
+                </td>
+                <td class="px-6 py-4">
+                    <div class="flex space-x-2">
+                        <button onclick="editCustomer(${cliente.id})"
+                                class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition">
+                            <i class="ri-edit-line"></i>
+                        </button>
+                        <button onclick="viewCustomerOrders(${cliente.id})"
+                                class="text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300 transition">
+                            <i class="ri-shopping-bag-line"></i>
+                        </button>
+                        <button onclick="deleteCustomer(${cliente.id})"
+                                class="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 transition">
+                            <i class="ri-delete-bin-line"></i>
+                        </button>
+                    </div>
+                </td>
+            </table>
+        `).join('');
+
+        updateBulkActions();
+    }
+
+    function renderPaginationButtons(totalPages) {
+        const paginationDiv = document.getElementById('paginationButtons');
+        if (totalPages <= 1) {
+            paginationDiv.innerHTML = '';
+            return;
+        }
+
+        let paginationHtml = `
+            <button onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}
+                    class="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''}">
+                <i class="ri-arrow-left-s-line"></i>
+            </button>
+        `;
+
+        const maxButtons = 5;
+        let startPage = Math.max(1, currentPage - Math.floor(maxButtons / 2));
+        let endPage = Math.min(totalPages, startPage + maxButtons - 1);
+
+        if (endPage - startPage < maxButtons - 1) {
+            startPage = Math.max(1, endPage - maxButtons + 1);
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+            paginationHtml += `
+                <button onclick="changePage(${i})"
+                        class="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg transition ${currentPage === i ? 'bg-blue-600 text-white border-blue-600' : 'hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'}">
+                    ${i}
+                </button>
+            `;
+        }
+
+        paginationHtml += `
+            <button onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}
+                    class="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''}">
+                <i class="ri-arrow-right-s-line"></i>
+            </button>
+        `;
+
+        paginationDiv.innerHTML = paginationHtml;
+    }
+
+    function changePage(page) {
+        if (page < 1) return;
+        currentPage = page;
+        render();
+    }
+
+    function render() {
+        const filtered = getFilteredClientes();
+        renderCustomersTable(filtered);
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    function updateBulkActions() {
+        const bulkDiv = document.getElementById('bulkActions');
+        const selectedCount = selectedCustomers.size;
+
+        if (selectedCount > 0) {
+            bulkDiv.classList.remove('hidden');
+            document.getElementById('selectedCount').textContent = selectedCount;
+        } else {
+            bulkDiv.classList.add('hidden');
+        }
+    }
+
+    // CRUD Operations
+    function openCustomerModal(editMode = false, customer = null) {
+        const modal = document.getElementById('customerModal');
+        const modalTitle = document.getElementById('modalTitle');
+
+        if (editMode && customer) {
+            modalTitle.textContent = 'Editar Cliente';
+            document.getElementById('customerId').value = customer.id;
+            document.getElementById('customerName').value = customer.nome;
+            document.getElementById('customerPhone').value = customer.telefone || '';
+            document.getElementById('customerAddress').value = customer.endereco || '';
+            document.getElementById('customerPoints').value = customer.pontos;
+            document.getElementById('customerTotalGasto').value = customer.total_gasto_acumulado.toLocaleString() + ' MT';
+        } else {
+            modalTitle.textContent = 'Novo Cliente';
+            document.getElementById('customerForm').reset();
+            document.getElementById('customerId').value = '';
+            document.getElementById('customerPoints').value = '0';
+            document.getElementById('customerTotalGasto').value = '0 MT';
+        }
+
+        modal.classList.remove('hidden');
+    }
+
+    function closeCustomerModal() {
+        document.getElementById('customerModal').classList.add('hidden');
+    }
+
+    async function saveCustomer(event) {
+        event.preventDefault();
+
+        const id = document.getElementById('customerId').value;
+        const customerData = {
+            nome: document.getElementById('customerName').value,
+            telefone: document.getElementById('customerPhone').value,
+            endereco: document.getElementById('customerAddress').value
+        };
+
+        if (!customerData.nome) {
+            showNotification('Nome é obrigatório', 'error');
+            return;
+        }
+
+        if (id) customerData.id = parseInt(id);
+        await saveClienteAPI(customerData);
+        closeCustomerModal();
+    }
+
+    function editCustomer(id) {
+        const customer = clientes.find(c => c.id === id);
+        if (customer) {
+            openCustomerModal(true, customer);
+        }
+    }
+
+    async function deleteCustomer(id) {
+        if (confirm('Tem certeza que deseja excluir este cliente? Esta ação não pode ser desfeita.')) {
+            await deleteClienteAPI(id);
+            selectedCustomers.delete(id);
+        }
+    }
+
+    async function bulkDelete() {
+        if (selectedCustomers.size > 0) {
+            if (confirm(`Tem certeza que deseja excluir ${selectedCustomers.size} cliente(s)?`)) {
+                const ids = Array.from(selectedCustomers);
+                await deleteMultipleClientesAPI(ids);
+                selectedCustomers.clear();
+            }
+        }
+    }
+
+    function viewCustomerOrders(id) {
+        showNotification(`Ver pedidos do cliente #${id}`, 'info');
+        // window.location.href = `/pedidos/?cliente=${id}`;
+    }
+
+    function adjustPoints() {
+        const customerId = document.getElementById('customerId').value;
+        if (customerId) {
+            openPointsModal(parseInt(customerId));
+        }
+    }
+
+    function openPointsModal(customerId) {
+        currentCustomerForPoints = clientes.find(c => c.id === customerId);
+        if (currentCustomerForPoints) {
+            document.getElementById('pointsModal').classList.remove('hidden');
+            document.getElementById('pointsAdjust').value = '';
+        }
+    }
+
+    function closePointsModal() {
+        document.getElementById('pointsModal').classList.add('hidden');
+        currentCustomerForPoints = null;
+    }
+
+    async function savePointsAdjust() {
+        const pontos = parseInt(document.getElementById('pointsAdjust').value);
+        const motivo = document.getElementById('pointsReason').value;
+
+        if (isNaN(pontos) || pontos === 0) {
+            showNotification('Digite uma quantidade válida de pontos', 'error');
+            return;
+        }
+
+        if (currentCustomerForPoints) {
+            await ajustarPontosAPI(currentCustomerForPoints.id, pontos, motivo);
+            closePointsModal();
+        }
+    }
+
+    function showNotification(message, type = 'success') {
+        const toast = document.createElement('div');
+        const colors = {
+            success: 'bg-green-500',
+            error: 'bg-red-500',
+            info: 'bg-blue-500',
+            warning: 'bg-yellow-500'
+        };
+
+        toast.className = `fixed bottom-4 right-4 px-6 py-3 rounded-lg text-white z-50 fade-in ${colors[type]} shadow-lg`;
+        toast.innerHTML = `
+            <div class="flex items-center space-x-2">
+                <i class="ri-${type === 'success' ? 'checkbox-circle' : type === 'error' ? 'error-warning' : 'information'}-line"></i>
+                <span>${message}</span>
+            </div>
+        `;
+        document.body.appendChild(toast);
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transition = 'opacity 0.3s ease';
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
+
+    // Event Listeners
+    document.getElementById('newCustomerBtn').onclick = () => openCustomerModal(false);
+    document.getElementById('searchInput').addEventListener('input', () => {
+        currentPage = 1;
+        render();
+    });
+    document.getElementById('pointsFilter').addEventListener('change', () => {
+        currentPage = 1;
+        render();
+    });
+    document.getElementById('sortBy').addEventListener('change', () => {
+        currentPage = 1;
+        render();
+    });
+    document.getElementById('resetFilters').onclick = () => {
+        document.getElementById('searchInput').value = '';
+        document.getElementById('pointsFilter').value = 'all';
+        document.getElementById('sortBy').value = 'name';
+        currentPage = 1;
+        render();
+    };
+    document.getElementById('bulkDeleteBtn').onclick = bulkDelete;
+
+    document.getElementById('customerForm').onsubmit = saveCustomer;
+
+    // Select all functionality
+    document.getElementById('selectAll').addEventListener('change', (e) => {
+        const filtered = getFilteredClientes();
+        const start = (currentPage - 1) * itemsPerPage;
+        const paginated = filtered.slice(start, start + itemsPerPage);
+
+        if (e.target.checked) {
+            paginated.forEach(c => selectedCustomers.add(c.id));
+        } else {
+            paginated.forEach(c => selectedCustomers.delete(c.id));
+        }
+        render();
+    });
+
+    document.addEventListener('change', (e) => {
+        if (e.target.classList && e.target.classList.contains('customer-checkbox')) {
+            const id = parseInt(e.target.value);
+            if (e.target.checked) {
+                selectedCustomers.add(id);
+            } else {
+                selectedCustomers.delete(id);
+            }
+            updateBulkActions();
+
+            const allCheckboxes = document.querySelectorAll('.customer-checkbox');
+            const allChecked = Array.from(allCheckboxes).every(cb => cb.checked);
+            document.getElementById('selectAll').checked = allChecked;
+        }
+    });
+
+    window.onclick = (event) => {
+        const modal = document.getElementById('customerModal');
+        const pointsModal = document.getElementById('pointsModal');
+        if (event.target === modal) closeCustomerModal();
+        if (event.target === pointsModal) closePointsModal();
+    };
+
+    // Inicializar
+    loadClientes();
+</script>
+{% endblock %}
