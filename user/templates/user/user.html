@@ -1,0 +1,777 @@
+{% extends 'main.html' %}
+{% load static %}
+{% block content %}
+
+<style>
+    .fade-in {
+        animation: fadeIn 0.4s ease-out;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .modal {
+        transition: all 0.3s ease;
+    }
+
+    .modal.hidden {
+        display: none;
+    }
+
+    .toast {
+        animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+        from { opacity: 0; transform: translateX(100%); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+</style>
+
+<!-- Main Content -->
+<main class="flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-900">
+    <!-- Top Bar -->
+    <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10 shadow-sm">
+        <div class="px-8 py-4 flex justify-between items-center">
+            <div>
+                <h2 class="text-2xl font-semibold text-gray-800 dark:text-white">Utilizadores</h2>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Gerencie as contas de acesso ao sistema</p>
+            </div>
+            <button id="newUserBtn"
+                    class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-5 py-2.5 rounded-lg flex items-center space-x-2 shadow-lg transition transform hover:scale-105">
+                <i class="ri-add-line text-xl"></i>
+                <span>Novo Utilizador</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="p-8 fade-in">
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+            <div class="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border-l-4 border-blue-500">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-gray-500 dark:text-gray-400 text-sm">Total Utilizadores</p>
+                        <p class="text-2xl font-bold text-gray-800 dark:text-white" id="totalUsers">0</p>
+                    </div>
+                    <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
+                        <i class="ri-user-line text-blue-600 dark:text-blue-400 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border-l-4 border-green-500">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-gray-500 dark:text-gray-400 text-sm">Ativos</p>
+                        <p class="text-2xl font-bold text-gray-800 dark:text-white" id="activeUsers">0</p>
+                    </div>
+                    <div class="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
+                        <i class="ri-user-star-line text-green-600 dark:text-green-400 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border-l-4 border-purple-500">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-gray-500 dark:text-gray-400 text-sm">Staff</p>
+                        <p class="text-2xl font-bold text-gray-800 dark:text-white" id="staffCount">0</p>
+                    </div>
+                    <div class="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center">
+                        <i class="ri-shield-line text-purple-600 dark:text-purple-400 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border-l-4 border-yellow-500">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-gray-500 dark:text-gray-400 text-sm">Super Users</p>
+                        <p class="text-2xl font-bold text-gray-800 dark:text-white" id="superuserCount">0</p>
+                    </div>
+                    <div class="w-10 h-10 bg-yellow-100 dark:bg-yellow-900/30 rounded-full flex items-center justify-center">
+                        <i class="ri-admin-line text-yellow-600 dark:text-yellow-400 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Buscar</label>
+                    <div class="relative">
+                        <i class="ri-search-line absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500"></i>
+                        <input type="text" id="searchUser" placeholder="Nome, username ou email..."
+                               class="w-full border border-gray-300 dark:border-gray-600 rounded-lg pl-10 pr-3 py-2
+                                      bg-white dark:bg-gray-700 text-gray-800 dark:text-white
+                                      focus:ring-2 focus:ring-blue-500">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Filtrar por Status</label>
+                    <select id="statusFilter" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2
+                                                     bg-white dark:bg-gray-700 text-gray-800 dark:text-white">
+                        <option value="all">Todos</option>
+                        <option value="active">Ativos</option>
+                        <option value="inactive">Inativos</option>
+                    </select>
+                </div>
+                <div class="flex items-end">
+                    <button id="resetFilters"
+                            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
+                                   text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
+                        <i class="ri-refresh-line"></i> Limpar Filtros
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Users Table -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50 dark:bg-gray-700">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                <input type="checkbox" id="selectAll" class="rounded dark:bg-gray-600">
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                Utilizador</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                Email</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                Último Acesso</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody" class="divide-y divide-gray-200 dark:divide-gray-700">
+                        <tr>
+                            <td colspan="6" class="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
+                                <i class="ri-loader-4-line text-4xl animate-spin"></i>
+                                <p class="mt-2">Carregando utilizadores...</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center">
+                <p class="text-sm text-gray-600 dark:text-gray-400" id="paginationInfo">Mostrando 0 resultados</p>
+                <div class="flex space-x-2" id="paginationButtons"></div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Modal Criar/Editar Utilizador -->
+<div id="userModal" class="modal hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-md">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+            <h3 class="text-xl font-semibold text-gray-800 dark:text-white" id="modalTitle">Novo Utilizador</h3>
+            <button onclick="closeUserModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                <i class="ri-close-line text-2xl"></i>
+            </button>
+        </div>
+        <div class="p-6">
+            <form id="userForm">
+                {% csrf_token %}
+                <input type="hidden" id="userId">
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nome Completo *</label>
+                        <input type="text" id="userFullName" required
+                               class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2
+                                      bg-white dark:bg-gray-700 text-gray-800 dark:text-white
+                                      focus:ring-2 focus:ring-blue-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Username *</label>
+                        <input type="text" id="userUsername" required
+                               class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2
+                                      bg-white dark:bg-gray-700 text-gray-800 dark:text-white
+                                      focus:ring-2 focus:ring-blue-500">
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Nome de utilizador para login</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email *</label>
+                        <input type="email" id="userEmail" required
+                               class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2
+                                      bg-white dark:bg-gray-700 text-gray-800 dark:text-white
+                                      focus:ring-2 focus:ring-blue-500">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Senha *</label>
+                            <input type="password" id="userPassword"
+                                   class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2
+                                          bg-white dark:bg-gray-700 text-gray-800 dark:text-white
+                                          focus:ring-2 focus:ring-blue-500">
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Mínimo 8 caracteres</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Confirmar Senha</label>
+                            <input type="password" id="userConfirmPassword"
+                                   class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2
+                                          bg-white dark:bg-gray-700 text-gray-800 dark:text-white
+                                          focus:ring-2 focus:ring-blue-500">
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between pt-2">
+                        <div>
+                            <p class="font-medium text-gray-700 dark:text-gray-300">Utilizador Ativo</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">Permitir acesso ao sistema</p>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="userIsActive" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="font-medium text-gray-700 dark:text-gray-300">Staff (Acesso Admin)</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">Acesso ao painel administrativo</p>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="userIsStaff">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="font-medium text-gray-700 dark:text-gray-300">Super Utilizador</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">Acesso total ao sistema</p>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="userIsSuperuser">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="flex justify-end space-x-3 mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <button type="button" onclick="closeUserModal()"
+                            class="px-6 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
+                                   text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
+                        Cancelar
+                    </button>
+                    <button type="submit"
+                            class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                        Salvar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Resetar Senha -->
+<div id="resetPasswordModal" class="modal hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full p-6">
+        <div class="text-center mb-4">
+            <div class="w-16 h-16 bg-yellow-100 dark:bg-yellow-900/30 rounded-full flex items-center justify-center mx-auto mb-3">
+                <i class="ri-lock-password-line text-2xl text-yellow-600 dark:text-yellow-400"></i>
+            </div>
+            <h3 class="text-xl font-semibold text-gray-800 dark:text-white">Resetar Senha</h3>
+            <p class="text-gray-500 dark:text-gray-400 text-sm mt-1" id="resetPasswordMessage">Tem certeza que deseja resetar a senha deste utilizador?</p>
+        </div>
+        <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 mb-4">
+            <p class="text-sm text-blue-800 dark:text-blue-300 flex items-center">
+                <i class="ri-information-line mr-2"></i>
+                Uma nova senha temporária será gerada.
+            </p>
+        </div>
+        <div class="flex space-x-3">
+            <button onclick="closeResetPasswordModal()"
+                    class="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
+                           text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
+                Cancelar
+            </button>
+            <button id="confirmResetBtn"
+                    class="flex-1 bg-yellow-600 hover:bg-yellow-700 text-white py-2 rounded-lg">
+                Resetar Senha
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // CSRF Token helper
+    function getCSRFToken() {
+        return document.querySelector('[name=csrfmiddlewaretoken]')?.value ||
+               document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
+    }
+
+    let users = [];
+    let currentPage = 1;
+    let itemsPerPage = 10;
+    let userToReset = null;
+
+    // ========== API CALLS ==========
+
+    async function loadUsers() {
+        try {
+            const response = await fetch('/api/usuarios/');
+            const data = await response.json();
+            if (data.success) {
+                users = data.usuarios;
+                renderUsersTable();
+                updateStats();
+            } else {
+                showNotification('Erro ao carregar utilizadores', 'error');
+            }
+        } catch (error) {
+            console.error('Erro:', error);
+            showNotification('Erro ao conectar com o servidor', 'error');
+        }
+    }
+
+    async function saveUserAPI(userData) {
+        const isEdit = userData.id;
+        const url = isEdit ? `/api/usuarios/editar/${userData.id}/` : '/api/usuarios/criar/';
+        const method = isEdit ? 'PUT' : 'POST';
+
+        try {
+            const response = await fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCSRFToken()
+                },
+                body: JSON.stringify(userData)
+            });
+            const data = await response.json();
+            if (data.success) {
+                if (!isEdit && data.senha_temporaria) {
+                    showNotification(`${data.message} Senha: ${data.senha_temporaria}`, 'success');
+                } else {
+                    showNotification(data.message, 'success');
+                }
+                loadUsers();
+                return true;
+            } else {
+                showNotification(data.error || 'Erro ao salvar', 'error');
+                return false;
+            }
+        } catch (error) {
+            showNotification('Erro ao salvar', 'error');
+            return false;
+        }
+    }
+
+    async function resetPasswordAPI(id) {
+        try {
+            const response = await fetch(`/api/usuarios/resetar-senha/${id}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCSRFToken()
+                }
+            });
+            const data = await response.json();
+            if (data.success) {
+                showNotification(`${data.message} Nova senha: ${data.nova_senha}`, 'info');
+                return true;
+            } else {
+                showNotification(data.error || 'Erro ao resetar senha', 'error');
+                return false;
+            }
+        } catch (error) {
+            showNotification('Erro ao resetar senha', 'error');
+            return false;
+        }
+    }
+
+    async function toggleUserStatusAPI(id, isActive) {
+        try {
+            const response = await fetch(`/api/usuarios/toggle-status/${id}/`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCSRFToken()
+                },
+                body: JSON.stringify({ is_active: isActive })
+            });
+            const data = await response.json();
+            if (data.success) {
+                showNotification(data.message, 'success');
+                loadUsers();
+                return true;
+            } else {
+                showNotification(data.error || 'Erro ao alterar status', 'error');
+                return false;
+            }
+        } catch (error) {
+            showNotification('Erro ao alterar status', 'error');
+            return false;
+        }
+    }
+
+    async function deleteUserAPI(id) {
+        try {
+            const response = await fetch(`/api/usuarios/excluir/${id}/`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRFToken': getCSRFToken()
+                }
+            });
+            const data = await response.json();
+            if (data.success) {
+                showNotification(data.message, 'success');
+                loadUsers();
+                return true;
+            } else {
+                showNotification(data.error || 'Erro ao excluir', 'error');
+                return false;
+            }
+        } catch (error) {
+            showNotification('Erro ao excluir', 'error');
+            return false;
+        }
+    }
+
+    // ========== RENDER FUNCTIONS ==========
+
+    function updateStats() {
+        const total = users.length;
+        const active = users.filter(u => u.is_active).length;
+        const staff = users.filter(u => u.is_staff).length;
+        const superusers = users.filter(u => u.is_superuser).length;
+
+        document.getElementById('totalUsers').textContent = total;
+        document.getElementById('activeUsers').textContent = active;
+        document.getElementById('staffCount').textContent = staff;
+        document.getElementById('superuserCount').textContent = superusers;
+    }
+
+    function renderUsersTable() {
+        const tbody = document.getElementById('usersTableBody');
+        const searchTerm = document.getElementById('searchUser').value.toLowerCase();
+        const statusFilter = document.getElementById('statusFilter').value;
+
+        let filtered = [...users];
+
+        if (searchTerm) {
+            filtered = filtered.filter(u =>
+                u.name.toLowerCase().includes(searchTerm) ||
+                u.username.toLowerCase().includes(searchTerm) ||
+                u.email.toLowerCase().includes(searchTerm)
+            );
+        }
+
+        if (statusFilter !== 'all') {
+            filtered = filtered.filter(u => statusFilter === 'active' ? u.is_active : !u.is_active);
+        }
+
+        const totalPages = Math.ceil(filtered.length / itemsPerPage);
+        const start = (currentPage - 1) * itemsPerPage;
+        const paginated = filtered.slice(start, start + itemsPerPage);
+
+        document.getElementById('paginationInfo').innerHTML =
+            `Mostrando ${filtered.length === 0 ? 0 : start + 1} a ${Math.min(start + itemsPerPage, filtered.length)} de ${filtered.length} resultados`;
+
+        renderPaginationButtons(totalPages);
+
+        if (paginated.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="6" class="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
+                        <i class="ri-inbox-line text-4xl mb-2 block"></i>
+                        Nenhum utilizador encontrado
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        tbody.innerHTML = paginated.map(user => `
+            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                <td class="px-6 py-4">
+                    <input type="checkbox" class="rounded dark:bg-gray-600 user-checkbox" value="${user.id}">
+                </td>
+                <td class="px-6 py-4">
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 flex items-center justify-center text-white font-semibold">
+                            ${user.name.charAt(0).toUpperCase()}
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm font-medium text-gray-900 dark:text-white">${escapeHtml(user.name)}</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">@${user.username}</p>
+                        </div>
+                    </div>
+                </td>
+                <td class="px-6 py-4">
+                    <p class="text-sm text-gray-600 dark:text-gray-300">${user.email}</p>
+                </td>
+                <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">${user.last_access || 'Nunca'}</td>
+                <td class="px-6 py-4">
+                    <span class="px-2 py-1 text-xs rounded-full ${user.is_active ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400' : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-400'}">
+                        ${user.is_active ? 'Ativo' : 'Inativo'}
+                    </span>
+                </td>
+                <td class="px-6 py-4">
+                    <div class="flex space-x-2">
+                        <button onclick="editUser(${user.id})" class="text-blue-600 dark:text-blue-400 hover:text-blue-800" title="Editar">
+                            <i class="ri-edit-line"></i>
+                        </button>
+                        <button onclick="openResetPasswordModal(${user.id})" class="text-yellow-600 dark:text-yellow-400 hover:text-yellow-800" title="Resetar Senha">
+                            <i class="ri-lock-password-line"></i>
+                        </button>
+                        <button onclick="toggleUserStatus(${user.id})" class="text-orange-600 dark:text-orange-400 hover:text-orange-800" title="${user.is_active ? 'Desativar' : 'Ativar'}">
+                            <i class="ri-${user.is_active ? 'user-forbid-line' : 'user-check-line'}"></i>
+                        </button>
+                        <button onclick="deleteUser(${user.id})" class="text-red-600 dark:text-red-400 hover:text-red-800" title="Excluir">
+                            <i class="ri-delete-bin-line"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function renderPaginationButtons(totalPages) {
+        const paginationDiv = document.getElementById('paginationButtons');
+        if (totalPages <= 1) {
+            paginationDiv.innerHTML = '';
+            return;
+        }
+
+        let paginationHtml = `
+            <button onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}
+                    class="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg
+                           hover:bg-gray-50 dark:hover:bg-gray-700
+                           ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''}">
+                <i class="ri-arrow-left-s-line"></i>
+            </button>
+        `;
+
+        const maxButtons = 5;
+        let startPage = Math.max(1, currentPage - Math.floor(maxButtons / 2));
+        let endPage = Math.min(totalPages, startPage + maxButtons - 1);
+
+        if (endPage - startPage < maxButtons - 1) {
+            startPage = Math.max(1, endPage - maxButtons + 1);
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+            paginationHtml += `
+                <button onclick="changePage(${i})"
+                        class="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg
+                               ${currentPage === i ? 'bg-blue-600 text-white border-blue-600' : 'hover:bg-gray-50 dark:hover:bg-gray-700'}">
+                    ${i}
+                </button>
+            `;
+        }
+
+        paginationHtml += `
+            <button onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}
+                    class="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg
+                           hover:bg-gray-50 dark:hover:bg-gray-700
+                           ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''}">
+                <i class="ri-arrow-right-s-line"></i>
+            </button>
+        `;
+
+        paginationDiv.innerHTML = paginationHtml;
+    }
+
+    function changePage(page) {
+        if (page < 1) return;
+        currentPage = page;
+        renderUsersTable();
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    // ========== CRUD OPERATIONS ==========
+
+    function openUserModal(user = null) {
+        const modal = document.getElementById('userModal');
+        const modalTitle = document.getElementById('modalTitle');
+
+        document.getElementById('userForm').reset();
+        document.getElementById('userId').value = '';
+        document.getElementById('userPassword').required = true;
+        document.getElementById('userIsActive').checked = true;
+        document.getElementById('userIsStaff').checked = false;
+        document.getElementById('userIsSuperuser').checked = false;
+
+        if (user) {
+            modalTitle.textContent = 'Editar Utilizador';
+            document.getElementById('userId').value = user.id;
+            document.getElementById('userFullName').value = user.name;
+            document.getElementById('userUsername').value = user.username;
+            document.getElementById('userEmail').value = user.email;
+            document.getElementById('userIsActive').checked = user.is_active;
+            document.getElementById('userIsStaff').checked = user.is_staff;
+            document.getElementById('userIsSuperuser').checked = user.is_superuser;
+            document.getElementById('userPassword').required = false;
+            document.getElementById('userPassword').placeholder = 'Deixe em branco para manter a mesma';
+        } else {
+            modalTitle.textContent = 'Novo Utilizador';
+        }
+
+        modal.classList.remove('hidden');
+    }
+
+    function closeUserModal() {
+        document.getElementById('userModal').classList.add('hidden');
+    }
+
+    async function saveUser(event) {
+        event.preventDefault();
+
+        const userId = document.getElementById('userId').value;
+        const password = document.getElementById('userPassword').value;
+        const confirmPassword = document.getElementById('userConfirmPassword').value;
+
+        if (!userId && password !== confirmPassword) {
+            showNotification('As senhas não coincidem!', 'error');
+            return;
+        }
+
+        if (!userId && password && password.length < 8) {
+            showNotification('A senha deve ter no mínimo 8 caracteres!', 'error');
+            return;
+        }
+
+        const userData = {
+            name: document.getElementById('userFullName').value,
+            username: document.getElementById('userUsername').value,
+            email: document.getElementById('userEmail').value,
+            is_active: document.getElementById('userIsActive').checked,
+            is_staff: document.getElementById('userIsStaff').checked,
+            is_superuser: document.getElementById('userIsSuperuser').checked
+        };
+
+        if (userId) {
+            userData.id = parseInt(userId);
+        }
+        if (password) {
+            userData.password = password;
+        }
+
+        await saveUserAPI(userData);
+        closeUserModal();
+    }
+
+    function editUser(id) {
+        const user = users.find(u => u.id === id);
+        if (user) {
+            openUserModal(user);
+        }
+    }
+
+    async function deleteUser(id) {
+        if (confirm('Tem certeza que deseja excluir este utilizador? Esta ação não pode ser desfeita.')) {
+            await deleteUserAPI(id);
+        }
+    }
+
+    async function toggleUserStatus(id) {
+        const user = users.find(u => u.id === id);
+        if (user) {
+            await toggleUserStatusAPI(id, !user.is_active);
+        }
+    }
+
+    function openResetPasswordModal(id) {
+        const user = users.find(u => u.id === id);
+        if (user) {
+            userToReset = id;
+            document.getElementById('resetPasswordMessage').innerHTML = `Tem certeza que deseja resetar a senha de <strong>${escapeHtml(user.name)}</strong>?`;
+            document.getElementById('resetPasswordModal').classList.remove('hidden');
+        }
+    }
+
+    function closeResetPasswordModal() {
+        userToReset = null;
+        document.getElementById('resetPasswordModal').classList.add('hidden');
+    }
+
+    async function confirmResetPassword() {
+        if (userToReset) {
+            await resetPasswordAPI(userToReset);
+            closeResetPasswordModal();
+        }
+    }
+
+    // ========== TOAST NOTIFICATIONS ==========
+
+    function showNotification(message, type = 'info') {
+        const toast = document.createElement('div');
+        const colors = {
+            success: 'bg-green-500',
+            error: 'bg-red-500',
+            info: 'bg-blue-500',
+            warning: 'bg-yellow-500'
+        };
+
+        toast.className = `fixed bottom-4 right-4 px-6 py-3 rounded-lg text-white z-50 fade-in ${colors[type]} shadow-lg`;
+        toast.innerHTML = `
+            <div class="flex items-center space-x-2">
+                <i class="ri-${type === 'success' ? 'checkbox-circle' : type === 'error' ? 'error-warning' : 'information'}-line"></i>
+                <span>${message}</span>
+            </div>
+        `;
+        document.body.appendChild(toast);
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transition = 'opacity 0.3s ease';
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
+
+    // ========== EVENT LISTENERS ==========
+
+    document.getElementById('newUserBtn').onclick = () => openUserModal(null);
+    document.getElementById('userForm').onsubmit = saveUser;
+    document.getElementById('confirmResetBtn').onclick = confirmResetPassword;
+
+    document.getElementById('searchUser').addEventListener('input', () => {
+        currentPage = 1;
+        renderUsersTable();
+    });
+    document.getElementById('statusFilter').addEventListener('change', () => {
+        currentPage = 1;
+        renderUsersTable();
+    });
+    document.getElementById('resetFilters').onclick = () => {
+        document.getElementById('searchUser').value = '';
+        document.getElementById('statusFilter').value = 'all';
+        currentPage = 1;
+        renderUsersTable();
+    };
+
+    document.getElementById('selectAll').addEventListener('change', (e) => {
+        document.querySelectorAll('.user-checkbox').forEach(cb => cb.checked = e.target.checked);
+    });
+
+    window.onclick = (event) => {
+        const userModal = document.getElementById('userModal');
+        const resetModal = document.getElementById('resetPasswordModal');
+
+        if (event.target === userModal) closeUserModal();
+        if (event.target === resetModal) closeResetPasswordModal();
+    };
+
+    // Inicializar
+    loadUsers();
+</script>
+
+{% endblock %}

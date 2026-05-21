@@ -53,7 +53,10 @@ INSTALLED_APPS = [
     "artigos.apps.ArtigosConfig",
     "cliente.apps.ClienteConfig",
     "lavandarias.apps.LavandariasConfig",
-    "funcionarios.apps.FuncionariosConfig"
+    "funcionarios.apps.FuncionariosConfig",
+    "user.apps.UserConfig",
+    "pedidos.apps.PedidosConfig",
+    "relatorios.apps.RelatoriosConfig"
 ]
 
 MIDDLEWARE = [

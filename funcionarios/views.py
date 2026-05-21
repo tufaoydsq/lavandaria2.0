@@ -1,8 +1,17 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
+from django.contrib.auth.models import User, Group
+from django.utils import timezone
+import json
+from core.models import Funcionario, Lavandaria
 
-# Create your views here.
+
 def ver_funcionarios(request):
-
+    """
+    View para página de gerenciamento de funcionários
+    """
     return render(request, 'funcionarios/funcionarios.html')
 
 

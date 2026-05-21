@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recibo - Impressão Térmica</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', 'Courier', monospace;
+            background: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .receipt-container {
+            background: white;
+            width: 400px;
+            max-width: 100%;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .receipt-header {
+            background: #f8f9fa;
+            padding: 15px;
+            text-align: center;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .receipt-header h3 {
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .receipt-header p {
+            color: #666;
+            font-size: 12px;
+        }
+
+        .receipt-image {
+            padding: 20px;
+            text-align: center;
+            background: white;
+        }
+
+        .receipt-image img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .button-container {
+            padding: 15px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            border-top: 1px solid #dee2e6;
+            background: #f8f9fa;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn-print {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-print:hover {
+            background: #2563eb;
+            transform: scale(1.02);
+        }
+
+        .btn-close {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-close:hover {
+            background: #5a6268;
+        }
+
+        .info-bar {
+            background: #e7f3ff;
+            padding: 10px;
+            text-align: center;
+            font-size: 12px;
+            color: #0066cc;
+            border-bottom: 1px solid #b8daff;
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+                margin: 0;
+            }
+            .receipt-container {
+                box-shadow: none;
+                border-radius: 0;
+            }
+            .receipt-header, .button-container, .info-bar {
+                display: none;
+            }
+            .receipt-image {
+                padding: 0;
+            }
+            .receipt-image img {
+                box-shadow: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="receipt-container">
+        <div class="receipt-header">
+            <h3>🎫 Recibo Térmico</h3>
+            <p>Imagem gerada para impressão</p>
+        </div>
+
+        <div class="info-bar">
+            <strong>ℹ️ Informação:</strong> Clique em "Imprimir" para enviar para a impressora térmica
+        </div>
+
+        <div class="receipt-image">
+            <img src="data:image/png;base64,{{ img_base64 }}" alt="Recibo Térmico">
+        </div>
+
+        <div class="button-container">
+            <button class="btn-print" onclick="window.print();">
+                🖨️ Imprimir
+            </button>
+            <button class="btn-close" onclick="window.close();">
+                ❌ Fechar
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Auto-imprimir ao carregar (opcional - descomente se quiser)
+        // window.onload = function() {
+        //     setTimeout(function() {
+        //         window.print();
+        //     }, 1000);
+        // };
+
+        // Fechar após imprimir (opcional)
+        window.onafterprint = function() {
+            if (confirm('Recibo gerado com sucesso! Deseja fechar esta janela?')) {
+                window.close();
+            }
+        };
+    </script>
+</body>
+</html>

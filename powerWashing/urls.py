@@ -18,5 +18,10 @@ urlpatterns = [
     path('',include('lavandarias.urls')),
 
     path('', include('funcionarios.urls')),
+    path('',include('user.urls')),
+
+    path('',include('pedidos.urls')),
+
+    path('',include('relatorios.urls')),
 ]
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

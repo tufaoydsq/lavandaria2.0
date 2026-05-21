@@ -157,7 +157,7 @@
                     <div class="relative">
                         <i class="ri-search-line absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500"></i>
                         <input type="text" id="searchFuncionario"
-                               placeholder="Nome, email ou telefone..."
+                               placeholder="Nome ou telefone..."
                                class="w-full border border-gray-300 dark:border-gray-600 rounded-lg pl-10 pr-3 py-2
                                       bg-white dark:bg-gray-700 text-gray-800 dark:text-white
                                       focus:ring-2 focus:ring-blue-500 focus:border-transparent
@@ -193,9 +193,6 @@
                                    bg-white dark:bg-gray-700 text-gray-800 dark:text-white
                                    focus:ring-2 focus:ring-blue-500 transition-colors duration-200">
                         <option value="all">Todas</option>
-                        <option value="1">PowerWash Central</option>
-                        <option value="2">PowerWash Matola</option>
-                        <option value="3">PowerWash Beira</option>
                     </select>
                 </div>
                 <div class="flex items-end">
@@ -211,7 +208,10 @@
 
         <!-- Funcionários Grid -->
         <div id="funcionariosGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            <!-- Cards serão inseridos via JS -->
+            <div class="col-span-full text-center py-12">
+                <i class="ri-loader-4-line text-4xl text-gray-400 animate-spin"></i>
+                <p class="text-gray-500 dark:text-gray-400 mt-2">Carregando funcionários...</p>
+            </div>
         </div>
 
         <!-- Empty State -->
@@ -247,31 +247,25 @@
         </div>
 
         <div class="p-6">
-            <form id="funcionarioForm" onsubmit="saveFuncionario(event)">
+            <form id="funcionarioForm">
+                {% csrf_token %}
                 <input type="hidden" id="funcionarioId">
                 <input type="hidden" id="funcionarioUserId">
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <!-- Coluna Esquerda - Dados Pessoais -->
                     <div class="space-y-4">
-                        <h4 class="font-semibold text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700 pb-2">Dados Pessoais</h4>
+                        <h4 class="font-semibold text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700 pb-2">Dados do Usuário</h4>
 
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nome Completo *</label>
-                            <input type="text" id="funcionarioNome" required
-                                   class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2
-                                          bg-white dark:bg-gray-700 text-gray-800 dark:text-white
-                                          focus:ring-2 focus:ring-blue-500 transition-colors duration-200"
-                                   placeholder="Ex: Maria Silva">
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email *</label>
-                            <input type="email" id="funcionarioEmail" required
-                                   class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2
-                                          bg-white dark:bg-gray-700 text-gray-800 dark:text-white
-                                          focus:ring-2 focus:ring-blue-500 transition-colors duration-200"
-                                   placeholder="email@empresa.com">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Usuário *</label>
+                            <select id="funcionarioUsuario" required
+                                    class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2
+                                           bg-white dark:bg-gray-700 text-gray-800 dark:text-white
+                                           focus:ring-2 focus:ring-blue-500 transition-colors duration-200">
+                                <option value="">Selecione um usuário</option>
+                            </select>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Selecione um usuário existente no sistema</p>
                         </div>
 
                         <div>
@@ -307,27 +301,7 @@
                                            bg-white dark:bg-gray-700 text-gray-800 dark:text-white
                                            focus:ring-2 focus:ring-blue-500 transition-colors duration-200">
                                 <option value="">Selecione uma lavandaria</option>
-                                <option value="1">PowerWash Central - Maputo</option>
-                                <option value="2">PowerWash Matola - Matola</option>
-                                <option value="3">PowerWash Beira - Beira</option>
-                                <option value="4">PowerWash Nampula - Nampula</option>
                             </select>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Senha Temporária</label>
-                            <div class="relative">
-                                <input type="password" id="funcionarioSenha"
-                                       class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2
-                                              bg-white dark:bg-gray-700 text-gray-800 dark:text-white
-                                              focus:ring-2 focus:ring-blue-500 transition-colors duration-200"
-                                       placeholder="Deixe em branco para gerar automaticamente">
-                                <button type="button" onclick="generatePassword()"
-                                        class="absolute right-2 top-1/2 transform -translate-y-1/2 text-blue-600 dark:text-blue-400 text-sm hover:underline">
-                                    Gerar
-                                </button>
-                            </div>
-                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Mínimo 8 caracteres</p>
                         </div>
 
                         <div class="flex items-center justify-between pt-2">
@@ -387,45 +361,15 @@
     </div>
 </div>
 
-<!-- Modal Resetar Senha -->
-<div id="resetPasswordModal" class="modal hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-    <div class="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full p-6 transition-colors duration-200">
-        <div class="text-center mb-4">
-            <div class="w-16 h-16 bg-yellow-100 dark:bg-yellow-900/30 rounded-full flex items-center justify-center mx-auto mb-3">
-                <i class="ri-lock-password-line text-2xl text-yellow-600 dark:text-yellow-400"></i>
-            </div>
-            <h3 class="text-xl font-semibold text-gray-800 dark:text-white">Resetar Senha</h3>
-            <p class="text-gray-500 dark:text-gray-400 text-sm mt-1" id="resetPasswordMessage">Tem certeza que deseja resetar a senha deste funcionário?</p>
-        </div>
-        <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 mb-4">
-            <p class="text-sm text-blue-800 dark:text-blue-300 flex items-center">
-                <i class="ri-information-line mr-2"></i>
-                Uma nova senha temporária será gerada e enviada por email.
-            </p>
-        </div>
-        <div class="flex space-x-3">
-            <button onclick="closeResetPasswordModal()"
-                    class="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
-                           text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
-                Cancelar
-            </button>
-            <button id="confirmResetBtn"
-                    class="flex-1 bg-yellow-600 hover:bg-yellow-700 text-white py-2 rounded-lg transition">
-                Resetar Senha
-            </button>
-        </div>
-    </div>
-</div>
-
 <!-- Modal Excluir -->
 <div id="deleteModal" class="modal hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
     <div class="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full p-6 text-center transition-colors duration-200">
         <div class="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
             <i class="ri-delete-bin-line text-2xl text-red-600 dark:text-red-400"></i>
         </div>
-        <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-2">Confirmar Exclusão</h3>
-        <p class="text-gray-600 dark:text-gray-400 mb-4" id="deleteMessage">Tem certeza que deseja excluir este funcionário?</p>
-        <p class="text-sm text-red-600 dark:text-red-400 mb-6">⚠️ Esta ação não pode ser desfeita.</p>
+        <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-2">Confirmar Remoção</h3>
+        <p class="text-gray-600 dark:text-gray-400 mb-4" id="deleteMessage">Tem certeza que deseja remover este funcionário?</p>
+        <p class="text-sm text-red-600 dark:text-red-400 mb-6">⚠️ O usuário continuará existindo no sistema, apenas a associação com a lavandaria será removida.</p>
         <div class="flex space-x-3">
             <button onclick="closeDeleteModal()"
                     class="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
@@ -434,7 +378,7 @@
             </button>
             <button id="confirmDeleteBtn"
                     class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg transition">
-                Excluir
+                Remover
             </button>
         </div>
     </div>
@@ -444,84 +388,18 @@
 <div id="toastContainer" class="fixed bottom-4 right-4 z-50 space-y-2"></div>
 
 <script>
-    // Dados mockados - Em produção, viriam da API
-    let funcionarios = [
-        {
-            id: 1,
-            user_id: 101,
-            nome: 'Maria Silva',
-            email: 'maria.silva@powerwash.co.mz',
-            telefone: '84 9999-8888',
-            cargo: 'gerente',
-            lavandaria_id: 1,
-            lavandaria_nome: 'PowerWash Central',
-            ativo: true,
-            ultimo_acesso: '2024-01-15 08:30:00',
-            criado_em: '2024-01-10',
-            permissoes: ['view_funcionario', 'add_itemservico', 'change_itemservico', 'delete_itemservico',
-                        'view_itemservico', 'add_servico', 'change_servico', 'delete_servico', 'view_servico',
-                        'add_pedido', 'change_pedido', 'delete_pedido', 'view_pedido', 'add_cliente',
-                        'change_cliente', 'delete_cliente', 'view_cliente', 'add_itempedido', 'change_itempedido',
-                        'delete_itempedido', 'view_itempedido', 'add_pagamentopedido', 'change_pagamentopedido',
-                        'delete_pagamentopedido', 'view_pagamentopedido']
-        },
-        {
-            id: 2,
-            user_id: 102,
-            nome: 'João Santos',
-            email: 'joao.santos@powerwash.co.mz',
-            telefone: '84 8888-7777',
-            cargo: 'caixa',
-            lavandaria_id: 1,
-            lavandaria_nome: 'PowerWash Central',
-            ativo: true,
-            ultimo_acesso: '2024-01-15 09:15:00',
-            criado_em: '2024-01-12',
-            permissoes: ['add_pedido', 'change_pedido', 'delete_pedido', 'view_pedido', 'add_cliente',
-                        'change_cliente', 'delete_cliente', 'view_cliente', 'add_itempedido', 'change_itempedido',
-                        'delete_itempedido', 'view_itempedido']
-        },
-        {
-            id: 3,
-            user_id: 103,
-            nome: 'Ana Costa',
-            email: 'ana.costa@powerwash.co.mz',
-            telefone: '84 7777-6666',
-            cargo: 'caixa',
-            lavandaria_id: 2,
-            lavandaria_nome: 'PowerWash Matola',
-            ativo: true,
-            ultimo_acesso: '2024-01-14 17:30:00',
-            criado_em: '2024-01-15',
-            permissoes: ['add_pedido', 'change_pedido', 'delete_pedido', 'view_pedido', 'add_cliente',
-                        'change_cliente', 'delete_cliente', 'view_cliente', 'add_itempedido', 'change_itempedido',
-                        'delete_itempedido', 'view_itempedido']
-        },
-        {
-            id: 4,
-            user_id: 104,
-            nome: 'Carlos Mendes',
-            email: 'carlos.mendes@powerwash.co.mz',
-            telefone: '84 6666-5555',
-            cargo: 'gerente',
-            lavandaria_id: 2,
-            lavandaria_nome: 'PowerWash Matola',
-            ativo: false,
-            ultimo_acesso: '2024-01-10 10:00:00',
-            criado_em: '2024-01-20',
-            permissoes: ['view_funcionario', 'add_itemservico', 'change_itemservico', 'delete_itemservico',
-                        'view_itemservico', 'add_servico', 'change_servico', 'delete_servico', 'view_servico',
-                        'add_pedido', 'change_pedido', 'delete_pedido', 'view_pedido', 'add_cliente',
-                        'change_cliente', 'delete_cliente', 'view_cliente', 'add_itempedido', 'change_itempedido',
-                        'delete_itempedido', 'view_itempedido', 'add_pagamentopedido', 'change_pagamentopedido',
-                        'delete_pagamentopedido', 'view_pagamentopedido']
-        }
-    ];
+    // CSRF Token helper
+    function getCSRFToken() {
+        return document.querySelector('[name=csrfmiddlewaretoken]')?.value ||
+               document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
+    }
 
+    let funcionarios = [];
+    let lavandarias = [];
+    let usuariosDisponiveis = [];
     let currentPage = 1;
     let itemsPerPage = 8;
     let funcionarioToDelete = null;
-    let funcionarioToReset = null;
 
     // Permissões por cargo
     const permissoesPorCargo = {
@@ -541,7 +419,131 @@
         ]
     };
 
-    // Formatar data
+    // ========== API CALLS ==========
+
+    async function loadUsuariosDisponiveis() {
+        try {
+            const response = await fetch('/api/funcionarios/usuarios-disponiveis/');
+            const data = await response.json();
+            if (data.success) {
+                usuariosDisponiveis = data.usuarios;
+                const select = document.getElementById('funcionarioUsuario');
+                select.innerHTML = '<option value="">Selecione um usuário</option>' +
+                    usuariosDisponiveis.map(u => `<option value="${u.id}">${u.nome} (${u.username})</option>`).join('');
+            }
+        } catch (error) {
+            console.error('Erro:', error);
+        }
+    }
+
+    async function loadLavandarias() {
+        try {
+            const response = await fetch('/api/funcionarios/lavandarias/');
+            const data = await response.json();
+            if (data.success) {
+                lavandarias = data.lavandarias;
+                const select = document.getElementById('funcionarioLavandaria');
+                select.innerHTML = '<option value="">Selecione uma lavandaria</option>' +
+                    lavandarias.map(l => `<option value="${l.id}">${l.nome}</option>`).join('');
+
+                // Atualizar filtro de lavandaria
+                const filter = document.getElementById('lavandariaFilter');
+                filter.innerHTML = '<option value="all">Todas</option>' +
+                    lavandarias.map(l => `<option value="${l.id}">${l.nome}</option>`).join('');
+            }
+        } catch (error) {
+            console.error('Erro:', error);
+        }
+    }
+
+    async function loadFuncionarios() {
+        try {
+            const response = await fetch('/api/funcionarios/');
+            const data = await response.json();
+            if (data.success) {
+                funcionarios = data.funcionarios;
+                render();
+                loadStats();
+            } else {
+                showToast('Erro ao carregar funcionários', 'error');
+            }
+        } catch (error) {
+            console.error('Erro:', error);
+            showToast('Erro ao conectar com o servidor', 'error');
+        }
+    }
+
+    async function loadStats() {
+        try {
+            const response = await fetch('/api/funcionarios/estatisticas/');
+            const data = await response.json();
+            if (data.success) {
+                const stats = data.estatisticas;
+                document.getElementById('totalFuncionarios').textContent = stats.total;
+                document.getElementById('ativosCount').textContent = stats.ativos;
+                document.getElementById('inativosCount').textContent = stats.inativos;
+                document.getElementById('gerentesCount').textContent = stats.gerentes;
+                document.getElementById('caixasCount').textContent = stats.caixas;
+            }
+        } catch (error) {
+            console.error('Erro:', error);
+        }
+    }
+
+    async function saveFuncionarioAPI(funcionarioData) {
+        const isEdit = funcionarioData.id;
+        const url = isEdit ? `/api/funcionarios/editar/${funcionarioData.id}/` : '/api/funcionarios/criar/';
+        const method = isEdit ? 'PUT' : 'POST';
+
+        try {
+            const response = await fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCSRFToken()
+                },
+                body: JSON.stringify(funcionarioData)
+            });
+            const data = await response.json();
+            if (data.success) {
+                showToast(data.message, 'success');
+                loadFuncionarios();
+                return true;
+            } else {
+                showToast(data.error || 'Erro ao salvar', 'error');
+                return false;
+            }
+        } catch (error) {
+            showToast('Erro ao salvar', 'error');
+            return false;
+        }
+    }
+
+    async function deleteFuncionarioAPI(id) {
+        try {
+            const response = await fetch(`/api/funcionarios/excluir/${id}/`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRFToken': getCSRFToken()
+                }
+            });
+            const data = await response.json();
+            if (data.success) {
+                showToast(data.message, 'success');
+                loadFuncionarios();
+                return true;
+            } else {
+                showToast(data.error || 'Erro ao remover', 'error');
+                return false;
+            }
+        } catch (error) {
+            showToast('Erro ao remover', 'error');
+            return false;
+        }
+    }
+
+    // ========== HELPER FUNCTIONS ==========
+
     function formatDate(dateString) {
         if (!dateString) return '—';
         const date = new Date(dateString);
@@ -554,12 +556,10 @@
         return date.toLocaleString('pt-PT');
     }
 
-    // Obter iniciais do nome
     function getInitials(name) {
         return name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
     }
 
-    // Obter cor do avatar baseada no nome
     function getAvatarColor(name) {
         const colors = [
             'bg-red-500', 'bg-blue-500', 'bg-green-500', 'bg-yellow-500',
@@ -569,22 +569,26 @@
         return colors[index];
     }
 
-    // Atualizar estatísticas
-    function updateStats() {
-        const total = funcionarios.length;
-        const ativos = funcionarios.filter(f => f.ativo === true).length;
-        const inativos = total - ativos;
-        const gerentes = funcionarios.filter(f => f.cargo === 'gerente').length;
-        const caixas = funcionarios.filter(f => f.cargo === 'caixa').length;
+    function updatePermissoesPreview() {
+        const cargo = document.getElementById('funcionarioCargo').value;
+        const container = document.getElementById('permissoesPreview');
 
-        document.getElementById('totalFuncionarios').textContent = total;
-        document.getElementById('ativosCount').textContent = ativos;
-        document.getElementById('inativosCount').textContent = inativos;
-        document.getElementById('gerentesCount').textContent = gerentes;
-        document.getElementById('caixasCount').textContent = caixas;
+        if (!cargo) {
+            container.innerHTML = '<p class="flex items-center"><i class="ri-information-line mr-2"></i> Selecione um cargo para ver as permissões</p>';
+            return;
+        }
+
+        const permissoes = permissoesPorCargo[cargo] || [];
+        container.innerHTML = `
+            <div class="space-y-1">
+                <p class="font-medium text-gray-700 dark:text-gray-300 mb-2">Permissões do cargo ${cargo === 'gerente' ? 'Gerente' : 'Caixa'}:</p>
+                ${permissoes.map(p => `<p class="text-sm flex items-center"><i class="ri-checkbox-circle-line text-green-500 mr-2"></i> ${p}</p>`).join('')}
+            </div>
+        `;
     }
 
-    // Filtrar funcionários
+    // ========== FILTER AND RENDER ==========
+
     function getFilteredFuncionarios() {
         const searchTerm = document.getElementById('searchFuncionario').value.toLowerCase();
         const cargoFilter = document.getElementById('cargoFilter').value;
@@ -596,7 +600,6 @@
         if (searchTerm) {
             filtered = filtered.filter(f =>
                 f.nome.toLowerCase().includes(searchTerm) ||
-                f.email.toLowerCase().includes(searchTerm) ||
                 (f.telefone && f.telefone.includes(searchTerm))
             );
         }
@@ -616,26 +619,6 @@
         return filtered;
     }
 
-    // Atualizar preview de permissões
-    function updatePermissoesPreview() {
-        const cargo = document.getElementById('funcionarioCargo').value;
-        const container = document.getElementById('permissoesPreview');
-
-        if (!cargo) {
-            container.innerHTML = '<p class="flex items-center"><i class="ri-information-line mr-2"></i> Selecione um cargo para ver as permissões</p>';
-            return;
-        }
-
-        const permissoes = permissoesPorCargo[cargo] || [];
-        container.innerHTML = `
-            <div class="space-y-1">
-                <p class="font-medium text-gray-700 dark:text-gray-300 mb-2">Permissões do cargo ${cargo === 'gerente' ? 'Gerente' : 'Caixa'}:</p>
-                ${permissoes.map(p => `<p class="text-sm flex items-center"><i class="ri-checkbox-circle-line text-green-500 mr-2"></i> ${p}</p>`).join('')}
-            </div>
-        `;
-    }
-
-    // Renderizar grid
     function renderGrid(funcionariosList) {
         const container = document.getElementById('funcionariosGrid');
         const emptyState = document.getElementById('emptyState');
@@ -662,8 +645,8 @@
                                     ${initials}
                                 </div>
                                 <div>
-                                    <h3 class="font-semibold text-gray-800 dark:text-white">${func.nome}</h3>
-                                    <p class="text-sm text-gray-500 dark:text-gray-400">${func.email}</p>
+                                    <h3 class="font-semibold text-gray-800 dark:text-white">${escapeHtml(func.nome)}</h3>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">${func.cargo === 'gerente' ? 'Gerente' : 'Caixa'}</p>
                                 </div>
                             </div>
                             <div class="flex space-x-1">
@@ -677,14 +660,9 @@
                                         title="Editar">
                                     <i class="ri-edit-line"></i>
                                 </button>
-                                <button onclick="openResetPasswordModal(${func.id})"
-                                        class="p-1.5 text-yellow-600 dark:text-yellow-400 hover:bg-yellow-50 dark:hover:bg-yellow-900/30 rounded-lg transition"
-                                        title="Resetar senha">
-                                    <i class="ri-lock-password-line"></i>
-                                </button>
                                 <button onclick="openDeleteModal(${func.id})"
                                         class="p-1.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition"
-                                        title="Excluir">
+                                        title="Remover">
                                     <i class="ri-delete-bin-line"></i>
                                 </button>
                             </div>
@@ -697,7 +675,7 @@
                             </p>
                             <p class="text-sm text-gray-600 dark:text-gray-400 flex items-center">
                                 <i class="ri-store-line mr-2 text-gray-400"></i>
-                                ${func.lavandaria_nome}
+                                ${escapeHtml(func.lavandaria_nome)}
                             </p>
                         </div>
 
@@ -716,26 +694,7 @@
         }).join('');
     }
 
-    // Renderizar com paginação
-    function render() {
-        const filtered = getFilteredFuncionarios();
-        const totalItems = filtered.length;
-        const totalPages = Math.ceil(totalItems / itemsPerPage);
-
-        if (currentPage > totalPages && totalPages > 0) {
-            currentPage = totalPages;
-        }
-
-        const start = (currentPage - 1) * itemsPerPage;
-        const paginated = filtered.slice(start, start + itemsPerPage);
-
-        const startNum = totalItems === 0 ? 0 : start + 1;
-        document.getElementById('paginationInfo').innerHTML =
-            `Mostrando ${startNum} a ${Math.min(start + itemsPerPage, totalItems)} de ${totalItems} resultados`;
-
-        renderGrid(paginated);
-
-        // Renderizar paginação
+    function renderPaginationButtons(totalPages) {
         const paginationDiv = document.getElementById('paginationButtons');
         if (totalPages <= 1) {
             paginationDiv.innerHTML = '';
@@ -782,8 +741,26 @@
         `;
 
         paginationDiv.innerHTML = paginationHtml;
+    }
 
-        updateStats();
+    function render() {
+        const filtered = getFilteredFuncionarios();
+        const totalItems = filtered.length;
+        const totalPages = Math.ceil(totalItems / itemsPerPage);
+
+        if (currentPage > totalPages && totalPages > 0) {
+            currentPage = totalPages;
+        }
+
+        const start = (currentPage - 1) * itemsPerPage;
+        const paginated = filtered.slice(start, start + itemsPerPage);
+
+        const startNum = totalItems === 0 ? 0 : start + 1;
+        document.getElementById('paginationInfo').innerHTML =
+            `Mostrando ${startNum} a ${Math.min(start + itemsPerPage, totalItems)} de ${totalItems} resultados`;
+
+        renderGrid(paginated);
+        renderPaginationButtons(totalPages);
     }
 
     function changePage(page) {
@@ -792,18 +769,14 @@
         render();
     }
 
-    // Gerar senha aleatória
-    function generatePassword() {
-        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%';
-        let password = '';
-        for (let i = 0; i < 10; i++) {
-            password += chars.charAt(Math.floor(Math.random() * chars.length));
-        }
-        document.getElementById('funcionarioSenha').value = password;
-        showToast('Senha gerada automaticamente', 'info');
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
     }
 
-    // CRUD Operations
+    // ========== CRUD OPERATIONS ==========
+
     function openNovoFuncionarioModal() {
         document.getElementById('modalTitle').textContent = 'Novo Funcionário';
         document.getElementById('funcionarioForm').reset();
@@ -811,6 +784,7 @@
         document.getElementById('funcionarioUserId').value = '';
         document.getElementById('funcionarioAtivo').checked = true;
         updatePermissoesPreview();
+        loadUsuariosDisponiveis();
         document.getElementById('funcionarioModal').classList.remove('hidden');
     }
 
@@ -819,93 +793,61 @@
         if (func) {
             document.getElementById('modalTitle').textContent = 'Editar Funcionário';
             document.getElementById('funcionarioId').value = func.id;
-            document.getElementById('funcionarioUserId').value = func.user_id || '';
-            document.getElementById('funcionarioNome').value = func.nome;
-            document.getElementById('funcionarioEmail').value = func.email;
+            document.getElementById('funcionarioUserId').value = func.user_id;
             document.getElementById('funcionarioTelefone').value = func.telefone || '';
             document.getElementById('funcionarioCargo').value = func.cargo;
             document.getElementById('funcionarioLavandaria').value = func.lavandaria_id;
             document.getElementById('funcionarioAtivo').checked = func.ativo;
-            document.getElementById('funcionarioSenha').value = '';
-            document.getElementById('funcionarioSenha').placeholder = 'Deixe em branco para manter a mesma';
+
+            // Esconder o campo de seleção de usuário (não pode mudar)
+            const userSelect = document.getElementById('funcionarioUsuario');
+            userSelect.disabled = true;
+            userSelect.innerHTML = `<option value="${func.user_id}">${func.nome}</option>`;
+
             updatePermissoesPreview();
             document.getElementById('funcionarioModal').classList.remove('hidden');
         }
     }
 
-    function saveFuncionario(event) {
+    async function saveFuncionario(event) {
         event.preventDefault();
 
         const id = document.getElementById('funcionarioId').value;
-        const nome = document.getElementById('funcionarioNome').value;
-        const email = document.getElementById('funcionarioEmail').value;
+        const user_id = document.getElementById('funcionarioUsuario').value;
         const telefone = document.getElementById('funcionarioTelefone').value;
-        const cargo = document.getElementById('funcionarioCargo').value;
-        const lavandaria_id = parseInt(document.getElementById('funcionarioLavandaria').value);
+        const grupo = document.getElementById('funcionarioCargo').value;
+        const lavandaria_id = document.getElementById('funcionarioLavandaria').value;
         const ativo = document.getElementById('funcionarioAtivo').checked;
-        const senha = document.getElementById('funcionarioSenha').value;
 
-        if (!nome || !email || !cargo || !lavandaria_id) {
-            showToast('Preencha todos os campos obrigatórios', 'error');
+        if (!id && !user_id) {
+            showToast('Selecione um usuário', 'error');
+            return;
+        }
+        if (!grupo) {
+            showToast('Selecione um cargo', 'error');
+            return;
+        }
+        if (!lavandaria_id) {
+            showToast('Selecione uma lavandaria', 'error');
             return;
         }
 
-        const lavandariaMap = {
-            1: 'PowerWash Central',
-            2: 'PowerWash Matola',
-            3: 'PowerWash Beira',
-            4: 'PowerWash Nampula'
-        };
-
+        const funcionarioData = { grupo, lavandaria_id, ativo };
         if (id) {
-            // Editar
-            const index = funcionarios.findIndex(f => f.id == id);
-            if (index !== -1) {
-                funcionarios[index] = {
-                    ...funcionarios[index],
-                    nome,
-                    email,
-                    telefone,
-                    cargo,
-                    lavandaria_id,
-                    lavandaria_nome: lavandariaMap[lavandaria_id],
-                    ativo
-                };
-                if (senha) {
-                    showToast('Senha alterada! O funcionário deve usar a nova senha no próximo login.', 'info');
-                }
-                showToast('Funcionário atualizado com sucesso!', 'success');
-            }
+            funcionarioData.id = parseInt(id);
         } else {
-            // Criar novo
-            const newId = Math.max(...funcionarios.map(f => f.id), 0) + 1;
-            const newUserId = Math.max(...funcionarios.map(f => f.user_id || 0), 0) + 1;
-            const hoje = new Date().toISOString().split('T')[0];
-
-            funcionarios.push({
-                id: newId,
-                user_id: newUserId,
-                nome,
-                email,
-                telefone,
-                cargo,
-                lavandaria_id,
-                lavandaria_nome: lavandariaMap[lavandaria_id],
-                ativo,
-                ultimo_acesso: null,
-                criado_em: hoje,
-                permissoes: cargo === 'gerente' ? permissoesPorCargo.gerente : permissoesPorCargo.caixa
-            });
-
-            const senhaGerada = senha || 'temp123456';
-            showToast(`Funcionário criado com sucesso! Senha: ${senhaGerada}`, 'success');
+            funcionarioData.user_id = parseInt(user_id);
         }
+        if (telefone) funcionarioData.telefone = telefone;
 
+        await saveFuncionarioAPI(funcionarioData);
         closeFuncionarioModal();
-        render();
+
+        // Reativar o select de usuário
+        document.getElementById('funcionarioUsuario').disabled = false;
     }
 
-    function viewDetails(id) {
+    async function viewDetails(id) {
         const func = funcionarios.find(f => f.id === id);
         if (func) {
             document.getElementById('detailsTitle').textContent = func.nome;
@@ -917,8 +859,8 @@
                                 ${getInitials(func.nome)}
                             </div>
                             <div>
-                                <h4 class="font-semibold text-gray-800 dark:text-white text-lg">${func.nome}</h4>
-                                <p class="text-sm text-gray-500 dark:text-gray-400">${func.email}</p>
+                                <h4 class="font-semibold text-gray-800 dark:text-white text-lg">${escapeHtml(func.nome)}</h4>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">${func.username}</p>
                                 <div class="flex items-center space-x-2 mt-1">
                                     <span class="status-badge px-2 py-0.5 text-xs rounded-full ${func.cargo === 'gerente' ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400' : 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'}">
                                         ${func.cargo === 'gerente' ? 'Gerente' : 'Caixa'}
@@ -943,7 +885,7 @@
                             <i class="ri-store-line text-gray-400 mt-0.5"></i>
                             <div>
                                 <p class="text-sm font-medium text-gray-700 dark:text-gray-300">Lavandaria</p>
-                                <p class="text-sm text-gray-600 dark:text-gray-400">${func.lavandaria_nome}</p>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">${escapeHtml(func.lavandaria_nome)}</p>
                             </div>
                         </div>
                         <div class="flex items-start space-x-2">
@@ -966,10 +908,7 @@
                         <h5 class="font-medium text-gray-800 dark:text-white mb-3">Permissões</h5>
                         <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
                             <div class="space-y-1">
-                                ${func.permissoes && func.permissoes.length > 0 ?
-                                    func.permissoes.map(p => `<p class="text-sm text-gray-600 dark:text-gray-400 flex items-center"><i class="ri-checkbox-circle-line text-green-500 mr-2"></i> ${p}</p>`).join('') :
-                                    '<p class="text-sm text-gray-500">Carregando permissões...</p>'
-                                }
+                                ${permissoesPorCargo[func.cargo] ? permissoesPorCargo[func.cargo].map(p => `<p class="text-sm text-gray-600 dark:text-gray-400 flex items-center"><i class="ri-checkbox-circle-line text-green-500 mr-2"></i> ${p}</p>`).join('') : '<p class="text-sm text-gray-500">Carregando permissões...</p>'}
                             </div>
                         </div>
                     </div>
@@ -979,10 +918,6 @@
                                 class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
                             <i class="ri-edit-line"></i> Editar
                         </button>
-                        <button onclick="closeDetailsModal(); openResetPasswordModal(${func.id})"
-                                class="px-4 py-2 border border-yellow-600 text-yellow-600 rounded-lg hover:bg-yellow-50 dark:hover:bg-yellow-900/20">
-                            <i class="ri-lock-password-line"></i> Resetar Senha
-                        </button>
                     </div>
                 </div>
             `;
@@ -990,33 +925,11 @@
         }
     }
 
-    function openResetPasswordModal(id) {
-        const func = funcionarios.find(f => f.id === id);
-        if (func) {
-            funcionarioToReset = id;
-            document.getElementById('resetPasswordMessage').innerHTML = `Tem certeza que deseja resetar a senha de <strong>${func.nome}</strong>?`;
-            document.getElementById('resetPasswordModal').classList.remove('hidden');
-        }
-    }
-
-    function closeResetPasswordModal() {
-        funcionarioToReset = null;
-        document.getElementById('resetPasswordModal').classList.add('hidden');
-    }
-
-    function confirmResetPassword() {
-        if (funcionarioToReset) {
-            const novaSenha = Math.random().toString(36).slice(-10) + '!@';
-            showToast(`Senha resetada! Nova senha temporária: ${novaSenha}`, 'info');
-            closeResetPasswordModal();
-        }
-    }
-
     function openDeleteModal(id) {
         const func = funcionarios.find(f => f.id === id);
         if (func) {
             funcionarioToDelete = id;
-            document.getElementById('deleteMessage').innerHTML = `Tem certeza que deseja excluir <strong>${func.nome}</strong>?`;
+            document.getElementById('deleteMessage').innerHTML = `Tem certeza que deseja remover <strong>${escapeHtml(func.nome)}</strong> da lista de funcionários?`;
             document.getElementById('deleteModal').classList.remove('hidden');
         }
     }
@@ -1026,35 +939,24 @@
         document.getElementById('deleteModal').classList.add('hidden');
     }
 
+    async function confirmDelete() {
+        if (funcionarioToDelete) {
+            await deleteFuncionarioAPI(funcionarioToDelete);
+            closeDeleteModal();
+        }
+    }
+
     function closeFuncionarioModal() {
         document.getElementById('funcionarioModal').classList.add('hidden');
+        document.getElementById('funcionarioUsuario').disabled = false;
     }
 
     function closeDetailsModal() {
         document.getElementById('detailsModal').classList.add('hidden');
     }
 
-    function confirmDelete() {
-        if (funcionarioToDelete) {
-            const index = funcionarios.findIndex(f => f.id === funcionarioToDelete);
-            if (index !== -1) {
-                const func = funcionarios[index];
-                funcionarios.splice(index, 1);
-                showToast(`"${func.nome}" foi excluído com sucesso!`, 'info');
+    // ========== TOAST NOTIFICATIONS ==========
 
-                const filtered = getFilteredFuncionarios();
-                const totalPages = Math.ceil(filtered.length / itemsPerPage);
-                if (currentPage > totalPages && totalPages > 0) {
-                    currentPage = totalPages;
-                }
-
-                render();
-            }
-            closeDeleteModal();
-        }
-    }
-
-    // Toast Notifications
     function showToast(message, type = 'info') {
         const container = document.getElementById('toastContainer');
         const toast = document.createElement('div');
@@ -1092,9 +994,10 @@
         }, 4000);
     }
 
-    // Event Listeners
+    // ========== EVENT LISTENERS ==========
+
     document.getElementById('newFuncionarioBtn').onclick = openNovoFuncionarioModal;
-    document.getElementById('confirmResetBtn').onclick = confirmResetPassword;
+    document.getElementById('funcionarioForm').onsubmit = saveFuncionario;
     document.getElementById('confirmDeleteBtn').onclick = confirmDelete;
 
     document.getElementById('searchFuncionario').addEventListener('input', () => {
@@ -1133,16 +1036,15 @@
         const funcModal = document.getElementById('funcionarioModal');
         const delModal = document.getElementById('deleteModal');
         const detModal = document.getElementById('detailsModal');
-        const resetModal = document.getElementById('resetPasswordModal');
 
         if (event.target === funcModal) closeFuncionarioModal();
         if (event.target === delModal) closeDeleteModal();
         if (event.target === detModal) closeDetailsModal();
-        if (event.target === resetModal) closeResetPasswordModal();
     };
 
     // Inicializar
-    render();
+    loadLavandarias();
+    loadFuncionarios();
 </script>
 
 {% endblock %}
