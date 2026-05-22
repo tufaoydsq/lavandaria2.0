@@ -28,7 +28,7 @@ from django.db import connection
 @require_http_methods(["GET"])
 def listar_pedidos(request):
     """
-    API: Listar todos os pedidos com filtros (VERSÃO OTIMIZADA)
+    API: Lddistar todos os pedidos com filtros (VERSÃO OTIMIZADA)
     """
     try:
         status_filter = request.GET.get('status', '')
