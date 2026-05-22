@@ -118,7 +118,6 @@
         padding-right: 2rem;
     }
 
-    /* Estilos para o botão de ação em massa */
     .bulk-actions-bar {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         border-radius: 1rem;
@@ -263,7 +262,7 @@
                             <td colspan="10" class="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
                                 <i class="ri-loader-4-line text-4xl animate-spin"></i>
                                 <p class="mt-2">Carregando pedidos...</p>
-                            </table>
+                            </td>
                         </tr>
                     </tbody>
                 </table>
@@ -418,6 +417,7 @@
     let clientes = [];
     let artigos = [];
     let currentPage = 1;
+    let totalPages = 1;
     let itemsPerPage = 50;
     let selectedPedidos = new Set();
 
@@ -439,21 +439,24 @@
 
     // ========== API CALLS ==========
 
-    async function loadPedidos() {
+    async function loadPedidos(page = 1) {
         const status = document.getElementById('statusFilter').value;
         const pagamento = document.getElementById('pagamentoFilter').value;
         const dataInicio = document.getElementById('dataInicio').value;
         const dataFim = document.getElementById('dataFim').value;
         const cliente = document.getElementById('clienteSearch').value;
 
-        let url = `/api/pedidos/?status=${status}&pagamento=${pagamento}&data_inicio=${dataInicio}&data_fim=${dataFim}&cliente=${cliente}`;
+        let url = `/api/pedidos/?page=${page}&per_page=50&status=${status}&pagamento=${pagamento}&data_inicio=${dataInicio}&data_fim=${dataFim}&cliente=${cliente}`;
 
         try {
             const response = await fetch(url);
             const data = await response.json();
             if (data.success) {
                 pedidos = data.pedidos;
+                currentPage = data.page;
+                totalPages = data.total_pages;
                 renderPedidosTable();
+                renderPaginationButtons(totalPages);
             }
         } catch (error) {
             showNotification('Erro ao carregar pedidos', 'error');
@@ -552,7 +555,7 @@
             }
         }
 
-        await loadPedidos();
+        await loadPedidos(currentPage);
         selectedPedidos.clear();
         updateBulkActionsBar();
 
@@ -580,7 +583,6 @@
         }
     }
 
-    // Função para enviar SMS do pedido pronto
     async function enviarSmsPedidoPronto(pedidoId, pedido) {
         if (!pedido || pedido.status !== 'pronto') {
             showNotification(`Pedido #${pedidoId} não está com status "Pronto"`, 'warning');
@@ -632,104 +634,98 @@
     // ========== RENDER FUNCTIONS ==========
 
     function renderPedidosTable() {
-    const tbody = document.getElementById('pedidosTableBody');
-    const start = (currentPage - 1) * itemsPerPage;
-    const paginated = pedidos.slice(start, start + itemsPerPage);
-    const totalPages = Math.ceil(pedidos.length / itemsPerPage);
+        const tbody = document.getElementById('pedidosTableBody');
 
-    document.getElementById('paginationInfo').innerHTML = `Mostrando ${pedidos.length === 0 ? 0 : start + 1} a ${Math.min(start + itemsPerPage, pedidos.length)} de ${pedidos.length} resultados`;
+        document.getElementById('paginationInfo').innerHTML = `Mostrando ${pedidos.length} de ${pedidos.length} resultados`;
 
-    if (paginated.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="10" class="px-6 py-12 text-center text-gray-500 dark:text-gray-400">Nenhum pedido encontrado</td></tr>`;
-        renderPaginationButtons(totalPages);
-        return;
-    }
-
-    const pagamentoColors = { 'nao_pago': 'red', 'parcial': 'yellow', 'pago': 'green' };
-
-    tbody.innerHTML = paginated.map(p => {
-        const statusAtual = p.status;
-        let opcoesDisponiveis = [];
-
-        if (statusAtual === 'pendente') {
-            opcoesDisponiveis = [
-                { value: 'pendente', label: 'Pendente', selected: true },
-                { value: 'completo', label: 'Completo', selected: false }
-            ];
-        } else if (statusAtual === 'completo') {
-            opcoesDisponiveis = [
-                { value: 'completo', label: 'Completo', selected: true },
-                { value: 'pronto', label: 'Pronto', selected: false }
-            ];
-        } else if (statusAtual === 'pronto') {
-            opcoesDisponiveis = [
-                { value: 'pronto', label: 'Pronto', selected: true },
-                { value: 'entregue', label: 'Entregue', selected: false }
-            ];
-        } else {
-            opcoesDisponiveis = [
-                { value: 'entregue', label: 'Entregue', selected: true }
-            ];
+        if (pedidos.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="10" class="px-6 py-12 text-center text-gray-500 dark:text-gray-400">Nenhum pedido encontrado</td></tr>`;
+            return;
         }
 
-        const statusClass = p.status === 'pendente' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400' :
-                            p.status === 'completo' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' :
-                            p.status === 'pronto' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
-                            'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400';
+        const pagamentoColors = { 'nao_pago': 'red', 'parcial': 'yellow', 'pago': 'green' };
 
-        return `
-            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition">
-                <td class="px-4 py-3">
-                    <input type="checkbox" class="rounded dark:bg-gray-600 pedido-checkbox" value="${p.id}" ${selectedPedidos.has(p.id) ? 'checked' : ''}>
-                </td>
-                <td class="px-4 py-3 text-sm font-medium text-gray-900 dark:text-white">${p.id_formatado}</td>
-                <td class="px-4 py-3">
-                    <div class="cliente-info">
-                        <div class="cliente-avatar w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
-                            <i class="ri-user-line text-blue-600 dark:text-blue-400 text-sm"></i>
-                        </div>
-                        <div class="cliente-detalhes">
-                            <p class="cliente-nome text-sm font-medium text-gray-900 dark:text-white" title="${p.cliente_nome}">${p.cliente_nome}</p>
-                            <p class="text-xs text-gray-500 dark:text-gray-400">${p.cliente_telefone || 'sem telefone'}</p>
-                        </div>
-                    </div>
-                </td>
-                <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">${p.itens} item(s)</td>
-                <td class="px-4 py-3 text-sm font-semibold text-gray-900 dark:text-white">${formatMoney(p.total_final)}</td>
-                <td class="px-4 py-3 text-sm text-green-600 dark:text-green-400">${formatMoney(p.total_pago)}</td>
-                <td class="px-4 py-3 text-sm font-semibold ${p.saldo > 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}">${formatMoney(p.saldo)}</td>
-                <td class="px-4 py-3">
-                    <select class="status-select text-xs rounded-full px-2 py-1 border-0 focus:ring-2 focus:ring-blue-500 cursor-pointer ${statusClass}"
-                            data-pedido-id="${p.id}"
-                            onchange="updatePedidoStatus(${p.id}, this.value)"
-                            ${p.status === 'entregue' ? 'disabled' : ''}>
-                        ${opcoesDisponiveis.map(opt => `<option value="${opt.value}" ${opt.selected ? 'selected' : ''}>${opt.label}</option>`).join('')}
-                    </select>
-                </td>
-                <td class="px-4 py-3">
-                    <span class="status-badge px-2 py-1 text-xs rounded-full bg-${pagamentoColors[p.status_pagamento]}-100 dark:bg-${pagamentoColors[p.status_pagamento]}-900/30 text-${pagamentoColors[p.status_pagamento]}-800 dark:text-${pagamentoColors[p.status_pagamento]}-400">
-                        ${p.status_pagamento_label}
-                    </span>
-                </td>
-                <td class="px-4 py-3">
-                    <div class="action-buttons">
-                        <button onclick="viewOrder(${p.id})" class="text-blue-600 dark:text-blue-400 hover:text-blue-800 transition" title="Visualizar">
-                            <i class="ri-eye-line text-lg"></i>
-                        </button>
-                        <button onclick="printReceipt(${p.id})" class="text-gray-600 dark:text-gray-400 hover:text-gray-800 transition" title="Imprimir Recibo">
-                            <i class="ri-printer-line text-lg"></i>
-                        </button>
-                        <button onclick="openPaymentModal(${p.id}, ${p.saldo})" class="text-purple-600 dark:text-purple-400 hover:text-purple-800 transition" title="Registrar Pagamento">
-                            <i class="ri-money-dollar-circle-line text-lg"></i>
-                        </button>
-                    </div>
-                </td>
-            </tr>
-        `;
-    }).join('');
+        tbody.innerHTML = pedidos.map(p => {
+            const statusAtual = p.status;
+            let opcoesDisponiveis = [];
 
-    renderPaginationButtons(totalPages);
-}
+            if (statusAtual === 'pendente') {
+                opcoesDisponiveis = [
+                    { value: 'pendente', label: 'Pendente', selected: true },
+                    { value: 'completo', label: 'Completo', selected: false }
+                ];
+            } else if (statusAtual === 'completo') {
+                opcoesDisponiveis = [
+                    { value: 'completo', label: 'Completo', selected: true },
+                    { value: 'pronto', label: 'Pronto', selected: false }
+                ];
+            } else if (statusAtual === 'pronto') {
+                opcoesDisponiveis = [
+                    { value: 'pronto', label: 'Pronto', selected: true },
+                    { value: 'entregue', label: 'Entregue', selected: false }
+                ];
+            } else {
+                opcoesDisponiveis = [
+                    { value: 'entregue', label: 'Entregue', selected: true }
+                ];
+            }
+
+            const statusClass = p.status === 'pendente' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400' :
+                                p.status === 'completo' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' :
+                                p.status === 'pronto' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
+                                'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400';
+
+            return `
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                    <td class="px-4 py-3">
+                        <input type="checkbox" class="rounded dark:bg-gray-600 pedido-checkbox" value="${p.id}" ${selectedPedidos.has(p.id) ? 'checked' : ''}>
+                    </td>
+                    <td class="px-4 py-3 text-sm font-medium text-gray-900 dark:text-white">${p.id_formatado}</td>
+                    <td class="px-4 py-3">
+                        <div class="cliente-info">
+                            <div class="cliente-avatar w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
+                                <i class="ri-user-line text-blue-600 dark:text-blue-400 text-sm"></i>
+                            </div>
+                            <div class="cliente-detalhes">
+                                <p class="cliente-nome text-sm font-medium text-gray-900 dark:text-white" title="${p.cliente_nome}">${p.cliente_nome}</p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">${p.cliente_telefone || 'sem telefone'}</p>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">${p.itens} item(s)</td>
+                    <td class="px-4 py-3 text-sm font-semibold text-gray-900 dark:text-white">${formatMoney(p.total_final)}</td>
+                    <td class="px-4 py-3 text-sm text-green-600 dark:text-green-400">${formatMoney(p.total_pago)}</td>
+                    <td class="px-4 py-3 text-sm font-semibold ${p.saldo > 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}">${formatMoney(p.saldo)}</td>
+                    <td class="px-4 py-3">
+                        <select class="status-select text-xs rounded-full px-2 py-1 border-0 focus:ring-2 focus:ring-blue-500 cursor-pointer ${statusClass}"
+                                data-pedido-id="${p.id}"
+                                onchange="updatePedidoStatus(${p.id}, this.value)"
+                                ${p.status === 'entregue' ? 'disabled' : ''}>
+                            ${opcoesDisponiveis.map(opt => `<option value="${opt.value}" ${opt.selected ? 'selected' : ''}>${opt.label}</option>`).join('')}
+                        </select>
+                    </td>
+                    <td class="px-4 py-3">
+                        <span class="status-badge px-2 py-1 text-xs rounded-full bg-${pagamentoColors[p.status_pagamento]}-100 dark:bg-${pagamentoColors[p.status_pagamento]}-900/30 text-${pagamentoColors[p.status_pagamento]}-800 dark:text-${pagamentoColors[p.status_pagamento]}-400">
+                            ${p.status_pagamento_label}
+                        </span>
+                    </td>
+                    <td class="px-4 py-3">
+                        <div class="action-buttons">
+                            <button onclick="viewOrder(${p.id})" class="text-blue-600 dark:text-blue-400 hover:text-blue-800 transition" title="Visualizar">
+                                <i class="ri-eye-line text-lg"></i>
+                            </button>
+                            <button onclick="printReceipt(${p.id})" class="text-gray-600 dark:text-gray-400 hover:text-gray-800 transition" title="Imprimir Recibo">
+                                <i class="ri-printer-line text-lg"></i>
+                            </button>
+                            <button onclick="openPaymentModal(${p.id}, ${p.saldo})" class="text-purple-600 dark:text-purple-400 hover:text-purple-800 transition" title="Registrar Pagamento">
+                                <i class="ri-money-dollar-circle-line text-lg"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
 
     function renderPaginationButtons(totalPages) {
         const paginationDiv = document.getElementById('paginationButtons');
@@ -738,7 +734,7 @@
             return;
         }
 
-        let html = `<button onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''} class="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''}">
+        let html = `<button onclick="loadPedidos(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''} class="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''}">
             <i class="ri-arrow-left-s-line"></i>
         </button>`;
 
@@ -746,104 +742,88 @@
         let startPage = Math.max(1, currentPage - Math.floor(maxButtons / 2));
         let endPage = Math.min(totalPages, startPage + maxButtons - 1);
 
-        for (let i = startPage; i <= endPage; i++) {
-            html += `<button onclick="changePage(${i})" class="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg ${currentPage === i ? 'bg-blue-600 text-white' : 'hover:bg-gray-50 dark:hover:bg-gray-700'}">${i}</button>`;
+        if (endPage - startPage < maxButtons - 1) {
+            startPage = Math.max(1, endPage - maxButtons + 1);
         }
 
-        html += `<button onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''} class="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''}">
+        for (let i = startPage; i <= endPage; i++) {
+            html += `<button onclick="loadPedidos(${i})" class="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg ${currentPage === i ? 'bg-blue-600 text-white' : 'hover:bg-gray-50 dark:hover:bg-gray-700'}">${i}</button>`;
+        }
+
+        html += `<button onclick="loadPedidos(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''} class="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''}">
             <i class="ri-arrow-right-s-line"></i>
         </button>`;
 
         paginationDiv.innerHTML = html;
     }
 
-    function changePage(page) {
-        if (page < 1) return;
-        currentPage = page;
-        renderPedidosTable();
-    }
     // Função para atualizar o status do pedido
-async function updatePedidoStatus(pedidoId, novoStatus) {
-    console.log(`[DEBUG] Atualizando pedido ${pedidoId} para status: ${novoStatus}`);
+    async function updatePedidoStatus(pedidoId, novoStatus) {
+        const pedidoAtual = pedidos.find(p => p.id === pedidoId);
+        if (!pedidoAtual) {
+            showNotification('Pedido não encontrado', 'error');
+            const select = document.querySelector(`.status-select[data-pedido-id="${pedidoId}"]`);
+            if (select) select.value = pedidoAtual?.status || '';
+            return;
+        }
 
-    // Encontrar o pedido atual
-    const pedidoAtual = pedidos.find(p => p.id === pedidoId);
-    if (!pedidoAtual) {
-        console.error(`Pedido ${pedidoId} não encontrado`);
-        showNotification('Pedido não encontrado', 'error');
-        // Resetar o select
-        const select = document.querySelector(`.status-select[data-pedido-id="${pedidoId}"]`);
-        if (select) select.value = pedidoAtual?.status || '';
-        return;
-    }
+        if (pedidoAtual.status === novoStatus) {
+            showNotification(`O pedido já está como ${novoStatus}!`, 'warning');
+            return;
+        }
 
-    // Verificar se o status é o mesmo
-    if (pedidoAtual.status === novoStatus) {
-        showNotification(`O pedido já está como ${novoStatus}!`, 'warning');
-        return;
-    }
+        let transicaoValida = false;
 
-    // Verificar transição permitida
-    let transicaoValida = false;
+        if (pedidoAtual.status === 'pendente' && novoStatus === 'completo') {
+            transicaoValida = true;
+        } else if (pedidoAtual.status === 'completo' && novoStatus === 'pronto') {
+            transicaoValida = true;
+        } else if (pedidoAtual.status === 'pronto' && novoStatus === 'entregue') {
+            if (pedidoAtual.saldo > 0) {
+                showNotification(`Não é possível entregar: saldo pendente de ${formatMoney(pedidoAtual.saldo)}`, 'error');
+                const select = document.querySelector(`.status-select[data-pedido-id="${pedidoId}"]`);
+                if (select) select.value = pedidoAtual.status;
+                return;
+            }
+            transicaoValida = true;
+        }
 
-    if (pedidoAtual.status === 'pendente' && novoStatus === 'completo') {
-        transicaoValida = true;
-    } else if (pedidoAtual.status === 'completo' && novoStatus === 'pronto') {
-        transicaoValida = true;
-    } else if (pedidoAtual.status === 'pronto' && novoStatus === 'entregue') {
-        // Verificar se pode entregar (saldo zero)
-        if (pedidoAtual.saldo > 0) {
-            showNotification(`Não é possível entregar: saldo pendente de ${formatMoney(pedidoAtual.saldo)}`, 'error');
-            // Resetar o select
+        if (!transicaoValida) {
+            showNotification(`Transição inválida! Não é possível alterar de "${pedidoAtual.status}" para "${novoStatus}"`, 'error');
             const select = document.querySelector(`.status-select[data-pedido-id="${pedidoId}"]`);
             if (select) select.value = pedidoAtual.status;
             return;
         }
-        transicaoValida = true;
-    }
 
-    if (!transicaoValida) {
-        showNotification(`Transição inválida! Não é possível alterar de "${pedidoAtual.status}" para "${novoStatus}"`, 'error');
-        // Resetar o select
-        const select = document.querySelector(`.status-select[data-pedido-id="${pedidoId}"]`);
-        if (select) select.value = pedidoAtual.status;
-        return;
-    }
+        showNotification(`Atualizando status...`, 'info');
 
-    showNotification(`Atualizando status...`, 'info');
+        try {
+            const response = await fetch(`/api/pedidos/atualizar-status/${pedidoId}/`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCSRFToken()
+                },
+                body: JSON.stringify({ status: novoStatus })
+            });
 
-    try {
-        const response = await fetch(`/api/pedidos/atualizar-status/${pedidoId}/`, {
-            method: 'PATCH',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCSRFToken()
-            },
-            body: JSON.stringify({ status: novoStatus })
-        });
+            const data = await response.json();
 
-        const data = await response.json();
-        console.log('[DEBUG] Resposta da API:', data);
-
-        if (data.success) {
-            showNotification(data.message || `Status atualizado para ${novoStatus}!`, 'success');
-            // Recarregar a lista de pedidos
-            await loadPedidos();
-        } else {
-            showNotification(data.error || 'Erro ao atualizar status', 'error');
-            // Resetar o select
+            if (data.success) {
+                showNotification(data.message || `Status atualizado para ${novoStatus}!`, 'success');
+                await loadPedidos(currentPage);
+            } else {
+                showNotification(data.error || 'Erro ao atualizar status', 'error');
+                const select = document.querySelector(`.status-select[data-pedido-id="${pedidoId}"]`);
+                if (select) select.value = pedidoAtual.status;
+            }
+        } catch (error) {
+            console.error('[ERROR]', error);
+            showNotification('Erro ao conectar com o servidor', 'error');
             const select = document.querySelector(`.status-select[data-pedido-id="${pedidoId}"]`);
             if (select) select.value = pedidoAtual.status;
         }
-    } catch (error) {
-        console.error('[ERROR]', error);
-        showNotification('Erro ao conectar com o servidor', 'error');
-        // Resetar o select
-        const select = document.querySelector(`.status-select[data-pedido-id="${pedidoId}"]`);
-        if (select) select.value = pedidoAtual.status;
     }
-}
-
 
     function printReceipt(pedidoId) {
         window.open(`/imprimir-recibo-imagem/${pedidoId}/`, '_blank');
@@ -853,15 +833,14 @@ async function updatePedidoStatus(pedidoId, novoStatus) {
     // ========== EVENT LISTENERS ==========
 
     document.getElementById('newOrderBtn').onclick = () => { resetOrderForm(); addItemRow(); openModal('orderModal'); };
-    document.getElementById('applyFiltersBtn').onclick = () => { currentPage = 1; loadPedidos(); };
+    document.getElementById('applyFiltersBtn').onclick = () => { loadPedidos(1); };
     document.getElementById('resetFiltersBtn').onclick = () => {
         document.getElementById('statusFilter').value = 'all';
         document.getElementById('pagamentoFilter').value = 'all';
         document.getElementById('dataInicio').value = '';
         document.getElementById('dataFim').value = '';
         document.getElementById('clienteSearch').value = '';
-        currentPage = 1;
-        loadPedidos();
+        loadPedidos(1);
     };
     document.getElementById('applyBulkActionBtn').onclick = applyBulkAction;
     document.getElementById('clearSelectionBtn').onclick = () => {
@@ -870,12 +849,10 @@ async function updatePedidoStatus(pedidoId, novoStatus) {
         renderPedidosTable();
     };
     document.getElementById('selectAll').addEventListener('change', (e) => {
-        const start = (currentPage - 1) * itemsPerPage;
-        const paginated = pedidos.slice(start, start + itemsPerPage);
         if (e.target.checked) {
-            paginated.forEach(p => selectedPedidos.add(p.id));
+            pedidos.forEach(p => selectedPedidos.add(p.id));
         } else {
-            paginated.forEach(p => selectedPedidos.delete(p.id));
+            pedidos.forEach(p => selectedPedidos.delete(p.id));
         }
         updateBulkActionsBar();
         renderPedidosTable();
@@ -999,7 +976,7 @@ async function updatePedidoStatus(pedidoId, novoStatus) {
             if (data.success) {
                 showNotification(data.message, 'success');
                 closeModal('orderModal');
-                loadPedidos();
+                loadPedidos(currentPage);
                 resetOrderForm();
             } else { showNotification(data.error, 'error'); }
         } catch (error) { showNotification('Erro ao salvar', 'error'); }
@@ -1024,7 +1001,7 @@ async function updatePedidoStatus(pedidoId, novoStatus) {
             if (data.success) {
                 showNotification(data.message, 'success');
                 closeModal('paymentModal');
-                loadPedidos();
+                loadPedidos(currentPage);
             } else { showNotification(data.error, 'error'); }
         } catch (error) { showNotification('Erro ao registrar pagamento', 'error'); }
     }
@@ -1095,7 +1072,7 @@ async function updatePedidoStatus(pedidoId, novoStatus) {
     // Inicializar
     loadClientes();
     loadArtigos();
-    loadPedidos();
+    loadPedidos(1);
 </script>
 
 {% endblock %}
