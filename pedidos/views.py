@@ -19,63 +19,102 @@ def ver_pedidos(request):
     return render(request, 'pedidos/pedidos.html')
 
 
+from django.db.models import Sum, Count, Q, Prefetch
+from django.core.paginator import Paginator
+from django.db import connection
+
+
 @csrf_exempt
 @require_http_methods(["GET"])
 def listar_pedidos(request):
     """
-    API: Listar todos os pedidos com filtros
+    API: Listar todos os pedidos com filtros (VERSÃO OTIMIZADA)
     """
-    status_filter = request.GET.get('status', '')
-    pagamento_filter = request.GET.get('pagamento', '')
-    data_inicio = request.GET.get('data_inicio', '')
-    data_fim = request.GET.get('data_fim', '')
-    cliente_search = request.GET.get('cliente', '')
+    try:
+        status_filter = request.GET.get('status', '')
+        pagamento_filter = request.GET.get('pagamento', '')
+        data_inicio = request.GET.get('data_inicio', '')
+        data_fim = request.GET.get('data_fim', '')
+        cliente_search = request.GET.get('cliente', '')
+        page = int(request.GET.get('page', 1))
+        per_page = int(request.GET.get('per_page', 50))
 
-    pedidos = Pedido.objects.select_related('cliente', 'funcionario', 'lavandaria').all()
+        # Query base com select_related (já está bom)
+        pedidos = Pedido.objects.select_related('cliente', 'funcionario', 'lavandaria')
 
-    # Aplicar filtros
-    if status_filter and status_filter != 'all':
-        pedidos = pedidos.filter(status=status_filter)
+        # Aplicar filtros
+        if status_filter and status_filter != 'all':
+            pedidos = pedidos.filter(status=status_filter)
 
-    if pagamento_filter and pagamento_filter != 'all':
-        pedidos = pedidos.filter(status_pagamento=pagamento_filter)
+        if pagamento_filter and pagamento_filter != 'all':
+            pedidos = pedidos.filter(status_pagamento=pagamento_filter)
 
-    if data_inicio:
-        pedidos = pedidos.filter(criado_em__date__gte=data_inicio)
+        if data_inicio:
+            pedidos = pedidos.filter(criado_em__date__gte=data_inicio)
 
-    if data_fim:
-        pedidos = pedidos.filter(criado_em__date__lte=data_fim)
+        if data_fim:
+            pedidos = pedidos.filter(criado_em__date__lte=data_fim)
 
-    if cliente_search:
-        pedidos = pedidos.filter(cliente__nome__icontains=cliente_search)
+        if cliente_search:
+            pedidos = pedidos.filter(cliente__nome__icontains=cliente_search)
 
-    pedidos_data = []
-    for pedido in pedidos.order_by('-criado_em'):
-        total_itens = pedido.itens.aggregate(total=Sum('quantidade'))['total'] or 0
+        # ORDENAR (importante para performance)
+        pedidos = pedidos.order_by('-criado_em')
 
-        pedidos_data.append({
-            'id': pedido.id,
-            'id_formatado': f'#{pedido.id:06d}',
-            'cliente_id': pedido.cliente.id,
-            'cliente_nome': pedido.cliente.nome,
-            'cliente_telefone': pedido.cliente.telefone or '',
-            'itens': total_itens,
-            'total': float(pedido.total),
-            'desconto': float(pedido.desconto),
-            'desconto_cabides': float(pedido.desconto_cabides),
-            'total_final': float(pedido.total_final),
-            'total_pago': float(pedido.total_pago),
-            'saldo': float(pedido.saldo),
-            'status': pedido.status,
-            'status_label': dict(Pedido.STATUS_CHOICES).get(pedido.status),
-            'status_pagamento': pedido.status_pagamento,
-            'status_pagamento_label': dict(Pedido.STATUS_PAGAMENTO_CHOICES).get(pedido.status_pagamento),
-            'cabides_trazidos': pedido.cabides_trazidos,
-            'criado_em': pedido.criado_em.strftime('%d/%m/%Y %H:%M'),
-            'funcionario': pedido.funcionario.user.get_full_name() if pedido.funcionario else '—',
+        # 🔥 OTIMIZAÇÃO 1: Usar annotate para contar itens em uma única query
+        pedidos = pedidos.annotate(
+            total_itens=Sum('itens__quantidade')
+        )
+
+        # 🔥 OTIMIZAÇÃO 2: Paginação no backend
+        total_pedidos = pedidos.count()
+        start = (page - 1) * per_page
+        end = start + per_page
+        pedidos_paginados = pedidos[start:end]
+
+        # 🔥 OTIMIZAÇÃO 3: Prefetch related para evitar N+1 queries
+        pedidos_paginados = pedidos_paginados.prefetch_related(
+            Prefetch('itens', queryset=ItemPedido.objects.select_related('item_de_servico'))
+        )
+
+        pedidos_data = []
+        for pedido in pedidos_paginados:
+            # Usar o total_itens do annotate (já calculado)
+            total_itens = pedido.total_itens or 0
+
+            pedidos_data.append({
+                'id': pedido.id,
+                'id_formatado': f'#{pedido.id:06d}',
+                'cliente_id': pedido.cliente.id,
+                'cliente_nome': pedido.cliente.nome,
+                'cliente_telefone': pedido.cliente.telefone or '',
+                'itens': total_itens,
+                'total': float(pedido.total),
+                'desconto': float(pedido.desconto),
+                'desconto_cabides': float(pedido.desconto_cabides),
+                'total_final': float(pedido.total_final),
+                'total_pago': float(pedido.total_pago),
+                'saldo': float(pedido.saldo),
+                'status': pedido.status,
+                'status_label': dict(Pedido.STATUS_CHOICES).get(pedido.status),
+                'status_pagamento': pedido.status_pagamento,
+                'status_pagamento_label': dict(Pedido.STATUS_PAGAMENTO_CHOICES).get(pedido.status_pagamento),
+                'cabides_trazidos': pedido.cabides_trazidos,
+                'criado_em': pedido.criado_em.strftime('%d/%m/%Y %H:%M'),
+                'funcionario': pedido.funcionario.user.get_full_name() if pedido.funcionario else '—',
+            })
+
+        return JsonResponse({
+            'success': True,
+            'pedidos': pedidos_data,
+            'total': total_pedidos,
+            'page': page,
+            'per_page': per_page,
+            'total_pages': (total_pedidos + per_page - 1) // per_page
         })
 
-    return JsonResponse({'success': True, 'pedidos': pedidos_data})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=400)
 
 
 @csrf_exempt
