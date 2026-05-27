@@ -157,6 +157,71 @@
         background: #0f172a;
         transform: scale(1.02);
     }
+
+    /* Estilos para selects com busca */
+    .searchable-select {
+        position: relative;
+    }
+
+    .searchable-select input {
+        width: 100%;
+        padding: 0.5rem;
+        border: 1px solid #d1d5db;
+        border-radius: 0.5rem;
+        font-size: 0.875rem;
+    }
+
+    .searchable-select ul {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        max-height: 200px;
+        overflow-y: auto;
+        background: white;
+        border: 1px solid #d1d5db;
+        border-radius: 0.5rem;
+        z-index: 10;
+        display: none;
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .searchable-select ul li {
+        padding: 0.5rem;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+
+    .searchable-select ul li:hover {
+        background: #f3f4f6;
+    }
+
+    .dark .searchable-select input {
+        background: #1f2937;
+        border-color: #4b5563;
+        color: white;
+    }
+
+    .dark .searchable-select ul {
+        background: #1f2937;
+        border-color: #4b5563;
+    }
+
+    .dark .searchable-select ul li:hover {
+        background: #374151;
+    }
+
+    /* Coluna de descrição mais larga */
+    .descricao-coluna {
+        min-width: 200px;
+    }
+
+    .descricao-input {
+        width: 100%;
+        min-width: 180px;
+    }
 </style>
 
 <!-- Main Content -->
@@ -279,7 +344,7 @@
 
 <!-- Modal Novo/Editar Pedido -->
 <div id="orderModal" class="modal hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-    <div class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-5xl max-h-[90vh] overflow-y-auto">
         <div class="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex justify-between items-center">
             <h3 class="text-xl font-semibold text-gray-800 dark:text-white" id="modalTitle">Novo Pedido</h3>
             <button onclick="closeModal('orderModal')" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
@@ -294,9 +359,11 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Cliente *</label>
-                        <select id="clienteSelect" required class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500">
-                            <option value="">Selecione um cliente</option>
-                        </select>
+                        <div class="searchable-select">
+                            <input type="text" id="clienteSearchInput" placeholder="Pesquisar cliente..." class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500">
+                            <input type="hidden" id="clienteSelect" required>
+                            <ul id="clienteList" class="hidden"></ul>
+                        </div>
                         <button type="button" id="newClienteBtn" class="mt-2 text-blue-600 dark:text-blue-400 text-sm hover:underline">+ Novo Cliente</button>
                     </div>
                     <div>
@@ -306,7 +373,7 @@
                     </div>
                 </div>
 
-                <!-- Itens Table com Descrição -->
+                <!-- Itens Table com Descrição mais larga -->
                 <div class="mb-6">
                     <div class="flex justify-between items-center mb-3">
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Itens do Pedido</label>
@@ -319,9 +386,9 @@
                             <thead class="bg-gray-50 dark:bg-gray-700">
                                 <tr>
                                     <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300">Artigo</th>
-                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300">Quantidade</th>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300">Qtd</th>
                                     <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300">Preço Unit.</th>
-                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300">Descrição</th>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 descricao-coluna">Descrição</th>
                                     <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300">Total</th>
                                     <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300"></th>
                                 </tr>
@@ -418,7 +485,9 @@
 <script>
     let pedidos = [];
     let clientes = [];
+    let clientesList = [];
     let artigos = [];
+    let artigosList = [];
     let currentPage = 1;
     let totalPages = 1;
     let itemsPerPage = 50;
@@ -439,6 +508,136 @@
         'pronto': 'Pronto',
         'entregue': 'Entregue'
     };
+
+    // ========== SELECT COM BUSCA PARA CLIENTE ==========
+
+    function initClienteSearch() {
+        const searchInput = document.getElementById('clienteSearchInput');
+        const hiddenInput = document.getElementById('clienteSelect');
+        const listUl = document.getElementById('clienteList');
+
+        if (!searchInput) return;
+
+        function filterClientes() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const filtered = clientes.filter(c =>
+                c.nome.toLowerCase().includes(searchTerm) ||
+                (c.telefone && c.telefone.includes(searchTerm))
+            );
+
+            if (filtered.length === 0) {
+                listUl.innerHTML = '<li class="text-gray-500 text-center">Nenhum cliente encontrado</li>';
+            } else {
+                listUl.innerHTML = filtered.map(c =>
+                    `<li data-id="${c.id}" data-nome="${c.nome}" data-telefone="${c.telefone || ''}">
+                        <div class="font-medium">${c.nome}</div>
+                        <div class="text-xs text-gray-500">${c.telefone || 'sem telefone'}</div>
+                    </li>`
+                ).join('');
+
+                listUl.querySelectorAll('li').forEach(li => {
+                    li.addEventListener('click', () => {
+                        searchInput.value = li.dataset.nome;
+                        hiddenInput.value = li.dataset.id;
+                        listUl.classList.add('hidden');
+                    });
+                });
+            }
+        }
+
+        searchInput.addEventListener('input', () => {
+            filterClientes();
+            listUl.classList.remove('hidden');
+        });
+
+        searchInput.addEventListener('focus', () => {
+            filterClientes();
+            listUl.classList.remove('hidden');
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!searchInput.contains(e.target) && !listUl.contains(e.target)) {
+                listUl.classList.add('hidden');
+            }
+        });
+    }
+
+    // ========== SELECT COM BUSCA PARA ARTIGO (nas linhas) ==========
+
+    function createArtigoSelect(rowId, selectedId = null) {
+        const selectDiv = document.createElement('div');
+        selectDiv.className = 'searchable-select-item relative';
+        selectDiv.style.minWidth = '180px';
+
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.placeholder = 'Pesquisar artigo...';
+        input.className = 'w-full border border-gray-300 dark:border-gray-600 rounded-lg px-2 py-1 bg-white dark:bg-gray-700 text-gray-800 dark:text-white text-sm';
+        input.setAttribute('data-row', rowId);
+
+        const ul = document.createElement('ul');
+        ul.className = 'absolute top-full left-0 right-0 max-h-48 overflow-y-auto bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg z-10 hidden';
+
+        const hiddenInput = document.createElement('input');
+        hiddenInput.type = 'hidden';
+        hiddenInput.className = 'item-artigo-id';
+        hiddenInput.setAttribute('data-row', rowId);
+        if (selectedId) hiddenInput.value = selectedId;
+
+        function filterArtigos() {
+            const searchTerm = input.value.toLowerCase();
+            const filtered = artigos.filter(a =>
+                a.nome.toLowerCase().includes(searchTerm)
+            );
+
+            if (filtered.length === 0) {
+                ul.innerHTML = '<li class="text-gray-500 text-center p-2">Nenhum artigo encontrado</li>';
+            } else {
+                ul.innerHTML = filtered.map(a =>
+                    `<li data-id="${a.id}" data-nome="${a.nome}" data-preco="${a.preco_base}" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer">
+                        <div class="font-medium">${a.nome}</div>
+                        <div class="text-xs text-gray-500">${formatMoney(a.preco_base)}</div>
+                    </li>`
+                ).join('');
+
+                ul.querySelectorAll('li').forEach(li => {
+                    li.addEventListener('click', () => {
+                        input.value = li.dataset.nome;
+                        hiddenInput.value = li.dataset.id;
+                        ul.classList.add('hidden');
+                        // Atualizar preço e total
+                        const precoSpan = document.querySelector(`#item-row-${rowId} .item-preco-unitario`);
+                        if (precoSpan) {
+                            precoSpan.textContent = formatMoney(parseFloat(li.dataset.preco));
+                            updateItemTotal(rowId);
+                        }
+                    });
+                });
+            }
+        }
+
+        input.addEventListener('input', () => {
+            filterArtigos();
+            ul.classList.remove('hidden');
+        });
+
+        input.addEventListener('focus', () => {
+            filterArtigos();
+            ul.classList.remove('hidden');
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!input.contains(e.target) && !ul.contains(e.target)) {
+                ul.classList.add('hidden');
+            }
+        });
+
+        selectDiv.appendChild(input);
+        selectDiv.appendChild(ul);
+        selectDiv.appendChild(hiddenInput);
+
+        return selectDiv;
+    }
 
     // ========== API CALLS ==========
 
@@ -472,9 +671,7 @@
             const data = await response.json();
             if (data.success) {
                 clientes = data.clientes;
-                const select = document.getElementById('clienteSelect');
-                select.innerHTML = '<option value="">Selecione um cliente</option>' +
-                    clientes.map(c => `<option value="${c.id}">${c.nome} - ${c.telefone || 'sem telefone'}</option>`).join('');
+                initClienteSearch();
             }
         } catch (error) {
             console.error('Erro:', error);
@@ -682,7 +879,7 @@
                 <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition">
                     <td class="px-4 py-3">
                         <input type="checkbox" class="rounded dark:bg-gray-600 pedido-checkbox" value="${p.id}" ${selectedPedidos.has(p.id) ? 'checked' : ''}>
-                    </td>
+                     </td>
                     <td class="px-4 py-3 text-sm font-medium text-gray-900 dark:text-white">${p.id_formatado}</td>
                     <td class="px-4 py-3">
                         <div class="cliente-info">
@@ -694,7 +891,7 @@
                                 <p class="text-xs text-gray-500 dark:text-gray-400">${p.cliente_telefone || 'sem telefone'}</p>
                             </div>
                         </div>
-                    </td>
+                     </td>
                     <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">${p.itens} item(s)</td>
                     <td class="px-4 py-3 text-sm font-semibold text-gray-900 dark:text-white">${formatMoney(p.total_final)}</td>
                     <td class="px-4 py-3 text-sm text-green-600 dark:text-green-400">${formatMoney(p.total_pago)}</td>
@@ -706,12 +903,12 @@
                                 ${p.status === 'entregue' ? 'disabled' : ''}>
                             ${opcoesDisponiveis.map(opt => `<option value="${opt.value}" ${opt.selected ? 'selected' : ''}>${opt.label}</option>`).join('')}
                         </select>
-                    </td>
+                     </td>
                     <td class="px-4 py-3">
                         <span class="status-badge px-2 py-1 text-xs rounded-full bg-${pagamentoColors[p.status_pagamento]}-100 dark:bg-${pagamentoColors[p.status_pagamento]}-900/30 text-${pagamentoColors[p.status_pagamento]}-800 dark:text-${pagamentoColors[p.status_pagamento]}-400">
                             ${p.status_pagamento_label}
                         </span>
-                    </td>
+                     </td>
                     <td class="px-4 py-3">
                         <div class="action-buttons">
                             <button onclick="viewOrder(${p.id})" class="text-blue-600 dark:text-blue-400 hover:text-blue-800 transition" title="Visualizar">
@@ -724,8 +921,8 @@
                                 <i class="ri-money-dollar-circle-line text-lg"></i>
                             </button>
                         </div>
-                    </td>
-                </tr>
+                     </td>
+                 </tr>
             `;
         }).join('');
     }
@@ -876,51 +1073,104 @@
         }
     });
 
-    // ========== ITEMS MANAGEMENT COM DESCRIÇÃO ==========
+    // ========== ITEMS MANAGEMENT COM DESCRIÇÃO E BUSCA ==========
+
+    function updateItemTotal(rowId) {
+        const precoSpan = document.querySelector(`#item-row-${rowId} .item-preco-unitario`);
+        const qtdInput = document.querySelector(`#item-row-${rowId} .item-qtd`);
+        const totalSpan = document.querySelector(`#item-row-${rowId} .item-total`);
+
+        if (precoSpan && qtdInput) {
+            const precoText = precoSpan.textContent;
+            const preco = parseFloat(precoText.replace('MT', '').replace(/\./g, '').replace(',', '.').trim()) || 0;
+            const qtd = parseInt(qtdInput.value) || 0;
+            const total = preco * qtd;
+            totalSpan.textContent = formatMoney(total);
+            updatePedidoTotals();
+        }
+    }
 
     function addItemRow() {
         const tbody = document.getElementById('itensTableBody');
         const rowId = Date.now();
+
         const html = `
             <tr id="item-row-${rowId}">
+                <td class="px-4 py-2" style="min-width: 200px;">
+                    <div class="searchable-select-item relative" id="artigo-select-${rowId}">
+                        <input type="text" class="artigo-search w-full border border-gray-300 dark:border-gray-600 rounded-lg px-2 py-1 bg-white dark:bg-gray-700 text-gray-800 dark:text-white text-sm"
+                               placeholder="Pesquisar artigo..." data-row="${rowId}">
+                        <ul class="artigo-list absolute top-full left-0 right-0 max-h-48 overflow-y-auto bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg z-10 hidden"></ul>
+                        <input type="hidden" class="item-artigo-id" data-row="${rowId}">
+                    </div>
+                 </td>
                 <td class="px-4 py-2">
-                    <select class="item-artigo w-full border rounded-lg px-2 py-1 bg-white dark:bg-gray-700" data-row="${rowId}" required>
-                        <option value="">Selecione</option>
-                        ${artigos.map(a => `<option value="${a.id}" data-preco="${a.preco_base}">${a.nome} - ${formatMoney(a.preco_base)}</option>`).join('')}
-                    </select>
-                </td>
-                <td class="px-4 py-2">
-                    <input type="number" class="item-qtd w-24 border rounded-lg px-2 py-1 bg-white dark:bg-gray-700" data-row="${rowId}" value="1" min="1">
-                </td>
+                    <input type="number" class="item-qtd w-20 border rounded-lg px-2 py-1 bg-white dark:bg-gray-700" data-row="${rowId}" value="1" min="1">
+                 </td>
                 <td class="px-4 py-2"><span class="item-preco-unitario" data-row="${rowId}">0 MT</span></td>
                 <td class="px-4 py-2">
                     <input type="text" class="item-descricao w-full border rounded-lg px-2 py-1 bg-white dark:bg-gray-700" data-row="${rowId}"
-                           placeholder="Observações (opcional)" maxlength="200">
-                </td>
+                           placeholder="Observações (opcional)" maxlength="200" style="min-width: 200px;">
+                 </td>
                 <td class="px-4 py-2"><span class="item-total" data-row="${rowId}">0 MT</span></td>
                 <td class="px-4 py-2"><button type="button" onclick="removeItemRow(${rowId})" class="text-red-500 hover:text-red-700"><i class="ri-delete-bin-line"></i></button></td>
-            </tr>
+             </tr>
         `;
+
         tbody.insertAdjacentHTML('beforeend', html);
 
-        const select = document.querySelector(`#item-row-${rowId} .item-artigo`);
+        // Inicializar busca de artigo para esta linha
+        const searchInput = document.querySelector(`#item-row-${rowId} .artigo-search`);
+        const listUl = document.querySelector(`#item-row-${rowId} .artigo-list`);
+        const hiddenInput = document.querySelector(`#item-row-${rowId} .item-artigo-id`);
         const qtdInput = document.querySelector(`#item-row-${rowId} .item-qtd`);
-        const descInput = document.querySelector(`#item-row-${rowId} .item-descricao`);
 
-        const updateTotals = () => {
-            const selectedOption = select.options[select.selectedIndex];
-            const preco = selectedOption ? parseFloat(selectedOption.dataset.preco) : 0;
-            const qtd = parseInt(qtdInput.value) || 0;
-            const total = preco * qtd;
+        function filterArtigos() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const filtered = artigos.filter(a => a.nome.toLowerCase().includes(searchTerm));
 
-            document.querySelector(`#item-row-${rowId} .item-preco-unitario`).textContent = formatMoney(preco);
-            document.querySelector(`#item-row-${rowId} .item-total`).textContent = formatMoney(total);
-            updatePedidoTotals();
-        };
+            if (filtered.length === 0) {
+                listUl.innerHTML = '<li class="text-gray-500 text-center p-2">Nenhum artigo encontrado</li>';
+            } else {
+                listUl.innerHTML = filtered.map(a =>
+                    `<li data-id="${a.id}" data-nome="${a.nome}" data-preco="${a.preco_base}" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer">
+                        <div class="font-medium">${a.nome}</div>
+                        <div class="text-xs text-gray-500">${formatMoney(a.preco_base)}</div>
+                    </li>`
+                ).join('');
 
-        select.addEventListener('change', updateTotals);
-        qtdInput.addEventListener('input', updateTotals);
-        updateTotals();
+                listUl.querySelectorAll('li').forEach(li => {
+                    li.addEventListener('click', () => {
+                        searchInput.value = li.dataset.nome;
+                        hiddenInput.value = li.dataset.id;
+                        listUl.classList.add('hidden');
+                        const precoSpan = document.querySelector(`#item-row-${rowId} .item-preco-unitario`);
+                        if (precoSpan) {
+                            precoSpan.textContent = formatMoney(parseFloat(li.dataset.preco));
+                            updateItemTotal(rowId);
+                        }
+                    });
+                });
+            }
+        }
+
+        searchInput.addEventListener('input', () => {
+            filterArtigos();
+            listUl.classList.remove('hidden');
+        });
+
+        searchInput.addEventListener('focus', () => {
+            filterArtigos();
+            listUl.classList.remove('hidden');
+        });
+
+        qtdInput.addEventListener('input', () => updateItemTotal(rowId));
+
+        document.addEventListener('click', (e) => {
+            if (!searchInput.contains(e.target) && !listUl.contains(e.target)) {
+                listUl.classList.add('hidden');
+            }
+        });
     }
 
     function removeItemRow(rowId) {
@@ -946,6 +1196,7 @@
 
     function resetOrderForm() {
         document.getElementById('pedidoId').value = '';
+        document.getElementById('clienteSearchInput').value = '';
         document.getElementById('clienteSelect').value = '';
         document.getElementById('cabidesInput').value = '0';
         document.getElementById('itensTableBody').innerHTML = '';
@@ -958,10 +1209,12 @@
         const cliente_id = document.getElementById('clienteSelect').value;
         const cabides_trazidos = parseInt(document.getElementById('cabidesInput').value) || 0;
 
+        if (!cliente_id) { showNotification('Selecione um cliente', 'error'); return; }
+
         const itens = [];
         document.querySelectorAll('#itensTableBody tr').forEach(row => {
-            const select = row.querySelector('.item-artigo');
-            const artigo_id = select?.value;
+            const hiddenInput = row.querySelector('.item-artigo-id');
+            const artigo_id = hiddenInput?.value;
             const quantidade = parseInt(row.querySelector('.item-qtd')?.value) || 0;
             const descricao = row.querySelector('.item-descricao')?.value || '';
             if (artigo_id && quantidade > 0) {
@@ -969,7 +1222,6 @@
             }
         });
 
-        if (!cliente_id) { showNotification('Selecione um cliente', 'error'); return; }
         if (itens.length === 0) { showNotification('Adicione pelo menos um item', 'error'); return; }
 
         const url = pedidoId ? `/api/pedidos/editar/${pedidoId}/` : '/api/pedidos/criar/';
@@ -1069,10 +1321,10 @@
                                                 <td class="px-4 py-2 text-center">${i.quantidade}</td>
                                                 <td class="px-4 py-2 text-right">${formatMoney(i.preco_total)}</td>
                                                 <td class="px-4 py-2 text-left text-gray-500 text-sm">${i.descricao || '—'}</td>
-                                            </table>
+                                             </tr>
                                         `).join('')}
                                     </tbody>
-                                </table>
+                                 </table>
                             </div>
                         </div>
                         <div class="bg-gray-50 p-4 rounded-lg">
