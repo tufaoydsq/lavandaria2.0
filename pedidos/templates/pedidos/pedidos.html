@@ -3,422 +3,166 @@
 {% block content %}
 
 <style>
-    .fade-in {
-        animation: fadeIn 0.4s ease-out;
-    }
+    .fade-in { animation: fadeIn 0.3s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .modal { transition: all 0.2s ease; }
+    .modal.hidden { display: none; }
+    .toast { animation: slideIn 0.3s ease-out; }
+    @keyframes slideIn { from { opacity: 0; transform: translateX(100%); } to { opacity: 1; transform: translateX(0); } }
 
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(20px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
+    .table-container { overflow-x: auto; }
+    .pedidos-table { min-width: 1000px; width: 100%; }
+    .cliente-info { display: flex; align-items: center; gap: 0.5rem; }
+    .action-buttons { display: flex; gap: 0.3rem; }
+    .status-select { cursor: pointer; padding-right: 1.5rem; }
 
-    .modal {
-        transition: all 0.3s ease;
-    }
+    /* Loading spinner */
+    .loader { border: 3px solid #f3f3f3; border-top: 3px solid #3b82f6; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 20px auto; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-    .modal.hidden {
-        display: none;
-    }
-
-    .toast {
-        animation: slideIn 0.3s ease-out;
-    }
-
-    @keyframes slideIn {
-        from { opacity: 0; transform: translateX(100%); }
-        to { opacity: 1; transform: translateX(0); }
-    }
-
-    .status-badge {
-        transition: all 0.2s;
-        display: inline-flex;
-        align-items: center;
-        white-space: nowrap;
-    }
-
-    .status-badge:hover {
-        transform: scale(1.05);
-    }
-
-    .table-container {
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-    }
-
-    .pedidos-table {
-        min-width: 1000px;
-        width: 100%;
-        white-space: nowrap;
-    }
-
-    .pedidos-table td,
-    .pedidos-table th {
-        white-space: nowrap;
-        vertical-align: middle;
-    }
-
-    .badge-status {
-        display: inline-flex;
-        align-items: center;
-        white-space: nowrap;
-        gap: 0.25rem;
-    }
-
-    .cliente-info {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        min-width: 160px;
-    }
-
-    .cliente-avatar {
-        flex-shrink: 0;
-    }
-
-    .cliente-detalhes {
-        min-width: 0;
-    }
-
-    .cliente-nome {
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        max-width: 140px;
-    }
-
-    .action-buttons {
-        display: flex;
-        gap: 0.5rem;
-        flex-wrap: nowrap;
-    }
-
-    @media (max-width: 768px) {
-        .table-container {
-            overflow-x: scroll;
-        }
-    }
-
-    input, select, textarea {
-        transition: all 0.2s ease;
-    }
-
-    input:focus, select:focus, textarea:focus {
-        outline: none;
-        ring: 2px solid #3b82f6;
-    }
-
-    .status-select {
-        cursor: pointer;
-        appearance: auto;
-        -webkit-appearance: auto;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236B7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
-        background-position: right 0.5rem center;
-        background-repeat: no-repeat;
-        background-size: 1.2em;
-        padding-right: 2rem;
-    }
-
-    .bulk-actions-bar {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border-radius: 1rem;
-        padding: 0.75rem 1.5rem;
-        margin-bottom: 1.5rem;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    .bulk-actions-bar .info {
-        color: white;
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-    }
-
-    .bulk-actions-bar select {
-        background: white;
-        border: none;
-        border-radius: 0.5rem;
-        padding: 0.5rem 1rem;
-        font-size: 0.875rem;
-    }
-
-    .bulk-actions-bar button {
-        background: #1e293b;
-        color: white;
-        border: none;
-        border-radius: 0.5rem;
-        padding: 0.5rem 1rem;
-        cursor: pointer;
-        transition: all 0.2s;
-    }
-
-    .bulk-actions-bar button:hover {
-        background: #0f172a;
-        transform: scale(1.02);
-    }
-
-    /* Estilos para selects com busca */
-    .searchable-select {
-        position: relative;
-    }
-
-    .searchable-select input {
-        width: 100%;
-        padding: 0.5rem;
-        border: 1px solid #d1d5db;
-        border-radius: 0.5rem;
-        font-size: 0.875rem;
-    }
-
-    .searchable-select ul {
-        position: absolute;
-        top: 100%;
-        left: 0;
-        right: 0;
-        max-height: 200px;
-        overflow-y: auto;
-        background: white;
-        border: 1px solid #d1d5db;
-        border-radius: 0.5rem;
-        z-index: 10;
-        display: none;
-        list-style: none;
-        padding: 0;
-        margin: 0;
-    }
-
-    .searchable-select ul li {
-        padding: 0.5rem;
-        cursor: pointer;
-        transition: background 0.2s;
-    }
-
-    .searchable-select ul li:hover {
-        background: #f3f4f6;
-    }
-
-    .dark .searchable-select input {
-        background: #1f2937;
-        border-color: #4b5563;
-        color: white;
-    }
-
-    .dark .searchable-select ul {
-        background: #1f2937;
-        border-color: #4b5563;
-    }
-
-    .dark .searchable-select ul li:hover {
-        background: #374151;
-    }
-
-    /* Coluna de descrição mais larga */
-    .descricao-coluna {
-        min-width: 200px;
-    }
-
-    .descricao-input {
-        width: 100%;
-        min-width: 180px;
-    }
+    /* Search dropdown */
+    .search-dropdown { position: absolute; top: 100%; left: 0; right: 0; max-height: 200px; overflow-y: auto; background: white; border: 1px solid #d1d5db; border-radius: 0.5rem; z-index: 50; margin-top: 2px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+    .dark .search-dropdown { background: #1f2937; border-color: #4b5563; }
+    .search-dropdown-item { padding: 0.5rem; cursor: pointer; border-bottom: 1px solid #e5e7eb; transition: background 0.2s; }
+    .dark .search-dropdown-item { border-bottom-color: #374151; }
+    .search-dropdown-item:hover { background: #f3f4f6; }
+    .dark .search-dropdown-item:hover { background: #374151; }
+    .search-dropdown-item:last-child { border-bottom: none; }
 </style>
 
-<!-- Main Content -->
 <main class="flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-900">
-    <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10 shadow-sm px-8 py-4">
+    <!-- Top Bar -->
+    <div class="bg-white dark:bg-gray-800 border-b sticky top-0 z-10 shadow-sm px-8 py-4">
         <div class="flex justify-between items-center">
             <h2 class="text-2xl font-semibold text-gray-800 dark:text-white">Pedidos</h2>
-            <button id="newOrderBtn"
-                    class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-6 py-2 rounded-lg flex items-center space-x-2 shadow-lg transition transform hover:scale-105">
+            <button id="newOrderBtn" class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-2 rounded-lg flex items-center space-x-2 shadow-lg transition transform hover:scale-105">
                 <i class="ri-add-line text-xl"></i>
                 <span>Novo Pedido</span>
             </button>
         </div>
     </div>
 
-    <div class="p-8 fade-in">
+    <div class="p-4 fade-in">
         <!-- Filters -->
-        <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm mb-6">
-            <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Status</label>
-                    <select id="statusFilter" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500">
-                        <option value="all">Todos</option>
-                        <option value="pendente">Pendente</option>
-                        <option value="completo">Completo</option>
-                        <option value="pronto">Pronto</option>
-                        <option value="entregue">Entregue</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Pagamento</label>
-                    <select id="pagamentoFilter" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500">
-                        <option value="all">Todos</option>
-                        <option value="pago">Pago</option>
-                        <option value="nao_pago">Não Pago</option>
-                        <option value="parcial">Parcial</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Data Início</label>
-                    <input type="date" id="dataInicio" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Data Fim</label>
-                    <input type="date" id="dataFim" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Cliente</label>
-                    <input type="text" id="clienteSearch" placeholder="Buscar cliente..." class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500">
-                </div>
-            </div>
-            <div class="mt-4 flex justify-end space-x-3">
-                <button id="resetFiltersBtn" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition">Limpar</button>
-                <button id="applyFiltersBtn" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition">Aplicar Filtros</button>
-            </div>
-        </div>
-
-        <!-- Bulk Actions Bar -->
-        <div id="bulkActionsBar" class="bulk-actions-bar hidden">
-            <div class="info">
-                <i class="ri-checkbox-multiple-line text-xl"></i>
-                <span id="selectedCount">0</span> pedido(s) selecionado(s)
-            </div>
-            <div class="flex items-center gap-3">
-                <select id="bulkActionSelect" class="bg-white dark:bg-gray-700 text-gray-800 dark:text-white">
-                    <option value="">Selecione uma ação</option>
-                    <option value="completo">✅ Marcar como Completo</option>
-                    <option value="pronto">🔧 Marcar como Pronto</option>
-                    <option value="entregue">📦 Marcar como Entregue</option>
-                    <option value="sms">📱 Enviar SMS - Pedido Pronto</option>
+        <div class="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm mb-4">
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
+                <select id="statusFilter" class="border rounded-lg px-3 py-2 bg-white dark:bg-gray-700">
+                    <option value="all">Todos Status</option>
+                    <option value="pendente">Pendente</option>
+                    <option value="completo">Completo</option>
+                    <option value="pronto">Pronto</option>
+                    <option value="entregue">Entregue</option>
                 </select>
-                <button id="applyBulkActionBtn" class="bg-blue-600 hover:bg-blue-700 text-white">
-                    <i class="ri-play-fill mr-1"></i> Aplicar
-                </button>
-                <button id="clearSelectionBtn" class="bg-gray-500 hover:bg-gray-600 text-white">
-                    <i class="ri-close-line"></i>
-                </button>
+                <select id="pagamentoFilter" class="border rounded-lg px-3 py-2 bg-white dark:bg-gray-700">
+                    <option value="all">Todos Pagamentos</option>
+                    <option value="pago">Pago</option>
+                    <option value="nao_pago">Não Pago</option>
+                    <option value="parcial">Parcial</option>
+                </select>
+                <input type="date" id="dataInicio" class="border rounded-lg px-3 py-2 bg-white dark:bg-gray-700">
+                <input type="date" id="dataFim" class="border rounded-lg px-3 py-2 bg-white dark:bg-gray-700">
+                <div class="flex gap-2">
+                    <input type="text" id="clienteSearch" placeholder="Buscar cliente..." class="flex-1 border rounded-lg px-3 py-2 bg-white dark:bg-gray-700">
+                    <button id="applyFiltersBtn" class="bg-blue-600 text-white px-4 py-2 rounded-lg">Filtrar</button>
+                </div>
             </div>
         </div>
 
         <!-- Orders Table -->
         <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm overflow-hidden">
             <div class="table-container">
-                <table class="pedidos-table">
+                <table class="pedidos-table w-full">
                     <thead class="bg-gray-50 dark:bg-gray-700">
                         <tr>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                <input type="checkbox" id="selectAll" class="rounded dark:bg-gray-600">
-                            </th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">ID</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Cliente</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Itens</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Total</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Pago</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Saldo</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Pagamento</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Ações</th>
+                            <th class="px-3 py-2"><input type="checkbox" id="selectAll" class="rounded"></th>
+                            <th class="px-3 py-2">ID</th>
+                            <th class="px-3 py-2">Cliente</th>
+                            <th class="px-3 py-2">Itens</th>
+                            <th class="px-3 py-2">Total</th>
+                            <th class="px-3 py-2">Pago</th>
+                            <th class="px-3 py-2">Saldo</th>
+                            <th class="px-3 py-2">Status</th>
+                            <th class="px-3 py-2">Pagamento</th>
+                            <th class="px-3 py-2">Ações</th>
                         </tr>
                     </thead>
-                    <tbody id="pedidosTableBody" class="divide-y divide-gray-200 dark:divide-gray-700">
-                        <tr>
-                            <td colspan="10" class="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
-                                <i class="ri-loader-4-line text-4xl animate-spin"></i>
-                                <p class="mt-2">Carregando pedidos...</p>
-                            </td>
-                        </tr>
+                    <tbody id="pedidosTableBody">
+                        <tr><td colspan="10"><div class="loader"></div></td></tr>
                     </tbody>
                 </table>
             </div>
-
-            <!-- Pagination -->
-            <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center">
-                <p class="text-sm text-gray-600 dark:text-gray-400" id="paginationInfo">Mostrando 0 resultados</p>
-                <div class="flex space-x-2" id="paginationButtons"></div>
+            <div class="px-4 py-3 border-t flex justify-between items-center">
+                <p class="text-sm text-gray-600" id="paginationInfo"></p>
+                <div class="flex space-x-1" id="paginationButtons"></div>
             </div>
         </div>
     </div>
 </main>
 
-<!-- Modal Novo/Editar Pedido -->
+<!-- Modal Novo Pedido -->
 <div id="orderModal" class="modal hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
     <div class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-5xl max-h-[90vh] overflow-y-auto">
-        <div class="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex justify-between items-center">
-            <h3 class="text-xl font-semibold text-gray-800 dark:text-white" id="modalTitle">Novo Pedido</h3>
-            <button onclick="closeModal('orderModal')" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-                <i class="ri-close-line text-2xl"></i>
-            </button>
+        <div class="sticky top-0 bg-white dark:bg-gray-800 border-b p-4 flex justify-between items-center">
+            <h3 class="text-lg font-semibold">Novo Pedido</h3>
+            <button onclick="closeModal('orderModal')" class="text-gray-500 hover:text-gray-700 text-xl">&times;</button>
         </div>
-        <div class="p-6">
+        <div class="p-4">
             <form id="pedidoForm">
-                {% csrf_token %}
-                <input type="hidden" id="pedidoId">
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div class="grid grid-cols-2 gap-4 mb-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Cliente *</label>
-                        <div class="searchable-select">
-                            <input type="text" id="clienteSearchInput" placeholder="Pesquisar cliente..." class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500">
-                            <input type="hidden" id="clienteSelect" required>
-                            <ul id="clienteList" class="hidden"></ul>
+                        <label class="block text-sm font-medium mb-1">Cliente *</label>
+                        <div class="relative">
+                            <input type="text" id="clienteSearchInput" placeholder="Digite para pesquisar cliente..."
+                                   class="w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-700">
+                            <input type="hidden" id="clienteSelect">
+                            <div id="clienteDropdown" class="search-dropdown hidden"></div>
                         </div>
-                        <button type="button" id="newClienteBtn" class="mt-2 text-blue-600 dark:text-blue-400 text-sm hover:underline">+ Novo Cliente</button>
+                        <button type="button" id="newClienteBtn" class="mt-2 text-blue-600 text-sm hover:underline">+ Novo Cliente</button>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Cabides Trazidos</label>
-                        <input type="number" id="cabidesInput" value="0" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500">
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Cada 20 cabides = 140 MT de desconto</p>
+                        <label class="block text-sm font-medium mb-1">Cabides Trazidos</label>
+                        <input type="number" id="cabidesInput" value="0" class="w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-700">
+                        <p class="text-xs text-gray-500 mt-1">Cada 20 cabides = 140 MT de desconto</p>
                     </div>
                 </div>
 
-                <!-- Itens Table com Descrição mais larga -->
-                <div class="mb-6">
-                    <div class="flex justify-between items-center mb-3">
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Itens do Pedido</label>
-                        <button type="button" id="addItemBtn" class="text-blue-600 dark:text-blue-400 text-sm flex items-center hover:underline">
+                <!-- Itens do Pedido -->
+                <div class="mb-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <label class="block text-sm font-medium">Itens do Pedido</label>
+                        <button type="button" id="addItemBtn" class="text-blue-600 text-sm flex items-center gap-1 hover:underline">
                             <i class="ri-add-line"></i> Adicionar Item
                         </button>
                     </div>
-                    <div class="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+                    <div class="border rounded-lg overflow-hidden">
                         <table class="w-full">
                             <thead class="bg-gray-50 dark:bg-gray-700">
                                 <tr>
-                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300">Artigo</th>
-                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300">Qtd</th>
-                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300">Preço Unit.</th>
-                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 descricao-coluna">Descrição</th>
-                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300">Total</th>
-                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300"></th>
+                                    <th class="p-2 text-left text-xs">Artigo</th>
+                                    <th class="p-2 text-center w-20">Qtd</th>
+                                    <th class="p-2 text-right w-24">Preço</th>
+                                    <th class="p-2 text-left">Descrição</th>
+                                    <th class="p-2 text-right w-24">Total</th>
+                                    <th class="p-2 w-10"></th>
                                 </tr>
                             </thead>
-                            <tbody id="itensTableBody" class="divide-y divide-gray-200 dark:divide-gray-700"></tbody>
+                            <tbody id="itensTableBody"></tbody>
                         </table>
                     </div>
                 </div>
 
-                <!-- Totals -->
-                <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-6 mb-6">
+                <!-- Totais -->
+                <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
                     <div class="space-y-2">
-                        <div class="flex justify-between">
-                            <span class="text-gray-600 dark:text-gray-400">Subtotal:</span>
-                            <span class="font-medium text-gray-800 dark:text-white" id="subtotalLabel">0 MT</span>
-                        </div>
-                        <div class="flex justify-between text-green-600 dark:text-green-400">
-                            <span>Desconto Cabides:</span>
-                            <span id="descontoCabidesLabel">- 0 MT</span>
-                        </div>
-                        <div class="flex justify-between text-lg font-bold pt-2 border-t border-gray-200 dark:border-gray-600">
-                            <span class="text-gray-800 dark:text-white">Total Final:</span>
-                            <span class="text-gray-800 dark:text-white" id="totalFinalLabel">0 MT</span>
-                        </div>
+                        <div class="flex justify-between"><span>Subtotal:</span><span id="subtotalLabel">0 MT</span></div>
+                        <div class="flex justify-between text-green-600"><span>Desconto Cabides:</span><span id="descontoLabel">0 MT</span></div>
+                        <div class="flex justify-between font-bold pt-2 border-t"><span>Total Final:</span><span id="totalLabel">0 MT</span></div>
                     </div>
                 </div>
 
-                <div class="flex justify-end space-x-3">
-                    <button type="button" onclick="closeModal('orderModal')" class="px-6 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition">Cancelar</button>
-                    <button type="submit" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition">Salvar Pedido</button>
+                <div class="flex justify-end gap-3 mt-4">
+                    <button type="button" onclick="closeModal('orderModal')" class="px-4 py-2 border rounded-lg hover:bg-gray-50">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Salvar Pedido</button>
                 </div>
             </form>
         </div>
@@ -428,42 +172,14 @@
 <!-- Modal Pagamento -->
 <div id="paymentModal" class="modal hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
     <div class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-md">
-        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-            <h3 class="text-xl font-semibold text-gray-800 dark:text-white">Registrar Pagamento</h3>
-            <button onclick="closeModal('paymentModal')" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-                <i class="ri-close-line text-2xl"></i>
-            </button>
-        </div>
-        <div class="p-6">
+        <div class="p-4 border-b flex justify-between"><h3 class="font-semibold">Registrar Pagamento</h3><button onclick="closeModal('paymentModal')">&times;</button></div>
+        <div class="p-4">
             <form id="paymentForm">
-                {% csrf_token %}
                 <input type="hidden" id="paymentPedidoId">
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Valor do Pagamento *</label>
-                        <input type="number" id="paymentValor" step="0.01" required class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500">
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1" id="saldoInfo">Saldo pendente: 0 MT</p>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Método de Pagamento *</label>
-                        <select id="paymentMetodo" required class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500">
-                            <option value="numerario">Numerário</option>
-                            <option value="pos">POS (Cartão)</option>
-                            <option value="mpesa">M-Pesa</option>
-                            <option value="emola">e-Mola</option>
-                            <option value="conta_movel">Conta Móvel</option>
-                            <option value="transferencia">Transferência</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Referência (Opcional)</label>
-                        <input type="text" id="paymentReferencia" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500" placeholder="Nº de transação, comprovante...">
-                    </div>
-                </div>
-                <div class="flex justify-end space-x-3 mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
-                    <button type="button" onclick="closeModal('paymentModal')" class="px-6 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition">Cancelar</button>
-                    <button type="submit" class="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition">Registrar Pagamento</button>
-                </div>
+                <div class="mb-4"><label>Valor *</label><input type="number" id="paymentValor" step="0.01" required class="w-full border rounded-lg p-2"></div>
+                <div class="mb-4"><label>Método</label><select id="paymentMetodo" class="w-full border rounded-lg p-2"><option value="numerario">Numerário</option><option value="pos">POS</option><option value="mpesa">M-Pesa</option><option value="emola">e-Mola</option></select></div>
+                <p id="saldoInfo" class="text-sm text-gray-500 mb-4"></p>
+                <div class="flex justify-end gap-3"><button type="button" onclick="closeModal('paymentModal')" class="px-4 py-2 border rounded">Cancelar</button><button type="submit" class="px-4 py-2 bg-green-600 text-white rounded">Pagar</button></div>
             </form>
         </div>
     </div>
@@ -472,25 +188,18 @@
 <!-- Modal Visualizar Pedido -->
 <div id="viewOrderModal" class="modal hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
     <div class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-2xl max-h-[80vh] overflow-y-auto">
-        <div class="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex justify-between items-center">
-            <h3 class="text-xl font-semibold text-gray-800 dark:text-white">Detalhes do Pedido</h3>
-            <button onclick="closeModal('viewOrderModal')" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-                <i class="ri-close-line text-2xl"></i>
-            </button>
-        </div>
-        <div class="p-6" id="viewOrderContent"></div>
+        <div class="sticky top-0 bg-white dark:bg-gray-800 border-b p-4 flex justify-between"><h3 class="font-semibold">Detalhes do Pedido</h3><button onclick="closeModal('viewOrderModal')">&times;</button></div>
+        <div class="p-4" id="viewOrderContent"></div>
     </div>
 </div>
 
 <script>
     let pedidos = [];
     let clientes = [];
-    let clientesList = [];
     let artigos = [];
-    let artigosList = [];
     let currentPage = 1;
     let totalPages = 1;
-    let itemsPerPage = 50;
+    let isLoading = false;
     let selectedPedidos = new Set();
 
     function getCSRFToken() {
@@ -502,167 +211,36 @@
         return new Intl.NumberFormat('pt-MZ', { style: 'currency', currency: 'MZN' }).format(value);
     }
 
-    const statusLabels = {
-        'pendente': 'Pendente',
-        'completo': 'Completo',
-        'pronto': 'Pronto',
-        'entregue': 'Entregue'
-    };
-
-    // ========== SELECT COM BUSCA PARA CLIENTE ==========
-
-    function initClienteSearch() {
-        const searchInput = document.getElementById('clienteSearchInput');
-        const hiddenInput = document.getElementById('clienteSelect');
-        const listUl = document.getElementById('clienteList');
-
-        if (!searchInput) return;
-
-        function filterClientes() {
-            const searchTerm = searchInput.value.toLowerCase();
-            const filtered = clientes.filter(c =>
-                c.nome.toLowerCase().includes(searchTerm) ||
-                (c.telefone && c.telefone.includes(searchTerm))
-            );
-
-            if (filtered.length === 0) {
-                listUl.innerHTML = '<li class="text-gray-500 text-center">Nenhum cliente encontrado</li>';
-            } else {
-                listUl.innerHTML = filtered.map(c =>
-                    `<li data-id="${c.id}" data-nome="${c.nome}" data-telefone="${c.telefone || ''}">
-                        <div class="font-medium">${c.nome}</div>
-                        <div class="text-xs text-gray-500">${c.telefone || 'sem telefone'}</div>
-                    </li>`
-                ).join('');
-
-                listUl.querySelectorAll('li').forEach(li => {
-                    li.addEventListener('click', () => {
-                        searchInput.value = li.dataset.nome;
-                        hiddenInput.value = li.dataset.id;
-                        listUl.classList.add('hidden');
-                    });
-                });
-            }
-        }
-
-        searchInput.addEventListener('input', () => {
-            filterClientes();
-            listUl.classList.remove('hidden');
-        });
-
-        searchInput.addEventListener('focus', () => {
-            filterClientes();
-            listUl.classList.remove('hidden');
-        });
-
-        document.addEventListener('click', (e) => {
-            if (!searchInput.contains(e.target) && !listUl.contains(e.target)) {
-                listUl.classList.add('hidden');
-            }
-        });
-    }
-
-    // ========== SELECT COM BUSCA PARA ARTIGO (nas linhas) ==========
-
-    function createArtigoSelect(rowId, selectedId = null) {
-        const selectDiv = document.createElement('div');
-        selectDiv.className = 'searchable-select-item relative';
-        selectDiv.style.minWidth = '180px';
-
-        const input = document.createElement('input');
-        input.type = 'text';
-        input.placeholder = 'Pesquisar artigo...';
-        input.className = 'w-full border border-gray-300 dark:border-gray-600 rounded-lg px-2 py-1 bg-white dark:bg-gray-700 text-gray-800 dark:text-white text-sm';
-        input.setAttribute('data-row', rowId);
-
-        const ul = document.createElement('ul');
-        ul.className = 'absolute top-full left-0 right-0 max-h-48 overflow-y-auto bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg z-10 hidden';
-
-        const hiddenInput = document.createElement('input');
-        hiddenInput.type = 'hidden';
-        hiddenInput.className = 'item-artigo-id';
-        hiddenInput.setAttribute('data-row', rowId);
-        if (selectedId) hiddenInput.value = selectedId;
-
-        function filterArtigos() {
-            const searchTerm = input.value.toLowerCase();
-            const filtered = artigos.filter(a =>
-                a.nome.toLowerCase().includes(searchTerm)
-            );
-
-            if (filtered.length === 0) {
-                ul.innerHTML = '<li class="text-gray-500 text-center p-2">Nenhum artigo encontrado</li>';
-            } else {
-                ul.innerHTML = filtered.map(a =>
-                    `<li data-id="${a.id}" data-nome="${a.nome}" data-preco="${a.preco_base}" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer">
-                        <div class="font-medium">${a.nome}</div>
-                        <div class="text-xs text-gray-500">${formatMoney(a.preco_base)}</div>
-                    </li>`
-                ).join('');
-
-                ul.querySelectorAll('li').forEach(li => {
-                    li.addEventListener('click', () => {
-                        input.value = li.dataset.nome;
-                        hiddenInput.value = li.dataset.id;
-                        ul.classList.add('hidden');
-                        // Atualizar preço e total
-                        const precoSpan = document.querySelector(`#item-row-${rowId} .item-preco-unitario`);
-                        if (precoSpan) {
-                            precoSpan.textContent = formatMoney(parseFloat(li.dataset.preco));
-                            updateItemTotal(rowId);
-                        }
-                    });
-                });
-            }
-        }
-
-        input.addEventListener('input', () => {
-            filterArtigos();
-            ul.classList.remove('hidden');
-        });
-
-        input.addEventListener('focus', () => {
-            filterArtigos();
-            ul.classList.remove('hidden');
-        });
-
-        document.addEventListener('click', (e) => {
-            if (!input.contains(e.target) && !ul.contains(e.target)) {
-                ul.classList.add('hidden');
-            }
-        });
-
-        selectDiv.appendChild(input);
-        selectDiv.appendChild(ul);
-        selectDiv.appendChild(hiddenInput);
-
-        return selectDiv;
-    }
-
     // ========== API CALLS ==========
 
     async function loadPedidos(page = 1) {
-        const status = document.getElementById('statusFilter').value;
-        const pagamento = document.getElementById('pagamentoFilter').value;
-        const dataInicio = document.getElementById('dataInicio').value;
-        const dataFim = document.getElementById('dataFim').value;
-        const cliente = document.getElementById('clienteSearch').value;
+        if (isLoading) return;
+        isLoading = true;
+        document.getElementById('pedidosTableBody').innerHTML = '<tr><td colspan="10"><div class="loader"></div></td></tr>';
 
-        let url = `/api/pedidos/?page=${page}&per_page=50&status=${status}&pagamento=${pagamento}&data_inicio=${dataInicio}&data_fim=${dataFim}&cliente=${cliente}`;
+        const params = new URLSearchParams({
+            page: page, per_page: 30,
+            status: document.getElementById('statusFilter').value,
+            pagamento: document.getElementById('pagamentoFilter').value,
+            data_inicio: document.getElementById('dataInicio').value,
+            data_fim: document.getElementById('dataFim').value,
+            cliente: document.getElementById('clienteSearch').value
+        });
 
         try {
-            const response = await fetch(url);
+            const response = await fetch(`/api/pedidos/?${params}`);
             const data = await response.json();
             if (data.success) {
                 pedidos = data.pedidos;
                 currentPage = data.page;
                 totalPages = data.total_pages;
                 renderPedidosTable();
-                renderPaginationButtons(totalPages);
+                renderPaginationButtons();
             }
         } catch (error) {
+            document.getElementById('pedidosTableBody').innerHTML = '<tr><td colspan="10" class="text-center p-8 text-red-500">Erro ao carregar</td></tr>';
             showNotification('Erro ao carregar pedidos', 'error');
-        }
+        } finally { isLoading = false; }
     }
 
     async function loadClientes() {
@@ -673,539 +251,252 @@
                 clientes = data.clientes;
                 initClienteSearch();
             }
-        } catch (error) {
-            console.error('Erro:', error);
-        }
+        } catch (error) { console.error('Erro:', error); }
     }
 
     async function loadArtigos() {
         try {
             const response = await fetch('/api/pedidos/artigos/');
             const data = await response.json();
-            if (data.success) {
-                artigos = data.artigos;
-            }
-        } catch (error) {
-            console.error('Erro:', error);
-        }
+            if (data.success) { artigos = data.artigos; }
+        } catch (error) { console.error('Erro:', error); }
     }
 
-    // ========== BULK ACTIONS ==========
+    // ========== PESQUISA DE CLIENTE ==========
 
-    async function applyBulkAction() {
-        const action = document.getElementById('bulkActionSelect').value;
-        const selectedIds = Array.from(selectedPedidos);
+    function initClienteSearch() {
+        const searchInput = document.getElementById('clienteSearchInput');
+        const hiddenInput = document.getElementById('clienteSelect');
+        const dropdown = document.getElementById('clienteDropdown');
 
-        if (selectedIds.length === 0) {
-            showNotification('Selecione pelo menos um pedido', 'warning');
-            return;
-        }
+        if (!searchInput) return;
 
-        if (!action) {
-            showNotification('Selecione uma ação', 'warning');
-            return;
-        }
-
-        const actionNames = {
-            'completo': 'marcar como Completo',
-            'pronto': 'marcar como Pronto',
-            'entregue': 'marcar como Entregue',
-            'sms': 'enviar SMS'
-        };
-
-        if (!confirm(`Tem certeza que deseja ${actionNames[action]} ${selectedIds.length} pedido(s)?`)) {
-            return;
-        }
-
-        showNotification(`Processando ${selectedIds.length} pedido(s)...`, 'info');
-
-        let sucessos = 0;
-        let erros = 0;
-
-        for (const pedidoId of selectedIds) {
-            const pedido = pedidos.find(p => p.id === pedidoId);
-            if (!pedido) continue;
-
-            let success = false;
-
-            switch (action) {
-                case 'completo':
-                    success = await updatePedidoStatusAPI(pedidoId, 'completo');
-                    break;
-                case 'pronto':
-                    success = await updatePedidoStatusAPI(pedidoId, 'pronto');
-                    break;
-                case 'entregue':
-                    if (pedido.saldo > 0) {
-                        showNotification(`Pedido #${pedidoId}: Não pode ser entregue (saldo pendente)`, 'warning');
-                        success = false;
-                    } else {
-                        success = await updatePedidoStatusAPI(pedidoId, 'entregue');
-                    }
-                    break;
-                case 'sms':
-                    success = await enviarSmsPedidoPronto(pedidoId, pedido);
-                    break;
-            }
-
-            if (success) {
-                sucessos++;
-            } else {
-                erros++;
-            }
-        }
-
-        await loadPedidos(currentPage);
-        selectedPedidos.clear();
-        updateBulkActionsBar();
-
-        if (erros === 0) {
-            showNotification(`✅ ${sucessos} pedido(s) processado(s) com sucesso!`, 'success');
-        } else {
-            showNotification(`⚠️ ${sucessos} sucesso(s), ${erros} erro(s)`, 'warning');
-        }
-    }
-
-    async function updatePedidoStatusAPI(pedidoId, novoStatus) {
-        try {
-            const response = await fetch(`/api/pedidos/atualizar-status/${pedidoId}/`, {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': getCSRFToken()
-                },
-                body: JSON.stringify({ status: novoStatus })
-            });
-            const data = await response.json();
-            return data.success;
-        } catch (error) {
-            return false;
-        }
-    }
-
-    async function enviarSmsPedidoPronto(pedidoId, pedido) {
-        if (!pedido || pedido.status !== 'pronto') {
-            showNotification(`Pedido #${pedidoId} não está com status "Pronto"`, 'warning');
-            return false;
-        }
-
-        if (!pedido.cliente_telefone) {
-            showNotification('Cliente não tem telefone cadastrado', 'error');
-            return false;
-        }
-
-        showNotification(`Enviando SMS para ${pedido.cliente_nome}...`, 'info');
-
-        try {
-            const response = await fetch(`/api/pedidos/enviar-sms/${pedidoId}/`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': getCSRFToken()
-                }
-            });
-            const data = await response.json();
-            if (data.success) {
-                showNotification(`✅ ${data.message}`, 'success');
-                return true;
-            } else {
-                showNotification(`❌ ${data.error}`, 'error');
-                return false;
-            }
-        } catch (error) {
-            console.error('Erro:', error);
-            showNotification('Erro ao enviar SMS', 'error');
-            return false;
-        }
-    }
-
-    function updateBulkActionsBar() {
-        const bar = document.getElementById('bulkActionsBar');
-        const count = selectedPedidos.size;
-        document.getElementById('selectedCount').textContent = count;
-
-        if (count > 0) {
-            bar.classList.remove('hidden');
-        } else {
-            bar.classList.add('hidden');
-        }
-    }
-
-    // ========== RENDER FUNCTIONS ==========
-
-    function renderPedidosTable() {
-        const tbody = document.getElementById('pedidosTableBody');
-
-        document.getElementById('paginationInfo').innerHTML = `Mostrando ${pedidos.length} de ${pedidos.length} resultados`;
-
-        if (pedidos.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="10" class="px-6 py-12 text-center text-gray-500 dark:text-gray-400">Nenhum pedido encontrado</td></tr>`;
-            return;
-        }
-
-        const pagamentoColors = { 'nao_pago': 'red', 'parcial': 'yellow', 'pago': 'green' };
-
-        tbody.innerHTML = pedidos.map(p => {
-            const statusAtual = p.status;
-            let opcoesDisponiveis = [];
-
-            if (statusAtual === 'pendente') {
-                opcoesDisponiveis = [
-                    { value: 'pendente', label: 'Pendente', selected: true },
-                    { value: 'completo', label: 'Completo', selected: false }
-                ];
-            } else if (statusAtual === 'completo') {
-                opcoesDisponiveis = [
-                    { value: 'completo', label: 'Completo', selected: true },
-                    { value: 'pronto', label: 'Pronto', selected: false }
-                ];
-            } else if (statusAtual === 'pronto') {
-                opcoesDisponiveis = [
-                    { value: 'pronto', label: 'Pronto', selected: true },
-                    { value: 'entregue', label: 'Entregue', selected: false }
-                ];
-            } else {
-                opcoesDisponiveis = [
-                    { value: 'entregue', label: 'Entregue', selected: true }
-                ];
-            }
-
-            const statusClass = p.status === 'pendente' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400' :
-                                p.status === 'completo' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' :
-                                p.status === 'pronto' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
-                                'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400';
-
-            return `
-                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition">
-                    <td class="px-4 py-3">
-                        <input type="checkbox" class="rounded dark:bg-gray-600 pedido-checkbox" value="${p.id}" ${selectedPedidos.has(p.id) ? 'checked' : ''}>
-                     </td>
-                    <td class="px-4 py-3 text-sm font-medium text-gray-900 dark:text-white">${p.id_formatado}</td>
-                    <td class="px-4 py-3">
-                        <div class="cliente-info">
-                            <div class="cliente-avatar w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
-                                <i class="ri-user-line text-blue-600 dark:text-blue-400 text-sm"></i>
-                            </div>
-                            <div class="cliente-detalhes">
-                                <p class="cliente-nome text-sm font-medium text-gray-900 dark:text-white" title="${p.cliente_nome}">${p.cliente_nome}</p>
-                                <p class="text-xs text-gray-500 dark:text-gray-400">${p.cliente_telefone || 'sem telefone'}</p>
-                            </div>
-                        </div>
-                     </td>
-                    <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">${p.itens} item(s)</td>
-                    <td class="px-4 py-3 text-sm font-semibold text-gray-900 dark:text-white">${formatMoney(p.total_final)}</td>
-                    <td class="px-4 py-3 text-sm text-green-600 dark:text-green-400">${formatMoney(p.total_pago)}</td>
-                    <td class="px-4 py-3 text-sm font-semibold ${p.saldo > 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}">${formatMoney(p.saldo)}</td>
-                    <td class="px-4 py-3">
-                        <select class="status-select text-xs rounded-full px-2 py-1 border-0 focus:ring-2 focus:ring-blue-500 cursor-pointer ${statusClass}"
-                                data-pedido-id="${p.id}"
-                                onchange="updatePedidoStatus(${p.id}, this.value)"
-                                ${p.status === 'entregue' ? 'disabled' : ''}>
-                            ${opcoesDisponiveis.map(opt => `<option value="${opt.value}" ${opt.selected ? 'selected' : ''}>${opt.label}</option>`).join('')}
-                        </select>
-                     </td>
-                    <td class="px-4 py-3">
-                        <span class="status-badge px-2 py-1 text-xs rounded-full bg-${pagamentoColors[p.status_pagamento]}-100 dark:bg-${pagamentoColors[p.status_pagamento]}-900/30 text-${pagamentoColors[p.status_pagamento]}-800 dark:text-${pagamentoColors[p.status_pagamento]}-400">
-                            ${p.status_pagamento_label}
-                        </span>
-                     </td>
-                    <td class="px-4 py-3">
-                        <div class="action-buttons">
-                            <button onclick="viewOrder(${p.id})" class="text-blue-600 dark:text-blue-400 hover:text-blue-800 transition" title="Visualizar">
-                                <i class="ri-eye-line text-lg"></i>
-                            </button>
-                            <button onclick="printReceipt(${p.id})" class="text-gray-600 dark:text-gray-400 hover:text-gray-800 transition" title="Imprimir Recibo">
-                                <i class="ri-printer-line text-lg"></i>
-                            </button>
-                            <button onclick="openPaymentModal(${p.id}, ${p.saldo})" class="text-purple-600 dark:text-purple-400 hover:text-purple-800 transition" title="Registrar Pagamento">
-                                <i class="ri-money-dollar-circle-line text-lg"></i>
-                            </button>
-                        </div>
-                     </td>
-                 </tr>
-            `;
-        }).join('');
-    }
-
-    function renderPaginationButtons(totalPages) {
-        const paginationDiv = document.getElementById('paginationButtons');
-        if (totalPages <= 1) {
-            paginationDiv.innerHTML = '';
-            return;
-        }
-
-        let html = `<button onclick="loadPedidos(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''} class="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''}">
-            <i class="ri-arrow-left-s-line"></i>
-        </button>`;
-
-        const maxButtons = 5;
-        let startPage = Math.max(1, currentPage - Math.floor(maxButtons / 2));
-        let endPage = Math.min(totalPages, startPage + maxButtons - 1);
-
-        if (endPage - startPage < maxButtons - 1) {
-            startPage = Math.max(1, endPage - maxButtons + 1);
-        }
-
-        for (let i = startPage; i <= endPage; i++) {
-            html += `<button onclick="loadPedidos(${i})" class="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg ${currentPage === i ? 'bg-blue-600 text-white' : 'hover:bg-gray-50 dark:hover:bg-gray-700'}">${i}</button>`;
-        }
-
-        html += `<button onclick="loadPedidos(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''} class="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''}">
-            <i class="ri-arrow-right-s-line"></i>
-        </button>`;
-
-        paginationDiv.innerHTML = html;
-    }
-
-    // Função para atualizar o status do pedido
-    async function updatePedidoStatus(pedidoId, novoStatus) {
-        const pedidoAtual = pedidos.find(p => p.id === pedidoId);
-        if (!pedidoAtual) {
-            showNotification('Pedido não encontrado', 'error');
-            const select = document.querySelector(`.status-select[data-pedido-id="${pedidoId}"]`);
-            if (select) select.value = pedidoAtual?.status || '';
-            return;
-        }
-
-        if (pedidoAtual.status === novoStatus) {
-            showNotification(`O pedido já está como ${novoStatus}!`, 'warning');
-            return;
-        }
-
-        let transicaoValida = false;
-
-        if (pedidoAtual.status === 'pendente' && novoStatus === 'completo') {
-            transicaoValida = true;
-        } else if (pedidoAtual.status === 'completo' && novoStatus === 'pronto') {
-            transicaoValida = true;
-        } else if (pedidoAtual.status === 'pronto' && novoStatus === 'entregue') {
-            if (pedidoAtual.saldo > 0) {
-                showNotification(`Não é possível entregar: saldo pendente de ${formatMoney(pedidoAtual.saldo)}`, 'error');
-                const select = document.querySelector(`.status-select[data-pedido-id="${pedidoId}"]`);
-                if (select) select.value = pedidoAtual.status;
-                return;
-            }
-            transicaoValida = true;
-        }
-
-        if (!transicaoValida) {
-            showNotification(`Transição inválida! Não é possível alterar de "${pedidoAtual.status}" para "${novoStatus}"`, 'error');
-            const select = document.querySelector(`.status-select[data-pedido-id="${pedidoId}"]`);
-            if (select) select.value = pedidoAtual.status;
-            return;
-        }
-
-        showNotification(`Atualizando status...`, 'info');
-
-        try {
-            const response = await fetch(`/api/pedidos/atualizar-status/${pedidoId}/`, {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': getCSRFToken()
-                },
-                body: JSON.stringify({ status: novoStatus })
-            });
-
-            const data = await response.json();
-
-            if (data.success) {
-                showNotification(data.message || `Status atualizado para ${novoStatus}!`, 'success');
-                await loadPedidos(currentPage);
-            } else {
-                showNotification(data.error || 'Erro ao atualizar status', 'error');
-                const select = document.querySelector(`.status-select[data-pedido-id="${pedidoId}"]`);
-                if (select) select.value = pedidoAtual.status;
-            }
-        } catch (error) {
-            console.error('[ERROR]', error);
-            showNotification('Erro ao conectar com o servidor', 'error');
-            const select = document.querySelector(`.status-select[data-pedido-id="${pedidoId}"]`);
-            if (select) select.value = pedidoAtual.status;
-        }
-    }
-
-    function printReceipt(pedidoId) {
-        window.open(`/imprimir-recibo-imagem/${pedidoId}/`, '_blank');
-        showNotification('Recibo aberto! Use Ctrl+P para imprimir', 'success');
-    }
-
-    // ========== EVENT LISTENERS ==========
-
-    document.getElementById('newOrderBtn').onclick = () => { resetOrderForm(); addItemRow(); openModal('orderModal'); };
-    document.getElementById('applyFiltersBtn').onclick = () => { loadPedidos(1); };
-    document.getElementById('resetFiltersBtn').onclick = () => {
-        document.getElementById('statusFilter').value = 'all';
-        document.getElementById('pagamentoFilter').value = 'all';
-        document.getElementById('dataInicio').value = '';
-        document.getElementById('dataFim').value = '';
-        document.getElementById('clienteSearch').value = '';
-        loadPedidos(1);
-    };
-    document.getElementById('applyBulkActionBtn').onclick = applyBulkAction;
-    document.getElementById('clearSelectionBtn').onclick = () => {
-        selectedPedidos.clear();
-        updateBulkActionsBar();
-        renderPedidosTable();
-    };
-    document.getElementById('selectAll').addEventListener('change', (e) => {
-        if (e.target.checked) {
-            pedidos.forEach(p => selectedPedidos.add(p.id));
-        } else {
-            pedidos.forEach(p => selectedPedidos.delete(p.id));
-        }
-        updateBulkActionsBar();
-        renderPedidosTable();
-    });
-
-    document.addEventListener('change', (e) => {
-        if (e.target.classList && e.target.classList.contains('pedido-checkbox')) {
-            const id = parseInt(e.target.value);
-            if (e.target.checked) {
-                selectedPedidos.add(id);
-            } else {
-                selectedPedidos.delete(id);
-            }
-            updateBulkActionsBar();
-            const allCheckboxes = document.querySelectorAll('.pedido-checkbox');
-            const allChecked = allCheckboxes.length === Array.from(allCheckboxes).filter(cb => cb.checked).length;
-            document.getElementById('selectAll').checked = allChecked;
-        }
-    });
-
-    // ========== ITEMS MANAGEMENT COM DESCRIÇÃO E BUSCA ==========
-
-    function updateItemTotal(rowId) {
-        const precoSpan = document.querySelector(`#item-row-${rowId} .item-preco-unitario`);
-        const qtdInput = document.querySelector(`#item-row-${rowId} .item-qtd`);
-        const totalSpan = document.querySelector(`#item-row-${rowId} .item-total`);
-
-        if (precoSpan && qtdInput) {
-            const precoText = precoSpan.textContent;
-            const preco = parseFloat(precoText.replace('MT', '').replace(/\./g, '').replace(',', '.').trim()) || 0;
-            const qtd = parseInt(qtdInput.value) || 0;
-            const total = preco * qtd;
-            totalSpan.textContent = formatMoney(total);
-            updatePedidoTotals();
-        }
-    }
-
-    function addItemRow() {
-        const tbody = document.getElementById('itensTableBody');
-        const rowId = Date.now();
-
-        const html = `
-            <tr id="item-row-${rowId}">
-                <td class="px-4 py-2" style="min-width: 200px;">
-                    <div class="searchable-select-item relative" id="artigo-select-${rowId}">
-                        <input type="text" class="artigo-search w-full border border-gray-300 dark:border-gray-600 rounded-lg px-2 py-1 bg-white dark:bg-gray-700 text-gray-800 dark:text-white text-sm"
-                               placeholder="Pesquisar artigo..." data-row="${rowId}">
-                        <ul class="artigo-list absolute top-full left-0 right-0 max-h-48 overflow-y-auto bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg z-10 hidden"></ul>
-                        <input type="hidden" class="item-artigo-id" data-row="${rowId}">
-                    </div>
-                 </td>
-                <td class="px-4 py-2">
-                    <input type="number" class="item-qtd w-20 border rounded-lg px-2 py-1 bg-white dark:bg-gray-700" data-row="${rowId}" value="1" min="1">
-                 </td>
-                <td class="px-4 py-2"><span class="item-preco-unitario" data-row="${rowId}">0 MT</span></td>
-                <td class="px-4 py-2">
-                    <input type="text" class="item-descricao w-full border rounded-lg px-2 py-1 bg-white dark:bg-gray-700" data-row="${rowId}"
-                           placeholder="Observações (opcional)" maxlength="200" style="min-width: 200px;">
-                 </td>
-                <td class="px-4 py-2"><span class="item-total" data-row="${rowId}">0 MT</span></td>
-                <td class="px-4 py-2"><button type="button" onclick="removeItemRow(${rowId})" class="text-red-500 hover:text-red-700"><i class="ri-delete-bin-line"></i></button></td>
-             </tr>
-        `;
-
-        tbody.insertAdjacentHTML('beforeend', html);
-
-        // Inicializar busca de artigo para esta linha
-        const searchInput = document.querySelector(`#item-row-${rowId} .artigo-search`);
-        const listUl = document.querySelector(`#item-row-${rowId} .artigo-list`);
-        const hiddenInput = document.querySelector(`#item-row-${rowId} .item-artigo-id`);
-        const qtdInput = document.querySelector(`#item-row-${rowId} .item-qtd`);
-
-        function filterArtigos() {
-            const searchTerm = searchInput.value.toLowerCase();
-            const filtered = artigos.filter(a => a.nome.toLowerCase().includes(searchTerm));
+        function filterAndShow() {
+            const term = searchInput.value.toLowerCase();
+            const filtered = clientes.filter(c =>
+                c.nome.toLowerCase().includes(term) ||
+                (c.telefone && c.telefone.includes(term))
+            );
 
             if (filtered.length === 0) {
-                listUl.innerHTML = '<li class="text-gray-500 text-center p-2">Nenhum artigo encontrado</li>';
+                dropdown.innerHTML = '<div class="p-2 text-center text-gray-500">Nenhum cliente encontrado</div>';
             } else {
-                listUl.innerHTML = filtered.map(a =>
-                    `<li data-id="${a.id}" data-nome="${a.nome}" data-preco="${a.preco_base}" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer">
-                        <div class="font-medium">${a.nome}</div>
-                        <div class="text-xs text-gray-500">${formatMoney(a.preco_base)}</div>
-                    </li>`
-                ).join('');
+                dropdown.innerHTML = filtered.map(c => `
+                    <div class="search-dropdown-item" data-id="${c.id}" data-nome="${c.nome}" data-telefone="${c.telefone || ''}">
+                        <div class="font-medium">${c.nome}</div>
+                        <div class="text-xs text-gray-500">${c.telefone || 'sem telefone'}</div>
+                    </div>
+                `).join('');
 
-                listUl.querySelectorAll('li').forEach(li => {
-                    li.addEventListener('click', () => {
-                        searchInput.value = li.dataset.nome;
-                        hiddenInput.value = li.dataset.id;
-                        listUl.classList.add('hidden');
-                        const precoSpan = document.querySelector(`#item-row-${rowId} .item-preco-unitario`);
+                dropdown.querySelectorAll('.search-dropdown-item').forEach(item => {
+                    item.addEventListener('click', () => {
+                        searchInput.value = item.dataset.nome;
+                        hiddenInput.value = item.dataset.id;
+                        dropdown.classList.add('hidden');
+                    });
+                });
+            }
+            dropdown.classList.remove('hidden');
+        }
+
+        searchInput.addEventListener('input', filterAndShow);
+        searchInput.addEventListener('focus', filterAndShow);
+
+        document.addEventListener('click', (e) => {
+            if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) {
+                dropdown.classList.add('hidden');
+            }
+        });
+    }
+
+    // ========== PESQUISA DE ARTIGO (para cada linha) ==========
+
+    function createArtigoSearch(rowId, currentValue = '') {
+        const container = document.createElement('div');
+        container.className = 'relative w-full';
+
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.placeholder = 'Digite para pesquisar...';
+        input.className = 'w-full border rounded-lg px-2 py-1 text-sm bg-white dark:bg-gray-700';
+        input.value = currentValue;
+
+        const dropdown = document.createElement('div');
+        dropdown.className = 'search-dropdown hidden';
+
+        const hiddenInput = document.createElement('input');
+        hiddenInput.type = 'hidden';
+        hiddenInput.className = 'item-artigo-id';
+        hiddenInput.setAttribute('data-row', rowId);
+
+        function filterArtigos() {
+            const term = input.value.toLowerCase();
+            const filtered = artigos.filter(a => a.nome.toLowerCase().includes(term));
+
+            if (filtered.length === 0) {
+                dropdown.innerHTML = '<div class="p-2 text-center text-gray-500">Nenhum artigo encontrado</div>';
+            } else {
+                dropdown.innerHTML = filtered.map(a => `
+                    <div class="search-dropdown-item" data-id="${a.id}" data-nome="${a.nome}" data-preco="${a.preco_base}">
+                        <div class="font-medium">${a.nome.substring(0, 40)}</div>
+                        <div class="text-xs text-gray-500">${formatMoney(a.preco_base)}</div>
+                    </div>
+                `).join('');
+
+                dropdown.querySelectorAll('.search-dropdown-item').forEach(item => {
+                    item.addEventListener('click', () => {
+                        input.value = item.dataset.nome;
+                        hiddenInput.value = item.dataset.id;
+                        dropdown.classList.add('hidden');
+                        // Atualizar preço e total
+                        const precoSpan = document.querySelector(`#row-${rowId} .item-preco`);
                         if (precoSpan) {
-                            precoSpan.textContent = formatMoney(parseFloat(li.dataset.preco));
+                            precoSpan.textContent = formatMoney(parseFloat(item.dataset.preco));
                             updateItemTotal(rowId);
                         }
                     });
                 });
             }
+            dropdown.classList.remove('hidden');
         }
 
-        searchInput.addEventListener('input', () => {
-            filterArtigos();
-            listUl.classList.remove('hidden');
-        });
-
-        searchInput.addEventListener('focus', () => {
-            filterArtigos();
-            listUl.classList.remove('hidden');
-        });
-
-        qtdInput.addEventListener('input', () => updateItemTotal(rowId));
+        input.addEventListener('input', filterArtigos);
+        input.addEventListener('focus', filterArtigos);
 
         document.addEventListener('click', (e) => {
-            if (!searchInput.contains(e.target) && !listUl.contains(e.target)) {
-                listUl.classList.add('hidden');
+            if (!input.contains(e.target) && !dropdown.contains(e.target)) {
+                dropdown.classList.add('hidden');
             }
         });
+
+        container.appendChild(input);
+        container.appendChild(dropdown);
+        container.appendChild(hiddenInput);
+
+        return container;
     }
 
-    function removeItemRow(rowId) {
-        document.getElementById(`item-row-${rowId}`).remove();
-        updatePedidoTotals();
+    // ========== ITENS DO PEDIDO ==========
+
+    let itemCounter = 0;
+
+    function addItemRow() {
+        const tbody = document.getElementById('itensTableBody');
+        const rowId = ++itemCounter;
+        const row = document.createElement('tr');
+        row.id = `row-${rowId}`;
+        row.className = 'border-t dark:border-gray-700';
+
+        // Coluna Artigo (com busca)
+        const tdArtigo = document.createElement('td');
+        tdArtigo.className = 'p-2';
+        tdArtigo.appendChild(createArtigoSearch(rowId));
+
+        // Coluna Quantidade
+        const tdQtd = document.createElement('td');
+        tdQtd.className = 'p-2 text-center';
+        const qtdInput = document.createElement('input');
+        qtdInput.type = 'number';
+        qtdInput.value = '1';
+        qtdInput.min = '1';
+        qtdInput.className = 'item-qtd w-20 border rounded-lg px-2 py-1 text-center';
+        qtdInput.setAttribute('data-row', rowId);
+        qtdInput.addEventListener('input', () => updateItemTotal(rowId));
+        tdQtd.appendChild(qtdInput);
+
+        // Coluna Preço Unitário
+        const tdPreco = document.createElement('td');
+        tdPreco.className = 'p-2 text-right';
+        const precoSpan = document.createElement('span');
+        precoSpan.className = 'item-preco';
+        precoSpan.setAttribute('data-row', rowId);
+        precoSpan.textContent = '0 MT';
+        tdPreco.appendChild(precoSpan);
+
+        // Coluna Descrição
+        const tdDesc = document.createElement('td');
+        tdDesc.className = 'p-2';
+        const descInput = document.createElement('input');
+        descInput.type = 'text';
+        descInput.placeholder = 'Observações...';
+        descInput.className = 'item-desc w-full border rounded-lg px-2 py-1 text-sm';
+        descInput.setAttribute('data-row', rowId);
+        tdDesc.appendChild(descInput);
+
+        // Coluna Total
+        const tdTotal = document.createElement('td');
+        tdTotal.className = 'p-2 text-right';
+        const totalSpan = document.createElement('span');
+        totalSpan.className = 'item-total';
+        totalSpan.setAttribute('data-row', rowId);
+        totalSpan.textContent = '0 MT';
+        tdTotal.appendChild(totalSpan);
+
+        // Coluna Ação
+        const tdAction = document.createElement('td');
+        tdAction.className = 'p-2 text-center';
+        const delBtn = document.createElement('button');
+        delBtn.type = 'button';
+        delBtn.className = 'text-red-500 hover:text-red-700';
+        delBtn.innerHTML = '<i class="ri-delete-bin-line"></i>';
+        delBtn.onclick = () => { row.remove(); updateTotals(); };
+        tdAction.appendChild(delBtn);
+
+        row.appendChild(tdArtigo);
+        row.appendChild(tdQtd);
+        row.appendChild(tdPreco);
+        row.appendChild(tdDesc);
+        row.appendChild(tdTotal);
+        row.appendChild(tdAction);
+
+        tbody.appendChild(row);
     }
 
-    function updatePedidoTotals() {
+    function updateItemTotal(rowId) {
+        const row = document.getElementById(`row-${rowId}`);
+        if (!row) return;
+
+        const hiddenInput = row.querySelector('.item-artigo-id');
+        const precoSpan = row.querySelector('.item-preco');
+        const qtdInput = row.querySelector('.item-qtd');
+        const totalSpan = row.querySelector('.item-total');
+
+        if (hiddenInput && hiddenInput.value) {
+            const artigo = artigos.find(a => a.id == hiddenInput.value);
+            if (artigo) {
+                const qtd = parseInt(qtdInput.value) || 0;
+                const total = artigo.preco_base * qtd;
+                precoSpan.textContent = formatMoney(artigo.preco_base);
+                totalSpan.textContent = formatMoney(total);
+            }
+        }
+        updateTotals();
+    }
+
+    function updateTotals() {
         let subtotal = 0;
-        document.querySelectorAll('#itensTableBody tr').forEach(row => {
-            const totalText = row.querySelector('.item-total')?.textContent || '0 MT';
-            const totalValue = parseFloat(totalText.replace('MT', '').replace(/\./g, '').replace(',', '.').trim()) || 0;
-            subtotal += totalValue;
+        document.querySelectorAll('.item-total').forEach(el => {
+            const val = parseFloat(el.textContent.replace('MT', '').replace(/\./g, '').replace(',', '.')) || 0;
+            subtotal += val;
         });
-
         const cabides = parseInt(document.getElementById('cabidesInput').value) || 0;
-        const descontoCabides = Math.floor(cabides / 20) * 140;
-
+        const desconto = Math.floor(cabides / 20) * 140;
         document.getElementById('subtotalLabel').textContent = formatMoney(subtotal);
-        document.getElementById('descontoCabidesLabel').textContent = `- ${formatMoney(descontoCabides)}`;
-        document.getElementById('totalFinalLabel').textContent = formatMoney(subtotal - descontoCabides);
+        document.getElementById('descontoLabel').textContent = `- ${formatMoney(desconto)}`;
+        document.getElementById('totalLabel').textContent = formatMoney(subtotal - desconto);
     }
 
-    function resetOrderForm() {
-        document.getElementById('pedidoId').value = '';
+    function resetForm() {
         document.getElementById('clienteSearchInput').value = '';
         document.getElementById('clienteSelect').value = '';
         document.getElementById('cabidesInput').value = '0';
         document.getElementById('itensTableBody').innerHTML = '';
-        updatePedidoTotals();
+        itemCounter = 0;
+        updateTotals();
     }
 
-    async function savePedido(event) {
-        event.preventDefault();
-        const pedidoId = document.getElementById('pedidoId').value;
+    async function savePedido(e) {
+        e.preventDefault();
         const cliente_id = document.getElementById('clienteSelect').value;
         const cabides_trazidos = parseInt(document.getElementById('cabidesInput').value) || 0;
 
@@ -1216,7 +507,7 @@
             const hiddenInput = row.querySelector('.item-artigo-id');
             const artigo_id = hiddenInput?.value;
             const quantidade = parseInt(row.querySelector('.item-qtd')?.value) || 0;
-            const descricao = row.querySelector('.item-descricao')?.value || '';
+            const descricao = row.querySelector('.item-desc')?.value || '';
             if (artigo_id && quantidade > 0) {
                 itens.push({ artigo_id, quantidade, descricao });
             }
@@ -1224,59 +515,122 @@
 
         if (itens.length === 0) { showNotification('Adicione pelo menos um item', 'error'); return; }
 
-        const url = pedidoId ? `/api/pedidos/editar/${pedidoId}/` : '/api/pedidos/criar/';
-        const method = pedidoId ? 'PUT' : 'POST';
-
         try {
-            const response = await fetch(url, {
-                method: method,
+            const response = await fetch('/api/pedidos/criar/', {
+                method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCSRFToken() },
                 body: JSON.stringify({ cliente_id, cabides_trazidos, itens })
             });
             const data = await response.json();
             if (data.success) {
-                showNotification(data.message, 'success');
+                showNotification('Pedido criado com sucesso!', 'success');
                 closeModal('orderModal');
-                loadPedidos(currentPage);
-                resetOrderForm();
+                resetForm();
+                loadPedidos(1);
             } else { showNotification(data.error, 'error'); }
         } catch (error) { showNotification('Erro ao salvar', 'error'); }
     }
 
-    async function registerPayment(event) {
-        event.preventDefault();
-        const pedidoId = document.getElementById('paymentPedidoId').value;
-        const valor = parseFloat(document.getElementById('paymentValor').value);
-        const metodo = document.getElementById('paymentMetodo').value;
-        const referencia = document.getElementById('paymentReferencia').value;
+    // ========== RENDER TABELA DE PEDIDOS ==========
 
-        if (!valor || valor <= 0) { showNotification('Valor inválido', 'error'); return; }
+    function renderPedidosTable() {
+        const tbody = document.getElementById('pedidosTableBody');
+        if (!pedidos || pedidos.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="10" class="text-center p-8 text-gray-500">Nenhum pedido encontrado</td></tr>';
+            return;
+        }
 
-        try {
-            const response = await fetch(`/api/pedidos/pagamento/${pedidoId}/`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCSRFToken() },
-                body: JSON.stringify({ valor, metodo, referencia })
-            });
-            const data = await response.json();
-            if (data.success) {
-                showNotification(data.message, 'success');
-                closeModal('paymentModal');
-                loadPedidos(currentPage);
-            } else { showNotification(data.error, 'error'); }
-        } catch (error) { showNotification('Erro ao registrar pagamento', 'error'); }
+        const statusColors = { 'pendente': 'yellow', 'completo': 'blue', 'pronto': 'green', 'entregue': 'purple' };
+        const pagamentoColors = { 'nao_pago': 'red', 'parcial': 'yellow', 'pago': 'green' };
+
+        tbody.innerHTML = pedidos.map(p => `
+            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                <td class="px-3 py-2"><input type="checkbox" class="rounded pedido-checkbox" value="${p.id}"></td>
+                <td class="px-3 py-2 text-sm font-medium">${p.id_formatado}</td>
+                <td class="px-3 py-2">
+                    <div class="flex items-center gap-2">
+                        <div class="w-7 h-7 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-bold">${(p.cliente_nome || '?').charAt(0)}</div>
+                        <div><div class="text-sm font-medium">${(p.cliente_nome || '').substring(0, 25)}</div><div class="text-xs text-gray-500">${p.cliente_telefone || ''}</div></div>
+                    </div>
+                </td>
+                <td class="px-3 py-2 text-sm">${p.itens}</td>
+                <td class="px-3 py-2 text-sm font-semibold">${formatMoney(p.total_final)}</td>
+                <td class="px-3 py-2 text-sm text-green-600">${formatMoney(p.total_pago)}</td>
+                <td class="px-3 py-2 text-sm font-semibold ${p.saldo > 0 ? 'text-red-600' : 'text-green-600'}">${formatMoney(p.saldo)}</td>
+                <td class="px-3 py-2">
+                    <select class="status-select text-xs rounded-full px-2 py-0.5 ${statusColors[p.status] === 'yellow' ? 'bg-yellow-100 text-yellow-800' : statusColors[p.status] === 'blue' ? 'bg-blue-100 text-blue-800' : statusColors[p.status] === 'green' ? 'bg-green-100 text-green-800' : 'bg-purple-100 text-purple-800'}" data-id="${p.id}" onchange="updateStatus(${p.id}, this.value)" ${p.status === 'entregue' ? 'disabled' : ''}>
+                        <option value="pendente" ${p.status === 'pendente' ? 'selected' : ''}>Pendente</option>
+                        <option value="completo" ${p.status === 'completo' ? 'selected' : ''}>Completo</option>
+                        <option value="pronto" ${p.status === 'pronto' ? 'selected' : ''}>Pronto</option>
+                        <option value="entregue" ${p.status === 'entregue' ? 'selected' : ''}>Entregue</option>
+                    </select>
+                </td>
+                <td class="px-3 py-2"><span class="px-2 py-0.5 text-xs rounded-full bg-${pagamentoColors[p.status_pagamento]}-100 text-${pagamentoColors[p.status_pagamento]}-800">${p.status_pagamento_label}</span></td>
+                <td class="px-3 py-2">
+                    <div class="flex gap-1">
+                        <button onclick="viewOrder(${p.id})" class="text-blue-600 hover:text-blue-800"><i class="ri-eye-line"></i></button>
+                        <button onclick="printReceipt(${p.id})" class="text-gray-600 hover:text-gray-800"><i class="ri-printer-line"></i></button>
+                        <button onclick="openPaymentModal(${p.id}, ${p.saldo})" class="text-purple-600 hover:text-purple-800"><i class="ri-money-dollar-circle-line"></i></button>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+        document.getElementById('paginationInfo').innerHTML = `Mostrando ${pedidos.length} de ${pedidos.length}`;
     }
 
-    function openPaymentModal(pedidoId, saldo) {
-        document.getElementById('paymentPedidoId').value = pedidoId;
-        document.getElementById('paymentValor').value = '';
-        document.getElementById('paymentValor').max = saldo;
-        const saldoInfo = document.getElementById('saldoInfo');
-        saldoInfo.innerHTML = `Saldo pendente: ${formatMoney(saldo)}`;
-        if (saldo > 0) {
-            saldoInfo.innerHTML += `<br><span class="text-yellow-600 dark:text-yellow-400 text-xs">⚠️ O pedido só poderá ser entregue após o pagamento total.</span>`;
+    function renderPaginationButtons() {
+        const div = document.getElementById('paginationButtons');
+        if (totalPages <= 1) { div.innerHTML = ''; return; }
+        let html = `<button onclick="loadPedidos(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''} class="px-2 py-1 border rounded ${currentPage === 1 ? 'opacity-50' : ''}">◀</button>`;
+        let start = Math.max(1, currentPage - 2);
+        let end = Math.min(totalPages, start + 4);
+        for (let i = start; i <= end; i++) {
+            html += `<button onclick="loadPedidos(${i})" class="px-2 py-1 border rounded ${currentPage === i ? 'bg-blue-600 text-white' : ''}">${i}</button>`;
         }
+        html += `<button onclick="loadPedidos(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''} class="px-2 py-1 border rounded ${currentPage === totalPages ? 'opacity-50' : ''}">▶</button>`;
+        div.innerHTML = html;
+    }
+
+    async function updateStatus(pedidoId, novoStatus) {
+        try {
+            const response = await fetch(`/api/pedidos/atualizar-status/${pedidoId}/`, {
+                method: 'PATCH', headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCSRFToken() },
+                body: JSON.stringify({ status: novoStatus })
+            });
+            const data = await response.json();
+            if (data.success) { showNotification(data.message, 'success'); loadPedidos(currentPage); }
+            else { showNotification(data.error, 'error'); }
+        } catch (error) { showNotification('Erro ao atualizar', 'error'); }
+    }
+
+    function printReceipt(pedidoId) { window.open(`/imprimir-recibo-imagem/${pedidoId}/`, '_blank'); }
+
+    // ========== MODAIS ==========
+    function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+    function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+    function openPaymentModal(id, saldo) {
+        document.getElementById('paymentPedidoId').value = id;
+        document.getElementById('paymentValor').max = saldo;
+        document.getElementById('saldoInfo').innerHTML = `Saldo pendente: ${formatMoney(saldo)}`;
         openModal('paymentModal');
+    }
+
+    async function registerPayment(e) {
+        e.preventDefault();
+        const id = document.getElementById('paymentPedidoId').value;
+        const valor = parseFloat(document.getElementById('paymentValor').value);
+        const metodo = document.getElementById('paymentMetodo').value;
+        if (!valor || valor <= 0) { showNotification('Valor inválido', 'error'); return; }
+        try {
+            const response = await fetch(`/api/pedidos/pagamento/${id}/`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCSRFToken() },
+                body: JSON.stringify({ valor, metodo })
+            });
+            const data = await response.json();
+            if (data.success) { showNotification(data.message, 'success'); closeModal('paymentModal'); loadPedidos(currentPage); }
+            else { showNotification(data.error, 'error'); }
+        } catch (error) { showNotification('Erro ao registrar', 'error'); }
     }
 
     async function viewOrder(id) {
@@ -1285,90 +639,92 @@
             const data = await response.json();
             if (data.success) {
                 const p = data.pedido;
-                const content = document.getElementById('viewOrderContent');
-                content.innerHTML = `
-                    <div class="space-y-4">
-                        <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
-                            <div class="flex justify-between">
-                                <div>
-                                    <p class="text-sm text-gray-500">Pedido #${p.id}</p>
-                                    <h4 class="text-lg font-semibold">${p.cliente_nome}</h4>
-                                    <p class="text-sm text-gray-500">${p.cliente_telefone || 'sem telefone'}</p>
-                                </div>
-                                <div class="text-right">
-                                    <span class="status-badge px-2 py-1 text-xs rounded-full bg-${p.status === 'pendente' ? 'yellow' : p.status === 'completo' ? 'blue' : p.status === 'pronto' ? 'green' : 'purple'}-100 text-${p.status === 'pendente' ? 'yellow' : p.status === 'completo' ? 'blue' : p.status === 'pronto' ? 'green' : 'purple'}-800">
-                                        ${statusLabels[p.status]}
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                        <div>
-                            <h5 class="font-medium mb-2">Itens</h5>
-                            <div class="border rounded-lg overflow-hidden">
-                                <table class="w-full text-sm">
-                                    <thead class="bg-gray-50 dark:bg-gray-700">
-                                        <tr>
-                                            <th class="px-4 py-2 text-left">Item</th>
-                                            <th class="px-4 py-2 text-center">Qtd</th>
-                                            <th class="px-4 py-2 text-right">Preço</th>
-                                            <th class="px-4 py-2 text-left">Descrição</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        ${p.itens.map(i => `
-                                            <tr class="border-t dark:border-gray-700">
-                                                <td class="px-4 py-2">${i.nome}</td>
-                                                <td class="px-4 py-2 text-center">${i.quantidade}</td>
-                                                <td class="px-4 py-2 text-right">${formatMoney(i.preco_total)}</td>
-                                                <td class="px-4 py-2 text-left text-gray-500 text-sm">${i.descricao || '—'}</td>
-                                             </tr>
-                                        `).join('')}
-                                    </tbody>
-                                 </table>
-                            </div>
-                        </div>
-                        <div class="bg-gray-50 p-4 rounded-lg">
-                            <div class="space-y-1">
-                                <div class="flex justify-between"><span>Subtotal:</span><span>${formatMoney(p.subtotal)}</span></div>
-                                ${p.desconto_cabides > 0 ? `<div class="flex justify-between text-green-600"><span>Desconto Cabides:</span><span>- ${formatMoney(p.desconto_cabides)}</span></div>` : ''}
-                                <div class="flex justify-between font-bold pt-2 border-t"><span>Total:</span><span>${formatMoney(p.total_final)}</span></div>
-                                <div class="flex justify-between"><span>Pago:</span><span class="text-green-600">${formatMoney(p.total_pago)}</span></div>
-                                ${p.saldo > 0 ? `<div class="flex justify-between text-red-600"><span>Saldo:</span><span>${formatMoney(p.saldo)}</span></div>` : ''}
-                            </div>
-                        </div>
-                        <div class="flex justify-end">
-                            <button onclick="closeModal('viewOrderModal')" class="px-4 py-2 border rounded-lg">Fechar</button>
-                            ${p.saldo > 0 ? `<button onclick="closeModal('viewOrderModal'); openPaymentModal(${p.id}, ${p.saldo})" class="px-4 py-2 bg-purple-600 text-white rounded-lg ml-2">Pagar</button>` : ''}
-                        </div>
+                document.getElementById('viewOrderContent').innerHTML = `
+                    <div class="space-y-3">
+                        <div class="bg-blue-50 p-3 rounded"><strong>Pedido #${p.id}</strong><br>Cliente: ${p.cliente_nome}<br>Telefone: ${p.cliente_telefone || '—'}</div>
+                        <div><strong>Itens:</strong><div class="border rounded overflow-hidden mt-1"><table class="w-full text-sm"><tbody>${p.itens.map(i => `<tr><td class="p-2">${i.nome}<td class="p-2 text-center">${i.quantidade}x<td class="p-2 text-right">${formatMoney(i.preco_total)}</tr>`).join('')}</tbody></table></div></div>
+                        <div class="bg-gray-50 p-3 rounded"><div class="flex justify-between"><span>Subtotal:</span><span>${formatMoney(p.subtotal)}</span></div>${p.desconto_cabides > 0 ? `<div class="flex justify-between text-green-600"><span>Desconto:</span><span>-${formatMoney(p.desconto_cabides)}</span></div>` : ''}<div class="flex justify-between font-bold pt-2 border-t"><span>Total:</span><span>${formatMoney(p.total_final)}</span></div><div class="flex justify-between"><span>Pago:</span><span class="text-green-600">${formatMoney(p.total_pago)}</span></div>${p.saldo > 0 ? `<div class="flex justify-between text-red-600"><span>Saldo:</span><span>${formatMoney(p.saldo)}</span></div>` : ''}</div>
+                        <div class="flex justify-end gap-2"><button onclick="closeModal('viewOrderModal')" class="px-3 py-1 border rounded">Fechar</button>${p.saldo > 0 ? `<button onclick="closeModal('viewOrderModal'); openPaymentModal(${p.id}, ${p.saldo})" class="px-3 py-1 bg-purple-600 text-white rounded">Pagar</button>` : ''}</div>
                     </div>
                 `;
                 openModal('viewOrderModal');
             }
-        } catch (error) { showNotification('Erro ao carregar detalhes', 'error'); }
+        } catch (error) { showNotification('Erro ao carregar', 'error'); }
     }
 
-    function showNotification(message, type) {
+    function showNotification(msg, type) {
         const toast = document.createElement('div');
-        const colors = { success: 'bg-green-500', error: 'bg-red-500', info: 'bg-blue-500', warning: 'bg-yellow-500' };
-        toast.className = `fixed bottom-4 right-4 px-4 py-3 rounded-lg text-white z-50 fade-in ${colors[type]} shadow-lg`;
-        toast.innerHTML = `<i class="ri-${type === 'success' ? 'checkbox-circle' : type === 'error' ? 'error-warning' : 'information'}-line mr-2"></i>${message}`;
+        toast.className = `fixed bottom-4 right-4 px-4 py-2 rounded-lg text-white z-50 ${type === 'success' ? 'bg-green-500' : type === 'error' ? 'bg-red-500' : 'bg-blue-500'} shadow-lg`;
+        toast.innerHTML = msg;
         document.body.appendChild(toast);
-        setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 3000);
+        setTimeout(() => toast.remove(), 3000);
     }
 
-    function openModal(modalId) { document.getElementById(modalId).classList.remove('hidden'); }
-    function closeModal(modalId) { document.getElementById(modalId).classList.add('hidden'); }
-
-    // Event Listeners
-    document.getElementById('addItemBtn').onclick = addItemRow;
+    // ========== EVENTOS ==========
+    document.getElementById('applyFiltersBtn').onclick = () => loadPedidos(1);
+    document.getElementById('newOrderBtn').onclick = () => { resetForm(); addItemRow(); openModal('orderModal'); };
     document.getElementById('pedidoForm').onsubmit = savePedido;
     document.getElementById('paymentForm').onsubmit = registerPayment;
-    document.getElementById('cabidesInput').addEventListener('input', updatePedidoTotals);
+    document.getElementById('addItemBtn').onclick = addItemRow;
+    document.getElementById('cabidesInput').addEventListener('input', updateTotals);
+
+    document.getElementById('selectAll')?.addEventListener('change', (e) => {
+        document.querySelectorAll('.pedido-checkbox').forEach(cb => cb.checked = e.target.checked);
+        selectedPedidos.clear();
+        if (e.target.checked) pedidos.forEach(p => selectedPedidos.add(p.id));
+        updateBulkActionsBar();
+    });
+
+    document.addEventListener('change', (e) => {
+        if (e.target.classList?.contains('pedido-checkbox')) {
+            const id = parseInt(e.target.value);
+            e.target.checked ? selectedPedidos.add(id) : selectedPedidos.delete(id);
+            updateBulkActionsBar();
+            const allChecked = document.querySelectorAll('.pedido-checkbox:checked').length === document.querySelectorAll('.pedido-checkbox').length;
+            document.getElementById('selectAll').checked = allChecked;
+        }
+    });
+
+    function updateBulkActionsBar() {
+        const bar = document.getElementById('bulkActionsBar');
+        if (bar) {
+            const count = selectedPedidos.size;
+            document.getElementById('selectedCount').textContent = count;
+            bar.classList.toggle('hidden', count === 0);
+        }
+    }
 
     // Inicializar
     loadClientes();
     loadArtigos();
     loadPedidos(1);
 </script>
+
+<!-- Bulk Actions Bar -->
+<div id="bulkActionsBar" class="bulk-actions-bar hidden fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50">
+    <div class="flex items-center gap-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-full shadow-lg">
+        <span id="selectedCount">0</span> selecionados
+        <select id="bulkActionSelect" class="bg-white text-gray-800 rounded px-2 py-1 text-sm">
+            <option value="">Ações</option>
+            <option value="completo">Marcar Completo</option>
+            <option value="pronto">Marcar Pronto</option>
+            <option value="entregue">Marcar Entregue</option>
+        </select>
+        <button id="applyBulkActionBtn" class="bg-white text-blue-600 px-3 py-1 rounded-full text-sm font-medium hover:bg-gray-100">Aplicar</button>
+        <button id="clearSelectionBtn" class="text-white hover:text-gray-200">&times;</button>
+    </div>
+</div>
+
+<style>
+    .bulk-actions-bar { transition: all 0.3s ease; }
+    .bulk-actions-bar.hidden { display: none; }
+    .search-dropdown { position: absolute; top: 100%; left: 0; right: 0; max-height: 200px; overflow-y: auto; background: white; border: 1px solid #d1d5db; border-radius: 0.5rem; z-index: 50; margin-top: 2px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+    .dark .search-dropdown { background: #1f2937; border-color: #4b5563; }
+    .search-dropdown-item { padding: 0.5rem; cursor: pointer; border-bottom: 1px solid #e5e7eb; transition: background 0.2s; }
+    .dark .search-dropdown-item { border-bottom-color: #374151; }
+    .search-dropdown-item:hover { background: #f3f4f6; }
+    .dark .search-dropdown-item:hover { background: #374151; }
+    .search-dropdown-item:last-child { border-bottom: none; }
+</style>
 
 {% endblock %}
