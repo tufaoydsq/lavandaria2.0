@@ -306,6 +306,7 @@
                     </div>
                 </div>
 
+                <!-- Itens Table com Descrição -->
                 <div class="mb-6">
                     <div class="flex justify-between items-center mb-3">
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Itens do Pedido</label>
@@ -320,6 +321,7 @@
                                     <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300">Artigo</th>
                                     <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300">Quantidade</th>
                                     <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300">Preço Unit.</th>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300">Descrição</th>
                                     <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300">Total</th>
                                     <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300"></th>
                                 </tr>
@@ -329,6 +331,7 @@
                     </div>
                 </div>
 
+                <!-- Totals -->
                 <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-6 mb-6">
                     <div class="space-y-2">
                         <div class="flex justify-between">
@@ -873,7 +876,7 @@
         }
     });
 
-    // ========== ITEMS MANAGEMENT ==========
+    // ========== ITEMS MANAGEMENT COM DESCRIÇÃO ==========
 
     function addItemRow() {
         const tbody = document.getElementById('itensTableBody');
@@ -890,6 +893,10 @@
                     <input type="number" class="item-qtd w-24 border rounded-lg px-2 py-1 bg-white dark:bg-gray-700" data-row="${rowId}" value="1" min="1">
                 </td>
                 <td class="px-4 py-2"><span class="item-preco-unitario" data-row="${rowId}">0 MT</span></td>
+                <td class="px-4 py-2">
+                    <input type="text" class="item-descricao w-full border rounded-lg px-2 py-1 bg-white dark:bg-gray-700" data-row="${rowId}"
+                           placeholder="Observações (opcional)" maxlength="200">
+                </td>
                 <td class="px-4 py-2"><span class="item-total" data-row="${rowId}">0 MT</span></td>
                 <td class="px-4 py-2"><button type="button" onclick="removeItemRow(${rowId})" class="text-red-500 hover:text-red-700"><i class="ri-delete-bin-line"></i></button></td>
             </tr>
@@ -898,6 +905,7 @@
 
         const select = document.querySelector(`#item-row-${rowId} .item-artigo`);
         const qtdInput = document.querySelector(`#item-row-${rowId} .item-qtd`);
+        const descInput = document.querySelector(`#item-row-${rowId} .item-descricao`);
 
         const updateTotals = () => {
             const selectedOption = select.options[select.selectedIndex];
@@ -955,8 +963,9 @@
             const select = row.querySelector('.item-artigo');
             const artigo_id = select?.value;
             const quantidade = parseInt(row.querySelector('.item-qtd')?.value) || 0;
+            const descricao = row.querySelector('.item-descricao')?.value || '';
             if (artigo_id && quantidade > 0) {
-                itens.push({ artigo_id, quantidade });
+                itens.push({ artigo_id, quantidade, descricao });
             }
         });
 
@@ -1041,9 +1050,44 @@
                                 </div>
                             </div>
                         </div>
-                        <div><h5 class="font-medium mb-2">Itens</h5><div class="border rounded-lg overflow-hidden"><table class="w-full text-sm"><tbody>${p.itens.map(i => `<tr class="border-t"><td class="px-4 py-2">${i.nome} ${i.quantidade}x</td><td class="px-4 py-2 text-right">${formatMoney(i.preco_total)}</td></tr>`).join('')}</tbody></table></div></div>
-                        <div class="bg-gray-50 p-4 rounded-lg"><div class="space-y-1"><div class="flex justify-between"><span>Subtotal:</span><span>${formatMoney(p.subtotal)}</span></div>${p.desconto_cabides > 0 ? `<div class="flex justify-between text-green-600"><span>Desconto Cabides:</span><span>- ${formatMoney(p.desconto_cabides)}</span></div>` : ''}<div class="flex justify-between font-bold pt-2 border-t"><span>Total:</span><span>${formatMoney(p.total_final)}</span></div><div class="flex justify-between"><span>Pago:</span><span class="text-green-600">${formatMoney(p.total_pago)}</span></div>${p.saldo > 0 ? `<div class="flex justify-between text-red-600"><span>Saldo:</span><span>${formatMoney(p.saldo)}</span></div>` : ''}</div></div>
-                        <div class="flex justify-end"><button onclick="closeModal('viewOrderModal')" class="px-4 py-2 border rounded-lg">Fechar</button>${p.saldo > 0 ? `<button onclick="closeModal('viewOrderModal'); openPaymentModal(${p.id}, ${p.saldo})" class="px-4 py-2 bg-purple-600 text-white rounded-lg ml-2">Pagar</button>` : ''}</div>
+                        <div>
+                            <h5 class="font-medium mb-2">Itens</h5>
+                            <div class="border rounded-lg overflow-hidden">
+                                <table class="w-full text-sm">
+                                    <thead class="bg-gray-50 dark:bg-gray-700">
+                                        <tr>
+                                            <th class="px-4 py-2 text-left">Item</th>
+                                            <th class="px-4 py-2 text-center">Qtd</th>
+                                            <th class="px-4 py-2 text-right">Preço</th>
+                                            <th class="px-4 py-2 text-left">Descrição</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${p.itens.map(i => `
+                                            <tr class="border-t dark:border-gray-700">
+                                                <td class="px-4 py-2">${i.nome}</td>
+                                                <td class="px-4 py-2 text-center">${i.quantidade}</td>
+                                                <td class="px-4 py-2 text-right">${formatMoney(i.preco_total)}</td>
+                                                <td class="px-4 py-2 text-left text-gray-500 text-sm">${i.descricao || '—'}</td>
+                                            </table>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <div class="space-y-1">
+                                <div class="flex justify-between"><span>Subtotal:</span><span>${formatMoney(p.subtotal)}</span></div>
+                                ${p.desconto_cabides > 0 ? `<div class="flex justify-between text-green-600"><span>Desconto Cabides:</span><span>- ${formatMoney(p.desconto_cabides)}</span></div>` : ''}
+                                <div class="flex justify-between font-bold pt-2 border-t"><span>Total:</span><span>${formatMoney(p.total_final)}</span></div>
+                                <div class="flex justify-between"><span>Pago:</span><span class="text-green-600">${formatMoney(p.total_pago)}</span></div>
+                                ${p.saldo > 0 ? `<div class="flex justify-between text-red-600"><span>Saldo:</span><span>${formatMoney(p.saldo)}</span></div>` : ''}
+                            </div>
+                        </div>
+                        <div class="flex justify-end">
+                            <button onclick="closeModal('viewOrderModal')" class="px-4 py-2 border rounded-lg">Fechar</button>
+                            ${p.saldo > 0 ? `<button onclick="closeModal('viewOrderModal'); openPaymentModal(${p.id}, ${p.saldo})" class="px-4 py-2 bg-purple-600 text-white rounded-lg ml-2">Pagar</button>` : ''}
+                        </div>
                     </div>
                 `;
                 openModal('viewOrderModal');

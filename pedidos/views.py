@@ -5,12 +5,27 @@ from django.views.decorators.http import require_http_methods
 from django.utils import timezone
 from decimal import Decimal
 import json
-from core.models import Pedido, ItemPedido, Cliente, ItemServico, PagamentoPedido, MovimentacaoPontos
-from core.models import Lavandaria
-from core.models import Funcionario
-from django.db.models import Sum, Q, Count
+import io
+import os
+import base64
+import re
+import requests
+from datetime import timedelta
 from django.db import transaction
+from django.db.models import Sum, Count, Q, OuterRef, Subquery, Value, DecimalField, F, Prefetch
+from django.db.models.functions import Coalesce
+from django.core.paginator import Paginator
+from django.conf import settings
+from django.template.loader import render_to_string
+from PIL import Image, ImageDraw, ImageFont
 
+from core.models import (
+    Pedido, ItemPedido, Cliente, ItemServico,
+    PagamentoPedido, MovimentacaoPontos, Lavandaria, Funcionario
+)
+
+
+# ========== VIEWS PRINCIPAIS ==========
 
 def ver_pedidos(request):
     """
@@ -19,18 +34,22 @@ def ver_pedidos(request):
     return render(request, 'pedidos/pedidos.html')
 
 
-from django.db.models import Sum, Count, Q, Prefetch
-from django.core.paginator import Paginator
-from django.db import connection
-
+# ========== API DE PEDIDOS ==========
 
 @csrf_exempt
 @require_http_methods(["GET"])
 def listar_pedidos(request):
     """
-    API: Lddistar todos os pedidos com filtros (VERSÃO OTIMIZADA)
+    API: Listar todos os pedidos com filtros (OTIMIZADA)
     """
     try:
+        # Filtrar por lavandaria do funcionário
+        usuario_logado = request.user
+        lavandaria_usuario = None
+
+        if hasattr(usuario_logado, 'funcionario'):
+            lavandaria_usuario = usuario_logado.funcionario.lavandaria
+
         status_filter = request.GET.get('status', '')
         pagamento_filter = request.GET.get('pagamento', '')
         data_inicio = request.GET.get('data_inicio', '')
@@ -39,8 +58,11 @@ def listar_pedidos(request):
         page = int(request.GET.get('page', 1))
         per_page = int(request.GET.get('per_page', 50))
 
-        # Query base com select_related (já está bom)
+        # Query base
         pedidos = Pedido.objects.select_related('cliente', 'funcionario', 'lavandaria')
+
+        if lavandaria_usuario:
+            pedidos = pedidos.filter(lavandaria=lavandaria_usuario)
 
         # Aplicar filtros
         if status_filter and status_filter != 'all':
@@ -58,28 +80,23 @@ def listar_pedidos(request):
         if cliente_search:
             pedidos = pedidos.filter(cliente__nome__icontains=cliente_search)
 
-        # ORDENAR (importante para performance)
+        # Ordenar e anotar totais
         pedidos = pedidos.order_by('-criado_em')
+        pedidos = pedidos.annotate(total_itens=Sum('itens__quantidade'))
 
-        # 🔥 OTIMIZAÇÃO 1: Usar annotate para contar itens em uma única query
-        pedidos = pedidos.annotate(
-            total_itens=Sum('itens__quantidade')
-        )
-
-        # 🔥 OTIMIZAÇÃO 2: Paginação no backend
+        # Paginação
         total_pedidos = pedidos.count()
         start = (page - 1) * per_page
         end = start + per_page
         pedidos_paginados = pedidos[start:end]
 
-        # 🔥 OTIMIZAÇÃO 3: Prefetch related para evitar N+1 queries
+        # Prefetch relacionamentos
         pedidos_paginados = pedidos_paginados.prefetch_related(
             Prefetch('itens', queryset=ItemPedido.objects.select_related('item_de_servico'))
         )
 
         pedidos_data = []
         for pedido in pedidos_paginados:
-            # Usar o total_itens do annotate (já calculado)
             total_itens = pedido.total_itens or 0
 
             pedidos_data.append({
@@ -126,7 +143,14 @@ def detalhes_pedido(request, id):
     try:
         pedido = get_object_or_404(Pedido, id=id)
 
-        # Itens do pedido
+        # Verificar permissão
+        usuario_logado = request.user
+        if hasattr(usuario_logado, 'funcionario'):
+            lavandaria_usuario = usuario_logado.funcionario.lavandaria
+            if lavandaria_usuario and pedido.lavandaria != lavandaria_usuario:
+                return JsonResponse({'success': False, 'error': 'Acesso negado'}, status=403)
+
+        # Itens do pedido com descrição
         itens = []
         for item in pedido.itens.all():
             itens.append({
@@ -134,7 +158,8 @@ def detalhes_pedido(request, id):
                 'nome': item.item_de_servico.nome if item.item_de_servico else 'Item',
                 'quantidade': item.quantidade,
                 'preco_unitario': float(item.item_de_servico.preco_base) if item.item_de_servico else 0,
-                'preco_total': float(item.preco_total)
+                'preco_total': float(item.preco_total),
+                'descricao': item.descricao or ''
             })
 
         # Pagamentos
@@ -216,7 +241,7 @@ def criar_pedido(request):
 
         cliente = get_object_or_404(Cliente, id=cliente_id)
 
-        # Obter lavandaria do funcionário logado
+        # Obter lavandaria do funcionário
         lavandaria = None
         funcionario = None
         if hasattr(request.user, 'funcionario'):
@@ -233,20 +258,21 @@ def criar_pedido(request):
             status_pagamento='nao_pago'
         )
 
-        # Adicionar itens
+        # Adicionar itens com descrição
         for item_data in itens:
             artigo_id = item_data.get('artigo_id')
             quantidade = item_data.get('quantidade', 1)
+            descricao = item_data.get('descricao', '')
 
             artigo = get_object_or_404(ItemServico, id=artigo_id)
 
             ItemPedido.objects.create(
                 pedido=pedido,
                 item_de_servico=artigo,
-                quantidade=quantidade
+                quantidade=quantidade,
+                descricao=descricao
             )
 
-        # Atualizar total e descontos
         pedido.atualizar_total()
 
         return JsonResponse({
@@ -266,6 +292,14 @@ def editar_pedido(request, id):
     """
     try:
         pedido = get_object_or_404(Pedido, id=id)
+
+        # Verificar permissão
+        usuario_logado = request.user
+        if hasattr(usuario_logado, 'funcionario'):
+            lavandaria_usuario = usuario_logado.funcionario.lavandaria
+            if lavandaria_usuario and pedido.lavandaria != lavandaria_usuario:
+                return JsonResponse({'success': False, 'error': 'Acesso negado'}, status=403)
+
         data = json.loads(request.body)
 
         if 'cabides_trazidos' in data:
@@ -294,6 +328,14 @@ def registrar_pagamento(request, id):
     """
     try:
         pedido = get_object_or_404(Pedido, id=id)
+
+        # Verificar permissão
+        usuario_logado = request.user
+        if hasattr(usuario_logado, 'funcionario'):
+            lavandaria_usuario = usuario_logado.funcionario.lavandaria
+            if lavandaria_usuario and pedido.lavandaria != lavandaria_usuario:
+                return JsonResponse({'success': False, 'error': 'Acesso negado'}, status=403)
+
         data = json.loads(request.body)
 
         valor = Decimal(str(data.get('valor', 0)))
@@ -311,7 +353,7 @@ def registrar_pagamento(request, id):
         if hasattr(request.user, 'funcionario'):
             funcionario = request.user.funcionario
 
-        pagamento = PagamentoPedido.objects.create(
+        PagamentoPedido.objects.create(
             pedido=pedido,
             valor=valor,
             metodo_pagamento=metodo,
@@ -336,49 +378,42 @@ def atualizar_status_pedido(request, id):
     """
     API: Atualizar o status do pedido com validação de fluxo
     """
-    print(f"[DEBUG] Recebendo requisição PATCH para pedido {id}")
-
     try:
         pedido = get_object_or_404(Pedido, id=id)
 
-        # Log do body da requisição
-        print(f"[DEBUG] Request body: {request.body}")
+        # Verificar permissão
+        usuario_logado = request.user
+        if hasattr(usuario_logado, 'funcionario'):
+            lavandaria_usuario = usuario_logado.funcionario.lavandaria
+            if lavandaria_usuario and pedido.lavandaria != lavandaria_usuario:
+                return JsonResponse({'success': False, 'error': 'Acesso negado'}, status=403)
 
-        # Tentar ler o body da requisição
         try:
             data = json.loads(request.body)
-            print(f"[DEBUG] JSON decodificado: {data}")
         except json.JSONDecodeError as e:
-            print(f"[ERROR] JSON decode error: {e}")
             return JsonResponse({'success': False, 'error': f'JSON inválido: {str(e)}'}, status=400)
 
         novo_status = data.get('status')
-        print(f"[DEBUG] Novo status solicitado: {novo_status}")
 
-        # Verificar se o status foi enviado
         if not novo_status:
             return JsonResponse({'success': False, 'error': 'Status não informado'}, status=400)
 
-        # Mapeamento de status permitidos
         STATUS_VALIDOS = ['pendente', 'completo', 'pronto', 'entregue']
 
         if novo_status not in STATUS_VALIDOS:
             return JsonResponse({
                 'success': False,
-                'error': f'Status inválido: {novo_status}. Status permitidos: {", ".join(STATUS_VALIDOS)}'
+                'error': f'Status inválido: {novo_status}'
             }, status=400)
 
         status_atual = pedido.status
-        print(f"[DEBUG] Status atual: {status_atual}")
 
-        # Se o status for o mesmo, retorna erro
         if status_atual == novo_status:
             return JsonResponse({
                 'success': False,
                 'error': f'O pedido já está como {novo_status}'
             }, status=400)
 
-        # Regras de transição de status
         transicoes_permitidas = {
             'pendente': ['completo'],
             'completo': ['pronto'],
@@ -386,25 +421,20 @@ def atualizar_status_pedido(request, id):
             'entregue': []
         }
 
-        # Verificar se a transição é permitida
         if novo_status not in transicoes_permitidas.get(status_atual, []):
             return JsonResponse({
                 'success': False,
-                'error': f'Transição inválida! Não é possível alterar de "{status_atual}" para "{novo_status}". Transições permitidas: {transicoes_permitidas.get(status_atual, [])}'
+                'error': f'Transição inválida! Não é possível alterar de "{status_atual}" para "{novo_status}".'
             }, status=400)
 
-        # Regra especial: para entregar, precisa ter saldo zero
         if novo_status == 'entregue' and pedido.saldo > 0:
             return JsonResponse({
                 'success': False,
                 'error': f'Não é possível entregar o pedido pois há saldo pendente de {float(pedido.saldo):.2f} MT'
             }, status=400)
 
-        # Atualizar o status
         pedido.status = novo_status
         pedido.save()
-
-        print(f"[DEBUG] Status atualizado com sucesso para {novo_status}")
 
         return JsonResponse({
             'success': True,
@@ -414,13 +444,9 @@ def atualizar_status_pedido(request, id):
         })
 
     except Pedido.DoesNotExist:
-        print(f"[ERROR] Pedido {id} não encontrado")
         return JsonResponse({'success': False, 'error': 'Pedido não encontrado'}, status=404)
     except Exception as e:
-        print(f"[ERROR] Erro inesperado: {str(e)}")
-        import traceback
-        traceback.print_exc()
-        return JsonResponse({'success': False, 'error': f'Erro interno: {str(e)}'}, status=500)
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
 
 @csrf_exempt
@@ -431,6 +457,13 @@ def excluir_pedido(request, id):
     """
     try:
         pedido = get_object_or_404(Pedido, id=id)
+
+        # Verificar permissão
+        usuario_logado = request.user
+        if hasattr(usuario_logado, 'funcionario'):
+            lavandaria_usuario = usuario_logado.funcionario.lavandaria
+            if lavandaria_usuario and pedido.lavandaria != lavandaria_usuario:
+                return JsonResponse({'success': False, 'error': 'Acesso negado'}, status=403)
 
         if pedido.status_pagamento == 'pago':
             return JsonResponse({'success': False, 'error': 'Não é possível excluir um pedido já pago'}, status=400)
@@ -445,126 +478,7 @@ def excluir_pedido(request, id):
         return JsonResponse({'success': False, 'error': str(e)}, status=400)
 
 
-import io
-import os
-import base64
-from PIL import Image, ImageDraw, ImageFont
-from django.conf import settings
-from django.template.loader import render_to_string
-from django.db.models import Sum, OuterRef, Subquery, Value, DecimalField, F
-from django.db.models.functions import Coalesce
-from django.utils import timezone
-from datetime import timedelta
-
-
-def recibo_termico_view(request, pedido_id):
-    """
-    View para gerar imagem do recibo térmico
-    """
-    pedido = get_object_or_404(Pedido, id=pedido_id)
-
-    # Subquery: soma pagamentos por pedido
-    pagos_subq = (
-        PagamentoPedido.objects
-        .filter(pedido=OuterRef("pk"))
-        .values("pedido")
-        .annotate(s=Sum("valor"))
-        .values("s")[:1]
-    )
-
-    # Buscar todos os pedidos não pagos do mesmo cliente (inclui parcial)
-    pedidos_nao_pagos = (
-        Pedido.objects
-        .filter(cliente=pedido.cliente)
-        .exclude(status_pagamento="pago")
-        .annotate(
-            valor_pago_calc=Coalesce(
-                Subquery(pagos_subq),
-                Value(Decimal("0.00")),
-                output_field=DecimalField(max_digits=12, decimal_places=2),
-            )
-        )
-        .annotate(
-            saldo_calc=Coalesce(
-                F("total") - F("valor_pago_calc"),
-                Value(Decimal("0.00")),
-                output_field=DecimalField(max_digits=12, decimal_places=2),
-            )
-        )
-        .order_by("-criado_em")
-    )[:3]
-
-    # Total em dívida (Decimal safe)
-    total_em_divida = (
-        Pedido.objects
-        .filter(cliente=pedido.cliente)
-        .exclude(status_pagamento="pago")
-        .annotate(
-            valor_pago_calc=Coalesce(
-                Subquery(pagos_subq),
-                Value(Decimal("0.00")),
-                output_field=DecimalField(max_digits=12, decimal_places=2),
-            )
-        )
-        .annotate(
-            saldo_calc=Coalesce(
-                F("total") - F("valor_pago_calc"),
-                Value(Decimal("0.00")),
-                output_field=DecimalField(max_digits=12, decimal_places=2),
-            )
-        )
-        .aggregate(
-            total=Coalesce(
-                Sum("saldo_calc"),
-                Value(Decimal("0.00")),
-                output_field=DecimalField(max_digits=12, decimal_places=2),
-            )
-        )["total"]
-    )
-
-    # Valor pago neste pedido (soma dos pagamentos)
-    valor_pago = (
-        PagamentoPedido.objects
-        .filter(pedido=pedido)
-        .aggregate(
-            total=Coalesce(
-                Sum("valor"),
-                Value(Decimal("0.00")),
-                output_field=DecimalField(max_digits=12, decimal_places=2),
-            )
-        )["total"]
-    )
-
-    # Desconto fidelidade aplicado
-    desconto_aplicado = pedido.desconto or Decimal("0.00")
-
-    # Pontos do pedido
-    mov_pontos = MovimentacaoPontos.objects.filter(pedido=pedido, tipo="ganho").first()
-    pontos_ganhos = mov_pontos.pontos if mov_pontos else 0
-
-    # Pontos totais do cliente
-    pontos_totais = pedido.cliente.pontos
-
-    # Saldo
-    saldo = pedido.saldo
-
-    # Data de validade dos pontos (90 dias após a compra)
-    data_validade_pontos = pedido.criado_em + timedelta(days=90)
-
-    context = {
-        'pedido': pedido,
-        'pedidos_nao_pagos': pedidos_nao_pagos,
-        'total_em_divida': total_em_divida,
-        'valor_pago': valor_pago,
-        'saldo': saldo,
-        'desconto_aplicado': desconto_aplicado,
-        'pontos_ganhos': pontos_ganhos,
-        'pontos_totais': pontos_totais,
-        'data_validade_pontos': data_validade_pontos,
-    }
-
-    return render(request, 'pedidos/recibo_termico.html', context)
-
+# ========== RECIBO TÉRMICO ==========
 
 def recibo_termico_view(request, id):
     """
@@ -572,7 +486,6 @@ def recibo_termico_view(request, id):
     """
     pedido = get_object_or_404(Pedido, id=id)
 
-    # Subquery: soma pagamentos por pedido
     pagos_subq = (
         PagamentoPedido.objects
         .filter(pedido=OuterRef("pk"))
@@ -581,7 +494,6 @@ def recibo_termico_view(request, id):
         .values("s")[:1]
     )
 
-    # Buscar todos os pedidos não pagos do mesmo cliente
     pedidos_nao_pagos = (
         Pedido.objects
         .filter(cliente=pedido.cliente)
@@ -603,7 +515,6 @@ def recibo_termico_view(request, id):
         .order_by("-criado_em")
     )[:3]
 
-    # Total em dívida
     total_em_divida = (
         Pedido.objects
         .filter(cliente=pedido.cliente)
@@ -631,7 +542,6 @@ def recibo_termico_view(request, id):
         )["total"]
     )
 
-    # Valor pago neste pedido
     valor_pago = (
         PagamentoPedido.objects
         .filter(pedido=pedido)
@@ -644,20 +554,12 @@ def recibo_termico_view(request, id):
         )["total"]
     )
 
-    # Desconto fidelidade aplicado
     desconto_aplicado = pedido.desconto or Decimal("0.00")
     saldo = pedido.saldo
 
-    # Pontos do pedido
-    from core.models import MovimentacaoPontos
     mov_pontos = MovimentacaoPontos.objects.filter(pedido=pedido, tipo="ganho").first()
     pontos_ganhos = mov_pontos.pontos if mov_pontos else 0
-
-    # Pontos totais do cliente
     pontos_totais = pedido.cliente.pontos
-
-    # Data de validade dos pontos (90 dias após a compra)
-    from datetime import timedelta
     data_validade_pontos = pedido.criado_em + timedelta(days=90)
 
     context = {
@@ -681,7 +583,6 @@ def imprimir_recibo_imagem(request, id):
     """
     pedido = get_object_or_404(Pedido, id=id)
 
-    # Subquery: soma pagamentos por pedido
     pagos_subq = (
         PagamentoPedido.objects
         .filter(pedido=OuterRef("pk"))
@@ -690,7 +591,6 @@ def imprimir_recibo_imagem(request, id):
         .values("s")[:1]
     )
 
-    # Buscar todos os pedidos não pagos do mesmo cliente
     pedidos_nao_pagos = (
         Pedido.objects
         .filter(cliente=pedido.cliente)
@@ -754,14 +654,11 @@ def imprimir_recibo_imagem(request, id):
     desconto_aplicado = pedido.desconto or Decimal("0.00")
     saldo = pedido.saldo
 
-    from core.models import MovimentacaoPontos
     mov_pontos = MovimentacaoPontos.objects.filter(pedido=pedido, tipo="ganho").first()
     pontos_ganhos = mov_pontos.pontos if mov_pontos else 0
-    pontos_totaux = pedido.cliente.pontos
-    from datetime import timedelta
+    pontos_totais = pedido.cliente.pontos
     data_validade_pontos = pedido.criado_em + timedelta(days=90)
 
-    # Renderizar o texto do recibo
     recibo_texto = render_to_string("pedidos/recibo_termico.txt", {
         "pedido": pedido,
         "pedidos_nao_pagos": pedidos_nao_pagos,
@@ -770,18 +667,11 @@ def imprimir_recibo_imagem(request, id):
         "saldo": saldo,
         "desconto_aplicado": desconto_aplicado,
         "pontos_ganhos": pontos_ganhos,
-        "pontos_totais": pontos_totaux,
+        "pontos_totais": pontos_totais,
         "data_validade_pontos": data_validade_pontos,
     })
 
-    # Criar imagem
     try:
-        from PIL import Image, ImageDraw, ImageFont
-        import io
-        import base64
-        import os
-        from django.conf import settings
-
         try:
             font = ImageFont.truetype("/usr/share/fonts/truetype/liberation/LiberationMono-Regular.ttf", 10)
         except:
@@ -829,7 +719,6 @@ def imprimir_recibo_imagem(request, id):
         return render(request, "pedidos/imprimir_recibo.html", {"img_base64": img_base64})
 
     except ImportError:
-        # Se PIL não estiver instalado, retornar o HTML normal
         return render(request, 'pedidos/recibo_termico.html', {
             "pedido": pedido,
             "pedidos_nao_pagos": pedidos_nao_pagos,
@@ -838,28 +727,13 @@ def imprimir_recibo_imagem(request, id):
             "saldo": saldo,
             "desconto_aplicado": desconto_aplicado,
             "pontos_ganhos": pontos_ganhos,
-            "pontos_totais": pontos_totaux,
+            "pontos_totais": pontos_totais,
             "data_validade_pontos": data_validade_pontos,
         })
 
 
-from django.shortcuts import render, get_object_or_404
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_http_methods
-from django.contrib.auth.decorators import login_required
-from django.utils import timezone
-from decimal import Decimal
-import json
-import requests
-from core.models import Pedido, ItemPedido, Cliente, ItemServico, PagamentoPedido
-from core.models import Lavandaria
-from core.models import Funcionario
-from core.models import MovimentacaoPontos
-from django.db.models import Sum, Q
-from django.db import transaction
+# ========== SMS ==========
 
-# Configurações da API de SMS
 SMS_API_URL = 'https://api.mozesms.com/v2/sms/bulk'
 SMS_BEARER_TOKEN = 'Bearer 2374:zKNUpX-J4dao9-VEi60O-UeNqdN'
 SMS_SENDER_ID = "POWERWASH"
@@ -869,12 +743,8 @@ def enviar_sms_mozesms(numero, mensagem, pedido=None, cliente=None):
     """
     Envia um SMS usando a API Mozesms
     """
-    import re
-
-    # Limpar o número (remover espaços, parênteses, etc.)
     numero_limpo = re.sub(r'\D', '', numero)
 
-    # Se o número não tiver código do país, adicionar 258 (Moçambique)
     if len(numero_limpo) == 9:
         numero_limpo = '258' + numero_limpo
     elif len(numero_limpo) == 12 and numero_limpo.startswith('258'):
@@ -882,18 +752,12 @@ def enviar_sms_mozesms(numero, mensagem, pedido=None, cliente=None):
     else:
         numero_limpo = '258' + numero_limpo
 
-    # Validar tamanho do número
     if len(numero_limpo) != 12:
         return False, f"Número inválido: {numero}"
 
     payload = {
         'sender_id': SMS_SENDER_ID,
-        'messages': [
-            {
-                'phone': numero_limpo,
-                'message': mensagem
-            }
-        ]
+        'messages': [{'phone': numero_limpo, 'message': mensagem}]
     }
 
     headers = {
@@ -907,25 +771,18 @@ def enviar_sms_mozesms(numero, mensagem, pedido=None, cliente=None):
         if response.status_code == 200:
             try:
                 json_resposta = response.json()
-                # Verificar se a resposta indica sucesso
                 if json_resposta.get('success') or json_resposta.get('status') == 'success':
-                    print(f"SMS enviado com sucesso para {numero}")
                     return True, json_resposta
                 else:
                     erro_msg = json_resposta.get('message', json_resposta.get('error', 'Erro desconhecido'))
-                    print(f"Erro ao enviar SMS: {erro_msg}")
                     return False, erro_msg
             except Exception as e:
-                print(f"Erro ao processar resposta JSON: {e}")
                 return False, str(e)
         else:
-            print(f"Erro na requisição: {response.status_code} - {response.text}")
             return False, f"HTTP {response.status_code}"
 
     except requests.RequestException as e:
-        print(f"Erro ao enviar SMS: {e}")
         return False, str(e)
-
 
 
 @csrf_exempt
@@ -938,37 +795,33 @@ def enviar_sms_pedido_pronto(request, pedido_id):
         pedido = get_object_or_404(Pedido, id=pedido_id)
         cliente = pedido.cliente
 
-        # Verificar se o pedido está pronto
         if pedido.status != 'pronto':
             return JsonResponse({
                 'success': False,
                 'error': f'O pedido não está com status "Pronto". Status atual: {pedido.get_status_display()}'
             }, status=400)
 
-        # Verificar se o cliente tem telefone
         if not cliente.telefone:
             return JsonResponse({
                 'success': False,
                 'error': 'Cliente não possui número de telefone cadastrado'
             }, status=400)
 
-        # Construir mensagem
         lavandaria = pedido.lavandaria
 
-        mensagem = f"""🏷️ POWERWASH - Pedido Pronto!
+        mensagem = f"""🏷 POWERWASH - Pedido Pronto!
 
 Olá {cliente.nome},
 Seu pedido #{pedido.id} está PRONTO para retirada!
 
-📍 {lavandaria.endereco}
-📞 Contato: {lavandaria.telefone}
+{lavandaria.endereco}
+Contato: {lavandaria.telefone}
 
-⚠️ Você tem 30 dias para retirar.
+⚠Você tem 30 dias para retirar.
 Após este prazo, será aplicada taxa de armazenamento.
 
-Obrigado pela preferência! 🙏"""
+Obrigado pela preferência! """
 
-        # Enviar SMS
         sucesso, resposta = enviar_sms_mozesms(cliente.telefone, mensagem, pedido, cliente)
 
         if sucesso:
@@ -988,7 +841,6 @@ Obrigado pela preferência! 🙏"""
         return JsonResponse({'success': False, 'error': str(e)}, status=400)
 
 
-
 @csrf_exempt
 @require_http_methods(["POST"])
 def enviar_sms_cobranca(request, pedido_id):
@@ -1000,21 +852,13 @@ def enviar_sms_cobranca(request, pedido_id):
         cliente = pedido.cliente
         saldo = pedido.saldo
 
-        # Verificar se há saldo pendente
         if saldo <= 0:
-            return JsonResponse({
-                'success': False,
-                'error': 'Pedido não possui saldo pendente'
-            }, status=400)
+            return JsonResponse({'success': False, 'error': 'Pedido não possui saldo pendente'}, status=400)
 
-        # Verificar se o cliente tem telefone
         if not cliente.telefone:
-            return JsonResponse({
-                'success': False,
-                'error': 'Cliente não possui número de telefone cadastrado'
-            }, status=400)
+            return JsonResponse({'success': False, 'error': 'Cliente não possui número de telefone cadastrado'},
+                                status=400)
 
-        # Construir mensagem de cobrança
         lavandaria = pedido.lavandaria
 
         mensagem = f"""⚠️ POWERWASH - Pagamento Pendente!
@@ -1022,19 +866,18 @@ def enviar_sms_cobranca(request, pedido_id):
 Olá {cliente.nome},
 Seu pedido #{pedido.id} tem saldo pendente de {saldo:.2f} MT.
 
-💰 Total: {pedido.total_final:.2f} MT
-💵 Pago: {(pedido.total_final - saldo):.2f} MT
-💳 Saldo: {saldo:.2f} MT
+Total: {pedido.total_final:.2f} MT
+ Pago: {(pedido.total_final - saldo):.2f} MT
+Saldo: {saldo:.2f} MT
 
-📍 Efetue o pagamento na loja:
+Efetue o pagamento na loja:
 {lavandaria.endereco}
-📞 {lavandaria.telefone}
+{lavandaria.telefone}
 
 Evite atrasos! Regularize seu pagamento.
 
-Obrigado! 🙏"""
+Obrigado! """
 
-        # Enviar SMS
         sucesso, resposta = enviar_sms_mozesms(cliente.telefone, mensagem, pedido, cliente)
 
         if sucesso:
@@ -1046,103 +889,6 @@ Obrigado! 🙏"""
             return JsonResponse({
                 'success': False,
                 'error': f'Falha ao enviar SMS: {resposta}'
-            }, status=500)
-
-    except Exception as e:
-        return JsonResponse({'success': False, 'error': str(e)}, status=400)
-
-
-@csrf_exempt
-@require_http_methods(["POST"])
-def enviar_sms_personalizado(request):
-    """
-    API: Enviar SMS personalizado para um ou múltiplos clientes
-    """
-    try:
-        data = json.loads(request.body)
-        cliente_ids = data.get('cliente_ids', [])
-        mensagem = data.get('mensagem', '')
-        pedido_id = data.get('pedido_id', None)
-
-        if not mensagem:
-            return JsonResponse({'success': False, 'error': 'Mensagem é obrigatória'}, status=400)
-
-        if not cliente_ids and not pedido_id:
-            return JsonResponse({'success': False, 'error': 'Selecione pelo menos um cliente ou pedido'}, status=400)
-
-        # Se for enviado por pedido
-        if pedido_id:
-            pedido = get_object_or_404(Pedido, id=pedido_id)
-            if pedido.cliente.telefone:
-                cliente_ids = [pedido.cliente.id]
-            else:
-                return JsonResponse({'success': False, 'error': 'Cliente não tem telefone'}, status=400)
-
-        # Buscar clientes
-        clientes = Cliente.objects.filter(id__in=cliente_ids, telefone__isnull=False).exclude(telefone='')
-
-        if not clientes.exists():
-            return JsonResponse({'success': False, 'error': 'Nenhum cliente com telefone válido encontrado'},
-                                status=400)
-
-        resultados = []
-        enviados = 0
-        erros = 0
-
-        for cliente in clientes:
-            sucesso, resposta = enviar_sms_mozesms(cliente.telefone, mensagem)
-            if sucesso:
-                enviados += 1
-                resultados.append({'cliente': cliente.nome, 'telefone': cliente.telefone, 'status': 'enviado'})
-            else:
-                erros += 1
-                resultados.append(
-                    {'cliente': cliente.nome, 'telefone': cliente.telefone, 'status': 'erro', 'erro': resposta})
-
-        return JsonResponse({
-            'success': True,
-            'message': f'SMS enviados: {enviados} sucesso, {erros} falhas',
-            'resultados': resultados
-        })
-
-    except Exception as e:
-        return JsonResponse({'success': False, 'error': str(e)}, status=400)
-
-
-@csrf_exempt
-@require_http_methods(["POST"])
-def enviar_sms_teste(request):
-    """
-    API: Enviar SMS de teste para verificar configuração
-    """
-    try:
-        data = json.loads(request.body)
-        telefone_teste = data.get('telefone', '')
-
-        if not telefone_teste:
-            return JsonResponse({'success': False, 'error': 'Telefone é obrigatório'}, status=400)
-
-        mensagem_teste = """🧪 POWERWASH - Teste de SMS
-
-Esta é uma mensagem de teste do sistema PowerWash.
-
-Se você recebeu esta mensagem, o sistema de SMS está funcionando corretamente!
-
-Data e hora do teste: {} 
-
-Obrigado! 🙏""".format(timezone.now().strftime('%d/%m/%Y %H:%M:%S'))
-
-        sucesso, resposta = enviar_sms_mozesms(telefone_teste, mensagem_teste)
-
-        if sucesso:
-            return JsonResponse({
-                'success': True,
-                'message': f'SMS de teste enviado com sucesso para {telefone_teste}'
-            })
-        else:
-            return JsonResponse({
-                'success': False,
-                'error': f'Falha ao enviar SMS de teste: {resposta}'
             }, status=500)
 
     except Exception as e:
