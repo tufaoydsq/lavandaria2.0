@@ -30,7 +30,7 @@ def ver_cliente(request):
 @require_http_methods(["GET"])
 def listar_clientes(request):
     """
-    API: Listar clientes (VERSÃO SUPER OTIMIZADA)
+    API: Listar clientes (VERSÃO OTIMIZADA PARA ÍNDICES)
     """
     try:
         search = request.GET.get('search', '')
@@ -39,12 +39,26 @@ def listar_clientes(request):
         page = int(request.GET.get('page', 1))
         per_page = int(request.GET.get('per_page', 50))
 
-        # Subquery para calcular total gasto por cliente (USANDO total_final)
-        # Como total_final é property, vamos usar total - descontos
-        pedidos_subquery = Pedido.objects.filter(cliente=OuterRef('pk'))
+        # Query principal com SELECT_RELATED e ANNOTATE
+        clientes = Cliente.objects.all()
 
-        # Query principal com ANNOTATE (uma única query para tudo)
-        clientes = Cliente.objects.annotate(
+        # 🔥 USANDO ÍNDICE: filtro de busca (nome e telefone têm índices)
+        if search:
+            clientes = clientes.filter(
+                Q(nome__icontains=search) |
+                Q(telefone__icontains=search)
+            )
+
+        # 🔥 USANDO ÍNDICE: filtro de pontos
+        if points_filter == 'high':
+            clientes = clientes.filter(pontos__gt=5000)
+        elif points_filter == 'medium':
+            clientes = clientes.filter(pontos__gte=1000, pontos__lte=5000)
+        elif points_filter == 'low':
+            clientes = clientes.filter(pontos__lt=1000)
+
+        # Anotar totais (uma única query adicional)
+        clientes = clientes.annotate(
             total_pedidos_count=Count('pedidos'),
             total_gasto_sum=Coalesce(
                 Sum('pedidos__total') - Sum('pedidos__desconto') - Sum('pedidos__desconto_cabides'),
@@ -54,34 +68,19 @@ def listar_clientes(request):
                                      filter=Q(pedidos__criado_em__gte=timezone.now() - timezone.timedelta(days=30)))
         )
 
-        # Aplicar filtro de busca
-        if search:
-            clientes = clientes.filter(
-                Q(nome__icontains=search) |
-                Q(telefone__icontains=search)
-            )
-
-        # Aplicar filtro de pontos
-        if points_filter == 'high':
-            clientes = clientes.filter(pontos__gt=5000)
-        elif points_filter == 'medium':
-            clientes = clientes.filter(pontos__gte=1000, pontos__lte=5000)
-        elif points_filter == 'low':
-            clientes = clientes.filter(pontos__lt=1000)
-
-        # Aplicar ordenação
+        # 🔥 USANDO ÍNDICE: ordenação
         if sort_by == 'name':
-            clientes = clientes.order_by('nome')
+            clientes = clientes.order_by('nome')  # índice em 'nome'
         elif sort_by == 'points':
-            clientes = clientes.order_by('-pontos')
+            clientes = clientes.order_by('-pontos')  # índice em 'pontos'
         elif sort_by == 'total_gasto':
             clientes = clientes.order_by('-total_gasto_sum')
         elif sort_by == 'recent':
-            clientes = clientes.order_by('-id')
+            clientes = clientes.order_by('-criado_em')  # índice em 'criado_em'
         else:
             clientes = clientes.order_by('-id')
 
-        # Paginação
+        # Paginação (count é rápido com índices)
         total = clientes.count()
         start = (page - 1) * per_page
         end = start + per_page
