@@ -16,7 +16,6 @@ urlpatterns = [
 
     # Rotas de SMS
     path('api/pedidos/enviar-sms/<int:pedido_id>/', views.enviar_sms_pedido_pronto, name='enviar_sms_pedido_pronto'),
-    path('api/pedidos/enviar-sms-cobranca/<int:pedido_id>/', views.enviar_sms_cobranca, name='enviar_sms_cobranca'),
-    path('api/pedidos/enviar-sms-personalizado/', views.enviar_sms_personalizado, name='enviar_sms_personalizado'),
-    path('api/pedidos/enviar-sms-teste/', views.enviar_sms_teste, name='enviar_sms_teste'),
+
+
 ]
