@@ -91,19 +91,21 @@ class Servico(models.Model):
 # Modelo para Clientes
 class Cliente(models.Model):
     """
-    Representa um cliente do sistema.
+       Representa um cliente do sistema.
     """
-    nome = models.CharField(max_length=255)
-    telefone = models.CharField(max_length=20, null=True, blank=True)
+    nome = models.CharField(max_length=255, db_index=True)  # Adicionado db_index
+    telefone = models.CharField(max_length=20, null=True, blank=True, db_index=True)  # Adicionado db_index
     endereco = models.TextField(null=True, blank=True)
-    pontos = models.PositiveIntegerField(default=0)
+    pontos = models.PositiveIntegerField(default=0, db_index=True)  # Adicionado db_index
+    criado_em = models.DateTimeField(auto_now_add=True, db_index=True)  # Adicionado campo e índice
 
     # Total acumulado gasto (para rastrear quando aplicar desconto)
     total_gasto_acumulado = models.DecimalField(
         max_digits=12,
         decimal_places=2,
         default=Decimal("0.00"),
-        help_text="Total gasto acumulado para controle de descontos de fidelidade"
+        help_text="Total gasto acumulado para controle de descontos de fidelidade",
+        db_index=True  # Adicionado db_index
     )
 
     # Último marco de desconto aplicado
@@ -111,6 +113,21 @@ class Cliente(models.Model):
         default=0,
         help_text="Último múltiplo de 5000 Mts que gerou desconto"
     )
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['nome']),
+            models.Index(fields=['telefone']),
+            models.Index(fields=['pontos']),
+            models.Index(fields=['criado_em']),
+            models.Index(fields=['total_gasto_acumulado']),
+            # Índices compostos para consultas comuns
+            models.Index(fields=['nome', 'pontos']),
+            models.Index(fields=['criado_em', 'pontos']),
+        ]
+        ordering = ['-criado_em']  # Ordenação padrão
+
+    # ... resto dos métodos existentes (pontos_validos, verificar_desconto_fidelidade, expirar_pontos, __str__)
 
     def pontos_validos(self):
         tres_meses_atras = timezone.now() - timedelta(days=90)

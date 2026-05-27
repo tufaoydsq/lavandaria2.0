@@ -10,11 +10,19 @@ from django.db.models import Sum, Count, Q, OuterRef, Subquery
 from django.db.models.functions import Coalesce
 from django.core.paginator import Paginator
 
+from django.shortcuts import render, get_object_or_404
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
+from django.utils import timezone
+from django.db.models import Sum, Count, Q, Value, DecimalField, OuterRef, Subquery
+from django.db.models.functions import Coalesce
+from decimal import Decimal
+import json
+from core.models import Cliente, MovimentacaoPontos, Pedido
+
 
 def ver_cliente(request):
-    """
-    View para página de gerenciamento de clientes
-    """
     return render(request, 'cliente/cliente.html')
 
 
@@ -22,15 +30,29 @@ def ver_cliente(request):
 @require_http_methods(["GET"])
 def listar_clientes(request):
     """
-    API: Listar todos os clientes (VERSÃO OTIMIZADA)
+    API: Listar clientes (VERSÃO SUPER OTIMIZADA)
     """
     try:
         search = request.GET.get('search', '')
+        points_filter = request.GET.get('points_filter', 'all')
+        sort_by = request.GET.get('sort_by', 'name')
         page = int(request.GET.get('page', 1))
         per_page = int(request.GET.get('per_page', 50))
 
-        # Query base
-        clientes = Cliente.objects.all()
+        # Subquery para calcular total gasto por cliente (USANDO total_final)
+        # Como total_final é property, vamos usar total - descontos
+        pedidos_subquery = Pedido.objects.filter(cliente=OuterRef('pk'))
+
+        # Query principal com ANNOTATE (uma única query para tudo)
+        clientes = Cliente.objects.annotate(
+            total_pedidos_count=Count('pedidos'),
+            total_gasto_sum=Coalesce(
+                Sum('pedidos__total') - Sum('pedidos__desconto') - Sum('pedidos__desconto_cabides'),
+                Value(Decimal('0.00'), output_field=DecimalField())
+            ),
+            tem_pedido_recente=Count('pedidos',
+                                     filter=Q(pedidos__criado_em__gte=timezone.now() - timezone.timedelta(days=30)))
+        )
 
         # Aplicar filtro de busca
         if search:
@@ -39,39 +61,45 @@ def listar_clientes(request):
                 Q(telefone__icontains=search)
             )
 
-        # 🔥 OTIMIZAÇÃO: Anotar totais em uma única query
-        clientes = clientes.annotate(
-            total_pedidos_count=Count('pedidos'),
-            total_gasto_sum=Coalesce(Sum('pedidos__total_final'), Decimal('0.00')),
-            tem_pedido_recente=Count('pedidos',
-                                     filter=Q(pedidos__criado_em__gte=timezone.now() - timezone.timedelta(days=30)))
-        )
+        # Aplicar filtro de pontos
+        if points_filter == 'high':
+            clientes = clientes.filter(pontos__gt=5000)
+        elif points_filter == 'medium':
+            clientes = clientes.filter(pontos__gte=1000, pontos__lte=5000)
+        elif points_filter == 'low':
+            clientes = clientes.filter(pontos__lt=1000)
 
-        # Ordenar
-        clientes = clientes.order_by('-id')
+        # Aplicar ordenação
+        if sort_by == 'name':
+            clientes = clientes.order_by('nome')
+        elif sort_by == 'points':
+            clientes = clientes.order_by('-pontos')
+        elif sort_by == 'total_gasto':
+            clientes = clientes.order_by('-total_gasto_sum')
+        elif sort_by == 'recent':
+            clientes = clientes.order_by('-id')
+        else:
+            clientes = clientes.order_by('-id')
 
         # Paginação
-        paginator = Paginator(clientes, per_page)
-        page_obj = paginator.get_page(page)
+        total = clientes.count()
+        start = (page - 1) * per_page
+        end = start + per_page
+        clientes_paginados = clientes[start:end]
 
+        # Montar resposta (sem loops pesados)
         clientes_data = []
-        for cliente in page_obj:
-            # Usar valores anotados (evita queries adicionais)
-            total_gasto = cliente.total_gasto_sum or Decimal('0.00')
-            total_pedidos = cliente.total_pedidos_count or 0
-            tem_pedido_recente = cliente.tem_pedido_recente > 0
-
+        for cliente in clientes_paginados:
             clientes_data.append({
                 'id': cliente.id,
                 'nome': cliente.nome,
                 'telefone': cliente.telefone or '',
                 'endereco': cliente.endereco or '',
                 'pontos': cliente.pontos,
-                'pontos_validos': cliente.pontos_validos(),
                 'total_gasto_acumulado': float(cliente.total_gasto_acumulado),
-                'total_gasto': float(total_gasto),
-                'total_pedidos': total_pedidos,
-                'status': 'active' if tem_pedido_recente else 'inactive',
+                'total_gasto': float(cliente.total_gasto_sum or 0),
+                'total_pedidos': cliente.total_pedidos_count or 0,
+                'status': 'active' if cliente.tem_pedido_recente > 0 else 'inactive',
                 'criado_em': cliente.criado_em.strftime('%Y-%m-%d') if hasattr(cliente,
                                                                                'criado_em') else timezone.now().strftime(
                     '%Y-%m-%d')
@@ -80,14 +108,57 @@ def listar_clientes(request):
         return JsonResponse({
             'success': True,
             'clientes': clientes_data,
-            'total': paginator.count,
+            'total': total,
             'page': page,
             'per_page': per_page,
-            'total_pages': paginator.num_pages
+            'total_pages': (total + per_page - 1) // per_page
         })
 
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=400)
+
+
+@csrf_exempt
+@require_http_methods(["GET"])
+def estatisticas_clientes(request):
+    """
+    API: Estatísticas rápidas (com cache opcional)
+    """
+    try:
+        # Todas em uma única query agregada
+        stats = Cliente.objects.aggregate(
+            total_clientes=Count('id'),
+            total_pontos=Coalesce(Sum('pontos'), 0),
+            total_gasto_acumulado=Coalesce(Sum('total_gasto_acumulado'), Decimal('0.00'))
+        )
+
+        # Clientes ativos (subquery eficiente)
+        ultimos_30_dias = timezone.now() - timezone.timedelta(days=30)
+        clientes_ativos = Cliente.objects.filter(
+            pedidos__criado_em__gte=ultimos_30_dias
+        ).distinct().count()
+
+        # Novos clientes este mês
+        inicio_mes = timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        novos_clientes_mes = Cliente.objects.filter(criado_em__gte=inicio_mes).count()
+
+        total_clientes = stats['total_clientes'] or 0
+
+        return JsonResponse({
+            'success': True,
+            'estatisticas': {
+                'total_clientes': total_clientes,
+                'clientes_ativos': clientes_ativos,
+                'percentual_ativos': round((clientes_ativos / total_clientes * 100), 1) if total_clientes > 0 else 0,
+                'total_pontos': stats['total_pontos'] or 0,
+                'total_gasto': float(stats['total_gasto_acumulado'] or 0),
+                'novos_clientes_mes': novos_clientes_mes
+            }
+        })
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=400)
+
+
 
 
 @csrf_exempt
@@ -262,48 +333,7 @@ def excluir_multiplos_clientes(request):
         return JsonResponse({'success': False, 'error': str(e)}, status=400)
 
 
-@csrf_exempt
-@require_http_methods(["GET"])
-def estatisticas_clientes(request):
-    """
-    API: Obter estatísticas dos clientes
-    """
-    try:
-        total_clientes = Cliente.objects.count()
 
-        # Clientes ativos (com pedido nos últimos 30 dias)
-        ultimos_30_dias = timezone.now() - timezone.timedelta(days=30)
-        clientes_ativos = Cliente.objects.filter(
-            pedidos__criado_em__gte=ultimos_30_dias
-        ).distinct().count()
-
-        # Total de pontos
-        total_pontos = Cliente.objects.aggregate(total=Coalesce(Sum('pontos'), 0))['total']
-
-        # Total gasto acumulado
-        total_gasto_acumulado = Cliente.objects.aggregate(
-            total=Coalesce(Sum('total_gasto_acumulado'), Decimal('0.00'))
-        )['total']
-
-        # Novos clientes este mês
-        inicio_mes = timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-        novos_clientes_mes = Cliente.objects.filter(
-            criado_em__gte=inicio_mes
-        ).count()
-
-        return JsonResponse({
-            'success': True,
-            'estatisticas': {
-                'total_clientes': total_clientes,
-                'clientes_ativos': clientes_ativos,
-                'percentual_ativos': round((clientes_ativos / total_clientes * 100), 1) if total_clientes > 0 else 0,
-                'total_pontos': total_pontos,
-                'total_gasto': float(total_gasto_acumulado),
-                'novos_clientes_mes': novos_clientes_mes
-            }
-        })
-    except Exception as e:
-        return JsonResponse({'success': False, 'error': str(e)}, status=400)
 
 
 @csrf_exempt
