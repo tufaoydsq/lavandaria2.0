@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from django.db.models import Sum, Count, Q, Avg, F, Value, DecimalField
+from django.db.models import Sum, Count, Q, Avg, F, Value, DecimalField, OuterRef, Subquery
 from django.db.models.functions import Coalesce
 from django.utils import timezone
 from datetime import timedelta
@@ -8,14 +8,16 @@ from core.models import Pedido, Cliente, ItemServico, Funcionario, PagamentoPedi
 
 
 def dashboard(request):
-    # Usuário e lavandaria
+    # ========== 1. USUÁRIO E LAVANDARIA ==========
     usuario_logado = request.user
     lavandaria_usuario = None
     nome_funcionario = ""
     nome_lavandaria = "PowerWash"
 
+    # Verificar se o usuário é funcionário e tem lavandaria associada
     if hasattr(usuario_logado, 'funcionario'):
-        lavandaria_usuario = usuario_logado.funcionario.lavandaria
+        funcionario = usuario_logado.funcionario
+        lavandaria_usuario = funcionario.lavandaria
         nome_funcionario = usuario_logado.get_full_name() or usuario_logado.username
         if lavandaria_usuario:
             nome_lavandaria = lavandaria_usuario.nome
@@ -24,7 +26,7 @@ def dashboard(request):
     inicio_hoje = timezone.make_aware(timezone.datetime.combine(hoje, timezone.datetime.min.time()))
     fim_hoje = timezone.make_aware(timezone.datetime.combine(hoje, timezone.datetime.max.time()))
 
-    # Filtros por lavandaria
+    # ========== 2. FILTROS POR LAVANDARIA ==========
     if lavandaria_usuario:
         pedidos_query = Pedido.objects.filter(lavandaria=lavandaria_usuario)
         clientes_query = Cliente.objects.filter(pedidos__lavandaria=lavandaria_usuario).distinct()
@@ -32,145 +34,135 @@ def dashboard(request):
         pedidos_query = Pedido.objects.all()
         clientes_query = Cliente.objects.all()
 
-    # ========== 1. MÉTRICAS PRINCIPAIS ==========
+    # ========== 3. MÉTRICAS PRINCIPAIS ==========
 
-    # Pedidos hoje
-    pedidos_hoje = pedidos_query.filter(criado_em__range=[inicio_hoje, fim_hoje])
-    total_pedidos_hoje = pedidos_hoje.count()
-    receita_hoje = pedidos_hoje.aggregate(total=Sum('total_pago'))['total'] or Decimal('0.00')
+    # Pedidos e receita de hoje
+    pedidos_hoje_stats = pedidos_query.filter(criado_em__range=[inicio_hoje, fim_hoje]).aggregate(
+        total_pedidos=Count('id'),
+        total_receita=Coalesce(Sum('total_pago'), Value(Decimal('0.00')))
+    )
+    total_pedidos_hoje = pedidos_hoje_stats['total_pedidos']
+    receita_hoje = pedidos_hoje_stats['total_receita']
 
-    # Ticket médio (usando total_pago pois total_final é property)
-    ticket_medio = pedidos_query.aggregate(
-        media=Avg('total_pago')
-    )['media'] or Decimal('0.00')
+    # Valor médio por pedido (antigo ticket médio)
+    valor_medio_pedido = pedidos_query.aggregate(
+        media=Coalesce(Avg('total_pago'), Value(Decimal('0.00')))
+    )['media']
 
-    # Pedidos por status
-    pedidos_pendentes = pedidos_query.filter(status='pendente').count()
-    pedidos_completos = pedidos_query.filter(status='completo').count()
-    pedidos_prontos = pedidos_query.filter(status='pronto').count()
-    pedidos_entregues = pedidos_query.filter(status='entregue').count()
+    # Contagens por status
+    status_counts = pedidos_query.values('status').annotate(total=Count('id'))
+    status_dict = {item['status']: item['total'] for item in status_counts}
+
+    pedidos_pendentes = status_dict.get('pendente', 0)
+    pedidos_completos = status_dict.get('completo', 0)
+    pedidos_prontos = status_dict.get('pronto', 0)
+    pedidos_entregues = status_dict.get('entregue', 0)
 
     # Taxa de conclusão
     total_pedidos = pedidos_query.count()
-    if total_pedidos > 0:
-        taxa_conclusao = ((pedidos_entregues + pedidos_prontos) / total_pedidos) * 100
-    else:
-        taxa_conclusao = 0
+    taxa_conclusao = ((pedidos_entregues + pedidos_prontos) / total_pedidos * 100) if total_pedidos > 0 else 0
 
-    # Pedidos em atraso (pendentes há mais de 3 dias)
+    # Pedidos em atraso
     limite_atraso = timezone.now() - timedelta(days=3)
     pedidos_atraso = pedidos_query.filter(
         status='pendente',
         criado_em__lte=limite_atraso
     ).count()
 
-    # Clientes ativos
-    ultimos_30_dias = hoje - timedelta(days=30)
-    clientes_ativos = clientes_query.filter(
-        pedidos__criado_em__gte=timezone.make_aware(
-            timezone.datetime.combine(ultimos_30_dias, timezone.datetime.min.time()))
+    # Clientes activos (grafia Moçambicana)
+    ultimos_30_dias_inicio = timezone.make_aware(
+        timezone.datetime.combine(hoje - timedelta(days=30), timezone.datetime.min.time()))
+    clientes_activos = clientes_query.filter(
+        pedidos__criado_em__gte=ultimos_30_dias_inicio
     ).distinct().count()
 
-    # Clientes fiéis (com pontos > 1000)
+    # Clientes fiéis
     clientes_fieis = clientes_query.filter(pontos__gt=1000).count()
 
-    # Total de pontos ativos
-    total_pontos = clientes_query.aggregate(total=Sum('pontos'))['total'] or 0
+    # Total de pontos
+    total_pontos = clientes_query.aggregate(total=Coalesce(Sum('pontos'), Value(0)))['total']
 
-    # ========== 2. MÉTRICAS FINANCEIRAS AVANÇADAS ==========
+    # ========== 4. MÉTRICAS FINANCEIRAS ==========
 
-    # Saldo pendente total (calculado em Python, não no banco)
-    pedidos_nao_pagos = pedidos_query.exclude(status_pagamento='pago')
+    # Descontos totais
+    descontos = pedidos_query.aggregate(
+        desconto_fidelidade=Coalesce(Sum('desconto'), Value(Decimal('0.00'))),
+        desconto_cabides=Coalesce(Sum('desconto_cabides'), Value(Decimal('0.00'))),
+        total_cabides=Coalesce(Sum('cabides_trazidos'), Value(0))
+    )
+
+    total_desconto_fidelidade = descontos['desconto_fidelidade']
+    total_desconto_cabides = descontos['desconto_cabides']
+    total_cabides = descontos['total_cabides']
+
+    # Saldo pendente
     saldo_pendente_total = Decimal('0.00')
-    for pedido in pedidos_nao_pagos:
+    for pedido in pedidos_query.exclude(status_pagamento='pago').only('id', 'total', 'desconto', 'desconto_cabides',
+                                                                      'total_pago'):
         saldo_pendente_total += pedido.saldo
-
-    # Descontos totais (campos diretos do banco)
-    total_desconto_fidelidade = pedidos_query.aggregate(total=Sum('desconto'))['total'] or Decimal('0.00')
-    total_desconto_cabides = pedidos_query.aggregate(total=Sum('desconto_cabides'))['total'] or Decimal('0.00')
-
-    # Total de cabides trazidos
-    total_cabides = pedidos_query.aggregate(total=Sum('cabides_trazidos'))['total'] or 0
 
     # Métodos de pagamento
     metodos_pagamento = PagamentoPedido.objects.filter(
         pedido__in=pedidos_query
     ).values('metodo_pagamento').annotate(
-        total=Sum('valor'),
+        total=Coalesce(Sum('valor'), Value(Decimal('0.00'))),
         quantidade=Count('id')
     ).order_by('-total')[:5]
 
-    # ========== 3. GRÁFICOS ==========
+    # ========== 5. GRÁFICOS ==========
 
-    # Receita últimos 7 dias
-    inicio_semana = hoje - timedelta(days=hoje.weekday())
+    # Dados da semana
     dados_semana = []
+    dias_pt = {
+        'Monday': 'Segunda', 'Tuesday': 'Terça', 'Wednesday': 'Quarta',
+        'Thursday': 'Quinta', 'Friday': 'Sexta', 'Saturday': 'Sábado', 'Sunday': 'Domingo'
+    }
+
     for i in range(7):
-        dia = inicio_semana + timedelta(days=i)
+        dia = hoje - timedelta(days=6 - i)
         inicio_dia = timezone.make_aware(timezone.datetime.combine(dia, timezone.datetime.min.time()))
         fim_dia = timezone.make_aware(timezone.datetime.combine(dia, timezone.datetime.max.time()))
 
-        receita_dia = pedidos_query.filter(
-            criado_em__range=[inicio_dia, fim_dia]
-        ).aggregate(total=Sum('total_pago'))['total'] or Decimal('0.00')
-
-        pedidos_dia = pedidos_query.filter(
-            criado_em__range=[inicio_dia, fim_dia]
-        ).count()
-
-        dias_pt = {
-            'Monday': 'Segunda',
-            'Tuesday': 'Terça',
-            'Wednesday': 'Quarta',
-            'Thursday': 'Quinta',
-            'Friday': 'Sexta',
-            'Saturday': 'Sábado',
-            'Sunday': 'Domingo'
-        }
+        stats_dia = pedidos_query.filter(criado_em__range=[inicio_dia, fim_dia]).aggregate(
+            receita=Coalesce(Sum('total_pago'), Value(Decimal('0.00'))),
+            pedidos=Count('id')
+        )
 
         dados_semana.append({
             'dia': dia.strftime('%A'),
             'dia_curto': dias_pt.get(dia.strftime('%A'), dia.strftime('%a'))[:3],
-            'receita': float(receita_dia),
-            'pedidos': pedidos_dia
+            'receita': float(stats_dia['receita']),
+            'pedidos': stats_dia['pedidos']
         })
 
-    # Top 5 clientes (usando valores calculados em Python)
-    # Top 5 clientes (otimizado)
-    todos_clientes = []
-
+    # Top 5 clientes
     if lavandaria_usuario:
-        # Filtra pedidos apenas da lavandaria atual
-        for cliente in clientes_query.all():
-            pedidos_cliente = cliente.pedidos.filter(lavandaria=lavandaria_usuario)
-            total_gasto = sum(pedido.total_final for pedido in pedidos_cliente)
-            total_pedidos_count = pedidos_cliente.count()
-
-            if total_gasto > 0:
-                todos_clientes.append({
-                    'cliente__nome': cliente.nome,
-                    'cliente__id': cliente.id,
-                    'total_gasto': total_gasto,
-                    'total_pedidos': total_pedidos_count
-                })
+        top_clientes_query = Cliente.objects.filter(
+            pedidos__lavandaria=lavandaria_usuario
+        ).annotate(
+            total_gasto=Coalesce(
+                Sum('pedidos__total') - Sum('pedidos__desconto') - Sum('pedidos__desconto_cabides'),
+                Value(Decimal('0.00'), output_field=DecimalField())
+            ),
+            total_pedidos=Count('pedidos')
+        ).filter(total_gasto__gt=0).order_by('-total_gasto')[:5]
     else:
-        # Sem filtro de lavandaria - todos os pedidos
-        for cliente in clientes_query.all():
-            pedidos_cliente = cliente.pedidos.all()
-            total_gasto = sum(pedido.total_final for pedido in pedidos_cliente)
-            total_pedidos_count = pedidos_cliente.count()
+        top_clientes_query = Cliente.objects.annotate(
+            total_gasto=Coalesce(
+                Sum('pedidos__total') - Sum('pedidos__desconto') - Sum('pedidos__desconto_cabides'),
+                Value(Decimal('0.00'), output_field=DecimalField())
+            ),
+            total_pedidos=Count('pedidos')
+        ).filter(total_gasto__gt=0).order_by('-total_gasto')[:5]
 
-            if total_gasto > 0:
-                todos_clientes.append({
-                    'cliente__nome': cliente.nome,
-                    'cliente__id': cliente.id,
-                    'total_gasto': total_gasto,
-                    'total_pedidos': total_pedidos_count
-                })
-
-    top_clientes = sorted(todos_clientes, key=lambda x: x['total_gasto'], reverse=True)[:5]
-
-    top_clientes = sorted(todos_clientes, key=lambda x: x['total_gasto'], reverse=True)[:5]
+    top_clientes = []
+    for cliente in top_clientes_query:
+        top_clientes.append({
+            'cliente__nome': cliente.nome,
+            'cliente__id': cliente.id,
+            'total_gasto': float(cliente.total_gasto),
+            'total_pedidos': cliente.total_pedidos
+        })
 
     # Top produtos mais vendidos
     top_produtos = ItemServico.objects.filter(
@@ -180,19 +172,19 @@ def dashboard(request):
         receita_total=Coalesce(Sum('itens__preco_total'), Value(0, output_field=DecimalField()))
     ).filter(total_vendido__gt=0).order_by('-total_vendido')[:5]
 
-    # Performance por funcionário
-    performance_funcionarios = pedidos_query.values(
+    # Desempenho por funcionário
+    desempenho_funcionarios = pedidos_query.values(
         'funcionario__user__username'
     ).annotate(
         total_pedidos=Count('id'),
-        receita_total=Sum('total_pago')
+        receita_total=Coalesce(Sum('total_pago'), Value(Decimal('0.00')))
     ).order_by('-total_pedidos')[:5]
 
-    # Status distribution
+    # Distribuição de status
     status_data = []
     status_choices = dict(Pedido.STATUS_CHOICES)
     for status_code, status_name in status_choices.items():
-        count = pedidos_query.filter(status=status_code).count()
+        count = status_dict.get(status_code, 0)
         if count > 0:
             status_data.append({
                 'status': status_name,
@@ -200,11 +192,10 @@ def dashboard(request):
                 'cor': _get_status_color(status_code)
             })
 
-    # ========== 4. ALERTAS E NOTIFICAÇÕES ==========
-
+    # ========== 6. ALERTAS ==========
     alertas = []
 
-    # Pontos prestes a expirar (próximos 30 dias)
+    # Pontos prestes a expirar
     data_limite = timezone.now() - timedelta(days=60)
     pontos_expirando = clientes_query.filter(
         movimentacoes_pontos__tipo='ganho',
@@ -223,11 +214,11 @@ def dashboard(request):
             'mensagem': f'{pedidos_atraso} pedidos estão em atraso há mais de 3 dias'
         })
 
-    # ========== 5. PEDIDOS RECENTES ==========
+    # ========== 7. PEDIDOS RECENTES ==========
     pedidos_recentes = pedidos_query.select_related('cliente').order_by('-criado_em')[:10]
     pedidos_data = []
     for pedido in pedidos_recentes:
-        total_itens = pedido.itens.aggregate(total=Sum('quantidade'))['total'] or 0
+        total_itens = pedido.itens.aggregate(total=Coalesce(Sum('quantidade'), Value(0)))['total']
         pedidos_data.append({
             'id': f'#{pedido.id:06d}',
             'cliente': pedido.cliente.nome,
@@ -243,12 +234,11 @@ def dashboard(request):
         })
 
     context = {
-        # Métricas principais
         'stats': {
             'pedidos_hoje': total_pedidos_hoje,
             'receita_hoje': f'{float(receita_hoje):,.0f} MT'.replace(',', '.'),
-            'ticket_medio': f'{float(ticket_medio):,.0f} MT'.replace(',', '.'),
-            'clientes_ativos': clientes_ativos,
+            'valor_medio_pedido': f'{float(valor_medio_pedido):,.0f} MT'.replace(',', '.'),
+            'clientes_activos': clientes_activos,
             'clientes_fieis': clientes_fieis,
             'pedidos_atraso': pedidos_atraso,
             'taxa_conclusao': round(taxa_conclusao, 1),
@@ -258,19 +248,13 @@ def dashboard(request):
             'total_desconto_cabides': f'{float(total_desconto_cabides):,.0f} MT'.replace(',', '.'),
             'total_cabides': total_cabides,
         },
-
-        # Gráficos
         'dados_semana': dados_semana,
         'status_data': status_data,
         'top_clientes': top_clientes,
-        'top_produtos': top_produtos,
-        'performance_funcionarios': performance_funcionarios,
+        'top_produtos': list(top_produtos),
+        'desempenho_funcionarios': list(desempenho_funcionarios),
         'metodos_pagamento': list(metodos_pagamento),
-
-        # Alertas
         'alertas': alertas,
-
-        # Outros
         'pedidos_recentes': pedidos_data,
         'lavandaria_nome': nome_lavandaria,
         'funcionario_nome': nome_funcionario,
