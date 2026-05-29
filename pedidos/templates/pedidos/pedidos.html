@@ -4,1082 +4,319 @@
 
 <style>
     /* ============ ANIMAÇÕES ============ */
-    .fade-in {
-        animation: fadeIn 0.4s ease-out;
-    }
-
+    .fade-in { animation: fadeIn 0.4s ease-out; }
     @keyframes fadeIn {
         from { opacity: 0; transform: translateY(20px); }
-        to { opacity: 1; transform: translateY(0); }
+        to   { opacity: 1; transform: translateY(0); }
     }
-
-    .slide-in {
-        animation: slideIn 0.3s ease-out;
-    }
-
+    .slide-in { animation: slideIn 0.3s ease-out; }
     @keyframes slideIn {
         from { opacity: 0; transform: translateX(100%); }
-        to { opacity: 1; transform: translateX(0); }
+        to   { opacity: 1; transform: translateX(0); }
     }
-
-    /* ============ CONTAINER PRINCIPAL ============ */
-    .page-container {
-        max-width: 1600px;
-        margin: 0 auto;
-        padding: 2rem;
-    }
-
-    /* ============ CABEÇALHO ============ */
-    .page-header {
-        background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
-        border-radius: 1.5rem;
-        padding: 2rem 2.5rem;
-        margin-bottom: 2rem;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-    }
-
-    .page-header h2 {
-        font-size: 1.875rem;
-        font-weight: 700;
-        color: white;
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-    }
-
-    .page-header h2 i {
-        font-size: 2rem;
-        opacity: 0.9;
-    }
-
-    .btn-new-order {
-        background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
-        color: white;
-        padding: 0.875rem 2rem;
-        border-radius: 1rem;
-        font-weight: 600;
-        font-size: 0.95rem;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
-    }
-    /* Adicione estes estilos ao seu bloco <style> existente */
-
-    /* Botão de Histórico de Pagamentos */
-    .btn-action-payments {
-        background: #fef3c7;
-        color: #d97706;
-    }
-
-    .btn-action-payments:hover {
-        background: #fde68a;
-        color: #b45309;
-    }
-
-    .dark .btn-action-payments {
-        background: rgba(217, 119, 6, 0.15);
-        color: #fbbf24;
-    }
-
-    .dark .btn-action-payments:hover {
-        background: rgba(217, 119, 6, 0.25);
-    }
-
-    /* Botão de Deletar */
-    .btn-action-delete {
-        background: #fee2e2;
-        color: #dc2626;
-    }
-
-    .btn-action-delete:hover {
-        background: #fecaca;
-        color: #b91c1c;
-    }
-
-    .dark .btn-action-delete {
-        background: rgba(220, 38, 38, 0.15);
-        color: #f87171;
-    }
-
-    .dark .btn-action-delete:hover {
-        background: rgba(220, 38, 38, 0.25);
-    }
-
-    .btn-new-order:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(59, 130, 246, 0.5);
-    }
-
-    /* ============ CARDS DE FILTROS ============ */
-    .filter-card {
-        background: white;
-        border-radius: 1.5rem;
-        padding: 1.75rem;
-        margin-bottom: 1.5rem;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-        border: 1px solid #e5e7eb;
-    }
-
-    .dark .filter-card {
-        background: #1f2937;
-        border-color: #374151;
-    }
-
-    .filter-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 1.25rem;
-        margin-bottom: 1.5rem;
-    }
-
-    .filter-group {
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-    }
-
-    .filter-group label {
-        font-size: 0.8rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        color: #6b7280;
-    }
-
-    .dark .filter-group label {
-        color: #9ca3af;
-    }
-
-    .filter-input {
-        padding: 0.75rem 1rem;
-        border: 2px solid #e5e7eb;
-        border-radius: 0.75rem;
-        background: #f9fafb;
-        font-size: 0.9rem;
-        transition: all 0.2s;
-    }
-
-    .filter-input:focus {
-        border-color: #3b82f6;
-        background: white;
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-    }
-
-    .dark .filter-input {
-        background: #374151;
-        border-color: #4b5563;
-        color: white;
-    }
-
-    .dark .filter-input:focus {
-        border-color: #60a5fa;
-        background: #374151;
-    }
-
-    .filter-actions {
-        display: flex;
-        justify-content: flex-end;
-        gap: 0.75rem;
-    }
-
-    .btn-filter {
-        padding: 0.75rem 1.5rem;
-        border-radius: 0.75rem;
-        font-weight: 500;
-        font-size: 0.9rem;
-        transition: all 0.2s;
-    }
-
-    .btn-filter-clear {
-        background: white;
-        border: 2px solid #e5e7eb;
-        color: #6b7280;
-    }
-
-    .btn-filter-clear:hover {
-        background: #f3f4f6;
-        border-color: #d1d5db;
-    }
-
-    .btn-filter-apply {
-        background: #3b82f6;
-        color: white;
-        border: none;
-    }
-
-    .btn-filter-apply:hover {
-        background: #2563eb;
-    }
-
-    .dark .btn-filter-clear {
-        background: #374151;
-        border-color: #4b5563;
-        color: #d1d5db;
-    }
-
-    .dark .btn-filter-clear:hover {
-        background: #4b5563;
-    }
-
-    /* ============ BARRA DE AÇÕES EM LOTE ============ */
-    .bulk-actions-bar {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border-radius: 1rem;
-        padding: 1rem 1.5rem;
-        margin-bottom: 1.5rem;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-        transition: all 0.3s ease;
-    }
-
-    .bulk-actions-bar.hidden {
-        display: none;
-    }
-
-    .bulk-info {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        color: white;
-        font-weight: 500;
-    }
-
-    .bulk-info i {
-        font-size: 1.5rem;
-    }
-
-    .bulk-controls {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-    }
-
-    .bulk-select {
-        padding: 0.625rem 1rem;
-        border-radius: 0.75rem;
-        border: none;
-        background: white;
-        font-size: 0.875rem;
-        min-width: 200px;
-    }
-
-    .btn-bulk-apply {
-        background: #1e293b;
-        color: white;
-        border: none;
-        padding: 0.625rem 1.25rem;
-        border-radius: 0.75rem;
-        font-weight: 500;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        transition: all 0.2s;
-    }
-
-    .btn-bulk-apply:hover {
-        background: #0f172a;
-        transform: scale(1.02);
-    }
-
-    .btn-bulk-clear {
-        background: rgba(255, 255, 255, 0.2);
-        color: white;
-        border: none;
-        padding: 0.625rem;
-        border-radius: 0.75rem;
-        transition: all 0.2s;
-    }
-
-    .btn-bulk-clear:hover {
-        background: rgba(255, 255, 255, 0.3);
-    }
-
-    /* ============ TABELA ============ */
-    .table-card {
-        background: white;
-        border-radius: 1.5rem;
-        overflow: hidden;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-        border: 1px solid #e5e7eb;
-    }
-
-    .dark .table-card {
-        background: #1f2937;
-        border-color: #374151;
-    }
-
-    .table-wrapper {
-        overflow-x: auto;
-    }
-
-    .orders-table {
-        width: 100%;
-        min-width: 1200px;
-        border-collapse: collapse;
-    }
-
-    .orders-table thead {
-        background: #f8fafc;
-        border-bottom: 2px solid #e5e7eb;
-    }
-
-    .dark .orders-table thead {
-        background: #111827;
-        border-bottom-color: #374151;
-    }
-
-    .orders-table th {
-        padding: 1rem 1.25rem;
-        text-align: left;
-        font-size: 0.75rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        color: #6b7280;
-        white-space: nowrap;
-    }
-
-    .dark .orders-table th {
-        color: #9ca3af;
-    }
-
-    .orders-table td {
-        padding: 1.125rem 1.25rem;
-        vertical-align: middle;
-        border-bottom: 1px solid #f3f4f6;
-    }
-
-    .dark .orders-table td {
-        border-bottom-color: #374151;
-    }
-
-    .orders-table tbody tr {
-        transition: background 0.15s;
-    }
-
-    .orders-table tbody tr:hover {
-        background: #f9fafb;
-    }
-
-    .dark .orders-table tbody tr:hover {
-        background: #374151;
-    }
-
-    /* Checkbox personalizado */
-    .custom-checkbox {
-        width: 1.125rem;
-        height: 1.125rem;
-        border: 2px solid #d1d5db;
-        border-radius: 0.25rem;
-        cursor: pointer;
-        accent-color: #3b82f6;
-    }
-
-    /* Cliente info */
-    .cliente-cell {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        min-width: 180px;
-    }
-
-    .cliente-avatar {
-        width: 2.5rem;
-        height: 2.5rem;
-        border-radius: 0.75rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 600;
-        font-size: 0.875rem;
-        flex-shrink: 0;
-    }
-
-    .cliente-details {
-        display: flex;
-        flex-direction: column;
-        gap: 0.125rem;
-    }
-
-    .cliente-nome {
-        font-weight: 600;
-        font-size: 0.9rem;
-        color: #111827;
-        max-width: 150px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-
-    .dark .cliente-nome {
-        color: #f9fafb;
-    }
-
-    .cliente-telefone {
-        font-size: 0.75rem;
-        color: #6b7280;
-    }
-
-    .dark .cliente-telefone {
-        color: #9ca3af;
-    }
-
-    /* Badges */
-    .badge-status {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.375rem;
-        padding: 0.375rem 0.75rem;
-        border-radius: 2rem;
-        font-size: 0.75rem;
-        font-weight: 600;
-        white-space: nowrap;
-    }
-
-    .badge-status i {
-        font-size: 0.875rem;
-    }
-
-    .badge-pendente {
-        background: #fef3c7;
-        color: #92400e;
-    }
-
-    .badge-completo {
-        background: #dbeafe;
-        color: #1e40af;
-    }
-
-    .badge-pronto {
-        background: #d1fae5;
-        color: #065f46;
-    }
-
-    .badge-entregue {
-        background: #ede9fe;
-        color: #5b21b6;
-    }
-
-    .dark .badge-pendente { background: rgba(251, 191, 36, 0.15); }
-    .dark .badge-completo { background: rgba(59, 130, 246, 0.15); }
-    .dark .badge-pronto { background: rgba(16, 185, 129, 0.15); }
-    .dark .badge-entregue { background: rgba(139, 92, 246, 0.15); }
-
-    .badge-pagamento {
-        padding: 0.25rem 0.625rem;
-        border-radius: 2rem;
-        font-size: 0.7rem;
-        font-weight: 700;
-    }
-
-    .badge-pago {
-        background: #d1fae5;
-        color: #065f46;
-    }
-
-    .badge-parcial {
-        background: #fef3c7;
-        color: #92400e;
-    }
-
-    .badge-nao-pago {
-        background: #fee2e2;
-        color: #991b1b;
-    }
-
-    /* Status Select */
-    .status-select {
-        padding: 0.375rem 0.75rem;
-        border-radius: 2rem;
-        font-size: 0.75rem;
-        font-weight: 600;
-        border: 2px solid transparent;
-        cursor: pointer;
-        transition: all 0.2s;
-        appearance: none;
-        -webkit-appearance: none;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236B7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
-        background-repeat: no-repeat;
-        background-position: right 0.5rem center;
-        background-size: 1rem;
-        padding-right: 2rem;
-    }
-
-    .status-select:focus {
-        outline: none;
-        border-color: #3b82f6;
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-    }
-
-    .status-select:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-    }
-
-    /* Action Buttons */
-    .action-btns {
-        display: flex;
-        gap: 0.5rem;
-    }
-
-    .btn-action {
-        width: 2.25rem;
-        height: 2.25rem;
-        border-radius: 0.75rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.2s;
-        font-size: 1.125rem;
-    }
-
-    .btn-action-view {
-        background: #eff6ff;
-        color: #3b82f6;
-    }
-
-    .btn-action-view:hover {
-        background: #dbeafe;
-    }
-
-    .btn-action-print {
-        background: #f3f4f6;
-        color: #6b7280;
-    }
-
-    .btn-action-print:hover {
-        background: #e5e7eb;
-    }
-
-    .btn-action-pay {
-        background: #f5f3ff;
-        color: #7c3aed;
-    }
-
-    .btn-action-pay:hover {
-        background: #ede9fe;
-    }
-
-    .dark .btn-action-view { background: rgba(59, 130, 246, 0.15); }
-    .dark .btn-action-print { background: rgba(107, 114, 128, 0.15); }
-    .dark .btn-action-pay { background: rgba(124, 58, 237, 0.15); }
-
-    /* ============ PAGINAÇÃO ============ */
-    .pagination-bar {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 1.25rem 1.5rem;
-        border-top: 1px solid #e5e7eb;
-    }
-
-    .dark .pagination-bar {
-        border-top-color: #374151;
-    }
-
-    .pagination-info {
-        font-size: 0.875rem;
-        color: #6b7280;
-    }
-
-    .pagination-btns {
-        display: flex;
-        gap: 0.375rem;
-    }
-
-    .btn-page {
-        min-width: 2.25rem;
-        height: 2.25rem;
-        border-radius: 0.625rem;
-        border: 1px solid #e5e7eb;
-        background: white;
-        font-size: 0.875rem;
-        font-weight: 500;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.2s;
-    }
-
-    .btn-page:hover {
-        background: #f3f4f6;
-    }
-
-    .btn-page.active {
-        background: #3b82f6;
-        color: white;
-        border-color: #3b82f6;
-    }
-
-    .btn-page:disabled {
-        opacity: 0.4;
-        cursor: not-allowed;
-    }
-
-    .dark .btn-page {
-        background: #374151;
-        border-color: #4b5563;
-        color: #d1d5db;
-    }
-
-    .dark .btn-page:hover {
-        background: #4b5563;
-    }
-
-    /* ============ MODAIS ============ */
-    .modal-overlay {
-        position: fixed;
-        inset: 0;
-        background: rgba(0, 0, 0, 0.5);
-        backdrop-filter: blur(4px);
-        z-index: 50;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 1.5rem;
-    }
-
-    .modal-overlay.hidden {
-        display: none;
-    }
-
-    .modal-content {
-        background: white;
-        border-radius: 1.5rem;
-        width: 100%;
-        max-width: 900px;
-        max-height: 85vh;
-        overflow-y: auto;
-        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
-    }
-
-    .modal-content.modal-sm {
-        max-width: 480px;
-    }
-
-    .modal-content.modal-lg {
-        max-width: 1100px;
-    }
-
-    .dark .modal-content {
-        background: #1f2937;
-    }
-
-    .modal-header {
-        position: sticky;
-        top: 0;
-        background: white;
-        border-bottom: 1px solid #e5e7eb;
-        padding: 1.25rem 1.75rem;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        z-index: 10;
-        border-radius: 1.5rem 1.5rem 0 0;
-    }
-
-    .dark .modal-header {
-        background: #1f2937;
-        border-bottom-color: #374151;
-    }
-
-    .modal-header h3 {
-        font-size: 1.25rem;
-        font-weight: 700;
-        color: #111827;
-    }
-
-    .dark .modal-header h3 {
-        color: #f9fafb;
-    }
-
-    .btn-modal-close {
-        width: 2.5rem;
-        height: 2.5rem;
-        border-radius: 0.75rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #6b7280;
-        transition: all 0.2s;
-    }
-
-    .btn-modal-close:hover {
-        background: #f3f4f6;
-        color: #111827;
-    }
-
-    .dark .btn-modal-close:hover {
-        background: #374151;
-        color: #f9fafb;
-    }
-
-    .modal-body {
-        padding: 1.75rem;
-    }
-
-    .modal-footer {
-        padding: 1.25rem 1.75rem;
-        border-top: 1px solid #e5e7eb;
-        display: flex;
-        justify-content: flex-end;
-        gap: 0.75rem;
-    }
-
-    .dark .modal-footer {
-        border-top-color: #374151;
-    }
-
-    /* Form Styles */
-    .form-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 1.5rem;
-        margin-bottom: 1.5rem;
-    }
-
-    .form-group {
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-    }
-
-    .form-label {
-        font-size: 0.8rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        color: #6b7280;
-    }
-
-    .dark .form-label {
-        color: #9ca3af;
-    }
-
-    .form-input {
-        padding: 0.75rem 1rem;
-        border: 2px solid #e5e7eb;
-        border-radius: 0.75rem;
-        font-size: 0.9rem;
-        transition: all 0.2s;
-        background: #f9fafb;
-    }
-
-    .form-input:focus {
-        border-color: #3b82f6;
-        background: white;
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-        outline: none;
-    }
-
-    .dark .form-input {
-        background: #374151;
-        border-color: #4b5563;
-        color: white;
-    }
-
-    .dark .form-input:focus {
-        border-color: #60a5fa;
-        background: #374151;
-    }
-
-    .btn-primary {
-        background: #3b82f6;
-        color: white;
-        padding: 0.75rem 1.5rem;
-        border-radius: 0.75rem;
-        font-weight: 600;
-        border: none;
-        transition: all 0.2s;
-    }
-
-    .btn-primary:hover {
-        background: #2563eb;
-    }
-
-    .btn-secondary {
-        background: white;
-        color: #6b7280;
-        padding: 0.75rem 1.5rem;
-        border-radius: 0.75rem;
-        font-weight: 500;
-        border: 2px solid #e5e7eb;
-        transition: all 0.2s;
-    }
-
-    .btn-secondary:hover {
-        background: #f3f4f6;
-    }
-
-    .dark .btn-secondary {
-        background: #374151;
-        border-color: #4b5563;
-        color: #d1d5db;
-    }
-
-    .dark .btn-secondary:hover {
-        background: #4b5563;
-    }
-
-    /* Itens Table */
-    .itens-table {
-        width: 100%;
-        border-collapse: collapse;
-        border: 1px solid #e5e7eb;
-        border-radius: 0.75rem;
-        overflow: hidden;
-    }
-
-    .itens-table thead {
-        background: #f8fafc;
-    }
-
-    .dark .itens-table thead {
-        background: #111827;
-    }
-
-    .itens-table th {
-        padding: 0.75rem 1rem;
-        font-size: 0.7rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        color: #6b7280;
-        text-align: left;
-    }
-
-    .itens-table td {
-        padding: 0.75rem 1rem;
-        border-top: 1px solid #f3f4f6;
-    }
-
-    .dark .itens-table td {
-        border-top-color: #374151;
-    }
-
-    .totals-card {
-        background: #f8fafc;
-        border-radius: 1rem;
-        padding: 1.5rem;
-        margin-top: 1.5rem;
-    }
-
-    .dark .totals-card {
-        background: #111827;
-    }
-
-    .totals-row {
-        display: flex;
-        justify-content: space-between;
-        padding: 0.5rem 0;
-    }
-
-    .totals-row.total-final {
-        border-top: 2px solid #e5e7eb;
-        padding-top: 1rem;
-        margin-top: 0.5rem;
-        font-size: 1.125rem;
-        font-weight: 700;
-    }
-
-    .dark .totals-row.total-final {
-        border-top-color: #374151;
-    }
-
-    /* Searchable Select */
-    .searchable-select {
-        position: relative;
-    }
-
-    .searchable-select .dropdown-list {
-        position: absolute;
-        top: 100%;
-        left: 0;
-        right: 0;
-        max-height: 200px;
-        overflow-y: auto;
-        background: white;
-        border: 1px solid #e5e7eb;
-        border-radius: 0.75rem;
-        z-index: 20;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-    }
-
-    .dark .searchable-select .dropdown-list {
-        background: #374151;
-        border-color: #4b5563;
-    }
-
-    .dropdown-list li {
-        padding: 0.625rem 1rem;
-        cursor: pointer;
-        font-size: 0.875rem;
-    }
-
-    .dropdown-list li:hover {
-        background: #f3f4f6;
-    }
-
-    .dark .dropdown-list li:hover {
-        background: #4b5563;
-    }
-
-    .dropdown-list li .nome {
-        font-weight: 500;
-    }
-
-    .dropdown-list li .info {
-        font-size: 0.75rem;
-        color: #6b7280;
-    }
-
-    /* Toast */
-    .toast-container {
-        position: fixed;
-        bottom: 1.5rem;
-        right: 1.5rem;
-        z-index: 100;
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-    }
-
-    .toast {
-        padding: 1rem 1.25rem;
-        border-radius: 1rem;
-        color: white;
-        font-size: 0.9rem;
-        font-weight: 500;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-        animation: slideIn 0.3s ease-out;
-    }
-
-    .toast-success { background: linear-gradient(135deg, #059669, #10b981); }
-    .toast-error { background: linear-gradient(135deg, #dc2626, #ef4444); }
-    .toast-info { background: linear-gradient(135deg, #2563eb, #3b82f6); }
-    .toast-warning { background: linear-gradient(135deg, #d97706, #f59e0b); }
-
-    .toast i { font-size: 1.25rem; }
-
-    /* Loading */
-    .loading-cell {
-        text-align: center;
-        padding: 3rem !important;
-    }
-
-    .loading-spinner {
-        display: inline-flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 0.75rem;
-        color: #6b7280;
-    }
-
-    .loading-spinner i {
-        font-size: 2.5rem;
-        animation: spin 1s linear infinite;
-    }
-
     @keyframes spin {
         from { transform: rotate(0deg); }
-        to { transform: rotate(360deg); }
+        to   { transform: rotate(360deg); }
     }
 
-    /* Empty State */
-    .empty-state {
-        text-align: center;
-        padding: 3rem;
-        color: #6b7280;
-    }
+    /* ============ LAYOUT ============ */
+    .page-container { max-width: 1600px; margin: 0 auto; padding: 2rem; }
 
-    .empty-state i {
-        font-size: 3rem;
-        margin-bottom: 0.75rem;
-        opacity: 0.5;
+    /* ============ HEADER ============ */
+    .page-header {
+        background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+        border-radius: 1.5rem; padding: 2rem 2.5rem; margin-bottom: 2rem;
+        display: flex; justify-content: space-between; align-items: center;
+        box-shadow: 0 10px 30px rgba(0,0,0,.1);
     }
-
-    .empty-state p {
-        font-size: 1rem;
-        font-weight: 500;
+    .page-header h2 { font-size: 1.875rem; font-weight: 700; color: white; display: flex; align-items: center; gap: .75rem; }
+    .btn-new-order {
+        background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
+        color: white; padding: .875rem 2rem; border-radius: 1rem; font-weight: 600;
+        font-size: .95rem; display: flex; align-items: center; gap: .5rem;
+        transition: all .3s; box-shadow: 0 4px 15px rgba(59,130,246,.4);
     }
+    .btn-new-order:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(59,130,246,.5); }
 
-    /* Responsividade */
+    /* ============ FILTROS ============ */
+    .filter-card {
+        background: white; border-radius: 1.5rem; padding: 1.75rem; margin-bottom: 1.5rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,.05); border: 1px solid #e5e7eb;
+    }
+    .dark .filter-card { background: #1f2937; border-color: #374151; }
+    .filter-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(200px,1fr)); gap: 1.25rem; margin-bottom: 1.5rem; }
+    .filter-group { display: flex; flex-direction: column; gap: .5rem; }
+    .filter-group label { font-size: .8rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: #6b7280; }
+    .dark .filter-group label { color: #9ca3af; }
+    .filter-input { padding: .75rem 1rem; border: 2px solid #e5e7eb; border-radius: .75rem; background: #f9fafb; font-size: .9rem; transition: all .2s; }
+    .filter-input:focus { border-color: #3b82f6; background: white; outline: none; box-shadow: 0 0 0 3px rgba(59,130,246,.1); }
+    .dark .filter-input { background: #374151; border-color: #4b5563; color: white; }
+    .dark .filter-input:focus { border-color: #60a5fa; background: #374151; }
+    .filter-actions { display: flex; justify-content: flex-end; gap: .75rem; }
+    .btn-filter { padding: .75rem 1.5rem; border-radius: .75rem; font-weight: 500; font-size: .9rem; transition: all .2s; cursor: pointer; }
+    .btn-filter-clear { background: white; border: 2px solid #e5e7eb; color: #6b7280; }
+    .btn-filter-clear:hover { background: #f3f4f6; }
+    .btn-filter-apply { background: #3b82f6; color: white; border: none; }
+    .btn-filter-apply:hover { background: #2563eb; }
+    .dark .btn-filter-clear { background: #374151; border-color: #4b5563; color: #d1d5db; }
+    .dark .btn-filter-clear:hover { background: #4b5563; }
+
+    /* ============ BULK ACTIONS ============ */
+    .bulk-actions-bar {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 1rem; padding: 1rem 1.5rem; margin-bottom: 1.5rem;
+        display: flex; justify-content: space-between; align-items: center;
+        box-shadow: 0 4px 15px rgba(102,126,234,.3); transition: all .3s;
+    }
+    .bulk-actions-bar.hidden { display: none; }
+    .bulk-info { display: flex; align-items: center; gap: .75rem; color: white; font-weight: 500; }
+    .bulk-info i { font-size: 1.5rem; }
+    .bulk-controls { display: flex; align-items: center; gap: .75rem; }
+    .bulk-select { padding: .625rem 1rem; border-radius: .75rem; border: none; background: white; font-size: .875rem; min-width: 200px; }
+    .btn-bulk-apply { background: #1e293b; color: white; border: none; padding: .625rem 1.25rem; border-radius: .75rem; font-weight: 500; display: flex; align-items: center; gap: .5rem; transition: all .2s; cursor: pointer; }
+    .btn-bulk-apply:hover { background: #0f172a; transform: scale(1.02); }
+    .btn-bulk-clear { background: rgba(255,255,255,.2); color: white; border: none; padding: .625rem; border-radius: .75rem; transition: all .2s; cursor: pointer; }
+    .btn-bulk-clear:hover { background: rgba(255,255,255,.3); }
+
+    /* ============ TABELA ============ */
+    .table-card { background: white; border-radius: 1.5rem; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,.05); border: 1px solid #e5e7eb; }
+    .dark .table-card { background: #1f2937; border-color: #374151; }
+    .table-wrapper { overflow-x: auto; }
+    .orders-table { width: 100%; min-width: 1200px; border-collapse: collapse; }
+    .orders-table thead { background: #f8fafc; border-bottom: 2px solid #e5e7eb; }
+    .dark .orders-table thead { background: #111827; border-bottom-color: #374151; }
+    .orders-table th { padding: 1rem 1.25rem; text-align: left; font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #6b7280; white-space: nowrap; }
+    .dark .orders-table th { color: #9ca3af; }
+    .orders-table td { padding: 1.125rem 1.25rem; vertical-align: middle; border-bottom: 1px solid #f3f4f6; }
+    .dark .orders-table td { border-bottom-color: #374151; }
+    .orders-table tbody tr:hover { background: #f9fafb; }
+    .dark .orders-table tbody tr:hover { background: #374151; }
+    .custom-checkbox { width: 1.125rem; height: 1.125rem; border: 2px solid #d1d5db; border-radius: .25rem; cursor: pointer; accent-color: #3b82f6; }
+
+    /* Cliente cell */
+    .cliente-cell { display: flex; align-items: center; gap: .75rem; min-width: 180px; }
+    .cliente-avatar { width: 2.5rem; height: 2.5rem; border-radius: .75rem; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: .875rem; flex-shrink: 0; }
+    .cliente-details { display: flex; flex-direction: column; gap: .125rem; }
+    .cliente-nome { font-weight: 600; font-size: .9rem; color: #111827; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .dark .cliente-nome { color: #f9fafb; }
+    .cliente-telefone { font-size: .75rem; color: #6b7280; }
+    .dark .cliente-telefone { color: #9ca3af; }
+
+    /* Badges */
+    .badge-status { display: inline-flex; align-items: center; gap: .375rem; padding: .375rem .75rem; border-radius: 2rem; font-size: .75rem; font-weight: 600; white-space: nowrap; }
+    .badge-pendente { background: #fef3c7; color: #92400e; }
+    .badge-completo { background: #dbeafe; color: #1e40af; }
+    .badge-pronto   { background: #d1fae5; color: #065f46; }
+    .badge-entregue { background: #ede9fe; color: #5b21b6; }
+    .dark .badge-pendente { background: rgba(251,191,36,.15); color: #fbbf24; }
+    .dark .badge-completo { background: rgba(59,130,246,.15);  color: #60a5fa; }
+    .dark .badge-pronto   { background: rgba(16,185,129,.15);  color: #34d399; }
+    .dark .badge-entregue { background: rgba(139,92,246,.15);  color: #a78bfa; }
+
+    .badge-pagamento { padding: .25rem .625rem; border-radius: 2rem; font-size: .7rem; font-weight: 700; }
+    .badge-pago     { background: #d1fae5; color: #065f46; }
+    .badge-parcial  { background: #fef3c7; color: #92400e; }
+    .badge-nao-pago { background: #fee2e2; color: #991b1b; }
+    .dark .badge-pago     { background: rgba(16,185,129,.15);  color: #34d399; }
+    .dark .badge-parcial  { background: rgba(251,191,36,.15);  color: #fbbf24; }
+    .dark .badge-nao-pago { background: rgba(239,68,68,.15);   color: #f87171; }
+
+    /* Status select */
+    .status-select { padding: .375rem 1.5rem .375rem .75rem; border-radius: 2rem; font-size: .75rem; font-weight: 600; border: 2px solid transparent; cursor: pointer; transition: all .2s; appearance: none; -webkit-appearance: none; background-repeat: no-repeat; background-position: right .5rem center; background-size: 1rem; }
+    .status-select:focus { outline: none; border-color: #3b82f6; }
+    .status-select:disabled { opacity: .6; cursor: not-allowed; }
+
+    /* Action buttons */
+    .action-btns { display: flex; gap: .5rem; }
+    .btn-action { width: 2.25rem; height: 2.25rem; border-radius: .75rem; display: flex; align-items: center; justify-content: center; transition: all .2s; font-size: 1.125rem; cursor: pointer; border: none; }
+    .btn-action-view   { background: #eff6ff; color: #3b82f6; }
+    .btn-action-view:hover   { background: #dbeafe; }
+    .btn-action-print  { background: #f3f4f6; color: #6b7280; }
+    .btn-action-print:hover  { background: #e5e7eb; }
+    .btn-action-pay    { background: #f5f3ff; color: #7c3aed; }
+    .btn-action-pay:hover    { background: #ede9fe; }
+    .btn-action-delete { background: #fee2e2; color: #dc2626; }
+    .btn-action-delete:hover { background: #fecaca; color: #b91c1c; }
+    .dark .btn-action-view   { background: rgba(59,130,246,.15); color: #60a5fa; }
+    .dark .btn-action-view:hover   { background: rgba(59,130,246,.25); }
+    .dark .btn-action-print  { background: rgba(107,114,128,.15); color: #9ca3af; }
+    .dark .btn-action-print:hover  { background: rgba(107,114,128,.25); }
+    .dark .btn-action-pay    { background: rgba(139,92,246,.15); color: #a78bfa; }
+    .dark .btn-action-pay:hover    { background: rgba(139,92,246,.25); }
+    .dark .btn-action-delete { background: rgba(220,38,38,.15); color: #f87171; }
+    .dark .btn-action-delete:hover { background: rgba(220,38,38,.25); }
+
+    /* ============ PAGINAÇÃO ============ */
+    .pagination-bar { display: flex; justify-content: space-between; align-items: center; padding: 1.25rem 1.5rem; border-top: 1px solid #e5e7eb; }
+    .dark .pagination-bar { border-top-color: #374151; }
+    .pagination-info { font-size: .875rem; color: #6b7280; }
+    .pagination-btns { display: flex; gap: .375rem; }
+    .btn-page { min-width: 2.25rem; height: 2.25rem; border-radius: .625rem; border: 1px solid #e5e7eb; background: white; font-size: .875rem; font-weight: 500; display: flex; align-items: center; justify-content: center; transition: all .2s; cursor: pointer; }
+    .btn-page:hover { background: #f3f4f6; }
+    .btn-page.active { background: #3b82f6; color: white; border-color: #3b82f6; }
+    .btn-page:disabled { opacity: .4; cursor: not-allowed; }
+    .dark .btn-page { background: #374151; border-color: #4b5563; color: #d1d5db; }
+    .dark .btn-page:hover { background: #4b5563; }
+
+    /* ============ MODAIS ============ */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.5); backdrop-filter: blur(4px); z-index: 50; display: flex; align-items: center; justify-content: center; padding: 1.5rem; }
+    .modal-overlay.hidden { display: none; }
+
+    /* CRÍTICO: modal-content NÃO tem overflow — o scroll fica no modal-body */
+    .modal-content { background: white; border-radius: 1.5rem; width: 100%; max-width: 900px; box-shadow: 0 25px 50px rgba(0,0,0,.25); display: flex; flex-direction: column; max-height: 85vh; overflow: visible; }
+    .modal-content.modal-sm { max-width: 480px; }
+    .modal-content.modal-lg { max-width: 1100px; }
+    .dark .modal-content { background: #1f2937; }
+
+    .modal-header { position: sticky; top: 0; background: white; border-bottom: 1px solid #e5e7eb; padding: 1.25rem 1.75rem; display: flex; justify-content: space-between; align-items: center; z-index: 10; border-radius: 1.5rem 1.5rem 0 0; flex-shrink: 0; }
+    .dark .modal-header { background: #1f2937; border-bottom-color: #374151; }
+    .modal-header h3 { font-size: 1.25rem; font-weight: 700; color: #111827; }
+    .dark .modal-header h3 { color: #f9fafb; }
+
+    .btn-modal-close { width: 2.5rem; height: 2.5rem; border-radius: .75rem; display: flex; align-items: center; justify-content: center; color: #6b7280; transition: all .2s; background: none; border: none; cursor: pointer; }
+    .btn-modal-close:hover { background: #f3f4f6; color: #111827; }
+    .dark .btn-modal-close:hover { background: #374151; color: #f9fafb; }
+
+    /* CRÍTICO: modal-body tem o overflow-y auto, não o modal-content */
+    .modal-body { padding: 1.75rem; overflow-y: auto; overflow-x: visible; flex: 1; }
+
+    .modal-footer { padding: 1.25rem 1.75rem; border-top: 1px solid #e5e7eb; display: flex; justify-content: flex-end; gap: .75rem; flex-shrink: 0; border-radius: 0 0 1.5rem 1.5rem; }
+    .dark .modal-footer { border-top-color: #374151; }
+
+    /* Form */
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
+    .form-group { display: flex; flex-direction: column; gap: .5rem; }
+    .form-label { font-size: .8rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: #6b7280; }
+    .dark .form-label { color: #9ca3af; }
+    .form-input { padding: .75rem 1rem; border: 2px solid #e5e7eb; border-radius: .75rem; font-size: .9rem; transition: all .2s; background: #f9fafb; width: 100%; box-sizing: border-box; }
+    .form-input:focus { border-color: #3b82f6; background: white; outline: none; box-shadow: 0 0 0 3px rgba(59,130,246,.1); }
+    .dark .form-input { background: #374151; border-color: #4b5563; color: white; }
+    .dark .form-input:focus { border-color: #60a5fa; background: #374151; }
+
+    .btn-primary { background: #3b82f6; color: white; padding: .75rem 1.5rem; border-radius: .75rem; font-weight: 600; border: none; transition: all .2s; cursor: pointer; }
+    .btn-primary:hover { background: #2563eb; }
+    .btn-secondary { background: white; color: #6b7280; padding: .75rem 1.5rem; border-radius: .75rem; font-weight: 500; border: 2px solid #e5e7eb; transition: all .2s; cursor: pointer; }
+    .btn-secondary:hover { background: #f3f4f6; }
+    .dark .btn-secondary { background: #374151; border-color: #4b5563; color: #d1d5db; }
+    .dark .btn-secondary:hover { background: #4b5563; }
+
+    /* Itens table */
+    .itens-table { width: 100%; border-collapse: collapse; border: 1px solid #e5e7eb; border-radius: .75rem; overflow: hidden; }
+    .itens-table thead { background: #f8fafc; }
+    .dark .itens-table thead { background: #111827; }
+    .itens-table th { padding: .75rem 1rem; font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: #6b7280; text-align: left; }
+    .itens-table td { padding: .75rem 1rem; border-top: 1px solid #f3f4f6; }
+    .dark .itens-table td { border-top-color: #374151; }
+
+    /* Totals */
+    .totals-card { background: #f8fafc; border-radius: 1rem; padding: 1.5rem; margin-top: 1.5rem; }
+    .dark .totals-card { background: #111827; }
+    .totals-row { display: flex; justify-content: space-between; padding: .5rem 0; }
+    .totals-row.total-final { border-top: 2px solid #e5e7eb; padding-top: 1rem; margin-top: .5rem; font-size: 1.125rem; font-weight: 700; }
+    .dark .totals-row.total-final { border-top-color: #374151; }
+
+    /* Delete modal */
+    .delete-confirm { background: #fee2e2; border: 1px solid #fecaca; border-radius: .75rem; padding: 1rem; }
+    .dark .delete-confirm { background: rgba(220,38,38,.1); border-color: rgba(220,38,38,.3); }
+
+    /* Loading / Empty */
+    .loading-cell { text-align: center; padding: 3rem !important; }
+    .loading-spinner { display: inline-flex; flex-direction: column; align-items: center; gap: .75rem; color: #6b7280; }
+    .loading-spinner i { font-size: 2.5rem; animation: spin 1s linear infinite; }
+    .empty-state { text-align: center; padding: 3rem; color: #6b7280; }
+    .empty-state i { font-size: 3rem; margin-bottom: .75rem; opacity: .5; display: block; }
+    .empty-state p { font-size: 1rem; font-weight: 500; }
+
+    /* Toast */
+    .toast-container { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 100000; display: flex; flex-direction: column; gap: .5rem; }
+    .toast { padding: 1rem 1.25rem; border-radius: 1rem; color: white; font-size: .9rem; font-weight: 500; display: flex; align-items: center; gap: .5rem; box-shadow: 0 10px 25px rgba(0,0,0,.2); animation: slideIn .3s ease-out; }
+    .toast-success { background: linear-gradient(135deg,#059669,#10b981); }
+    .toast-error   { background: linear-gradient(135deg,#dc2626,#ef4444); }
+    .toast-info    { background: linear-gradient(135deg,#2563eb,#3b82f6); }
+    .toast-warning { background: linear-gradient(135deg,#d97706,#f59e0b); }
+    .toast i { font-size: 1.25rem; }
+
+    /* ============ DROPDOWN PORTAL ============
+       Renderizados no <body> via JS para escapar do overflow do modal.
+       position:fixed calcula relativo à viewport, ignora stacking contexts internos.
+    ============================================ */
+    .dropdown-portal {
+        position: fixed !important;
+        z-index: 99999 !important;
+        background: white;
+        border: 1px solid #d1d5db;
+        border-radius: .625rem;
+        box-shadow: 0 10px 30px rgba(0,0,0,.18);
+        max-height: 260px;
+        overflow-y: auto;
+        padding: 0;
+        margin: 0;
+        list-style: none;
+    }
+    .dropdown-portal.dark-portal {
+        background: #1f2937;
+        border-color: #4b5563;
+    }
+    .dropdown-portal .dp-item {
+        padding: .7rem 1rem;
+        cursor: pointer;
+        border-bottom: 1px solid #f3f4f6;
+        transition: background .15s;
+        list-style: none;
+    }
+    .dropdown-portal.dark-portal .dp-item { border-bottom-color: #374151; }
+    .dropdown-portal .dp-item:last-child { border-bottom: none; }
+    .dropdown-portal .dp-item:hover { background: #f3f4f6; }
+    .dropdown-portal.dark-portal .dp-item:hover { background: #374151; }
+    .dp-item-name  { font-weight: 500; font-size: .875rem; }
+    .dp-item-info  { font-size: .75rem; color: #6b7280; }
+    .dark-portal .dp-item-info { color: #9ca3af; }
+
+    /* Responsivo */
     @media (max-width: 768px) {
-        .page-container {
-            padding: 1rem;
-        }
-
-        .page-header {
-            flex-direction: column;
-            gap: 1rem;
-            text-align: center;
-            padding: 1.5rem;
-        }
-
-        .form-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .bulk-actions-bar {
-            flex-direction: column;
-            gap: 0.75rem;
-        }
-
-        .bulk-controls {
-            flex-wrap: wrap;
-        }
+        .page-container { padding: 1rem; }
+        .page-header { flex-direction: column; gap: 1rem; padding: 1.5rem; }
+        .form-grid { grid-template-columns: 1fr; }
+        .bulk-actions-bar { flex-direction: column; gap: .75rem; }
+        .bulk-controls { flex-wrap: wrap; }
     }
 </style>
 
 <!-- Toast Container -->
 <div class="toast-container" id="toastContainer"></div>
 
-<!-- Main Content -->
+<!-- ============ MAIN ============ -->
 <main class="flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-900 min-h-screen">
     <div class="page-container">
 
-        <!-- Page Header -->
+        <!-- Header -->
         <div class="page-header fade-in">
-            <h2>
-                <i class="ri-shopping-bag-3-line"></i>
-                Pedidos
-            </h2>
+            <h2><i class="ri-shopping-bag-3-line"></i> Pedidos</h2>
             <button id="newOrderBtn" class="btn-new-order">
-                <i class="ri-add-line text-xl"></i>
-                <span>Novo Pedido</span>
+                <i class="ri-add-line text-xl"></i> Novo Pedido
             </button>
         </div>
 
-        <!-- Filters -->
+        <!-- Filtros -->
         <div class="filter-card fade-in">
             <div class="filter-grid">
                 <div class="filter-group">
                     <label>Status</label>
                     <select id="statusFilter" class="filter-input">
                         <option value="all">Todos os Status</option>
-                        <option value="pendente">⏳ Pendente</option>
-                        <option value="completo">✅ Completo</option>
-                        <option value="pronto">🔧 Pronto</option>
-                        <option value="entregue">📦 Entregue</option>
+                        <option value="pendente">Pendente</option>
+                        <option value="completo">Completo</option>
+                        <option value="pronto">Pronto</option>
+                        <option value="entregue">Entregue</option>
                     </select>
                 </div>
                 <div class="filter-group">
                     <label>Pagamento</label>
                     <select id="pagamentoFilter" class="filter-input">
                         <option value="all">Todos</option>
-                        <option value="pago">💰 Pago</option>
-                        <option value="nao_pago">❌ Não Pago</option>
-                        <option value="parcial">⚠️ Parcial</option>
+                        <option value="pago">Pago</option>
+                        <option value="nao_pago">Não Pago</option>
+                        <option value="parcial">Parcial</option>
                     </select>
                 </div>
                 <div class="filter-group">
@@ -1096,16 +333,12 @@
                 </div>
             </div>
             <div class="filter-actions">
-                <button id="resetFiltersBtn" class="btn-filter btn-filter-clear">
-                    <i class="ri-refresh-line"></i> Limpar Filtros
-                </button>
-                <button id="applyFiltersBtn" class="btn-filter btn-filter-apply">
-                    <i class="ri-search-line"></i> Aplicar Filtros
-                </button>
+                <button id="resetFiltersBtn" class="btn-filter btn-filter-clear"><i class="ri-refresh-line"></i> Limpar</button>
+                <button id="applyFiltersBtn" class="btn-filter btn-filter-apply"><i class="ri-search-line"></i> Aplicar</button>
             </div>
         </div>
 
-        <!-- Bulk Actions Bar -->
+        <!-- Bulk Actions -->
         <div id="bulkActionsBar" class="bulk-actions-bar hidden">
             <div class="bulk-info">
                 <i class="ri-checkbox-multiple-line"></i>
@@ -1114,29 +347,23 @@
             <div class="bulk-controls">
                 <select id="bulkActionSelect" class="bulk-select">
                     <option value="">Selecione uma ação...</option>
-                    <option value="completo">✅ Marcar como Completo</option>
-                    <option value="pronto">🔧 Marcar como Pronto</option>
-                    <option value="entregue">📦 Marcar como Entregue</option>
-                    <option value="sms">📱 Enviar SMS - Pedido Pronto</option>
+                    <option value="completo">Marcar como Completo</option>
+                    <option value="pronto">Marcar como Pronto</option>
+                    <option value="entregue">Marcar como Entregue</option>
+                    <option value="sms">Enviar SMS - Pedido Pronto</option>
                 </select>
-                <button id="applyBulkActionBtn" class="btn-bulk-apply">
-                    <i class="ri-play-fill"></i> Aplicar
-                </button>
-                <button id="clearSelectionBtn" class="btn-bulk-clear">
-                    <i class="ri-close-line"></i>
-                </button>
+                <button id="applyBulkActionBtn" class="btn-bulk-apply"><i class="ri-play-fill"></i> Aplicar</button>
+                <button id="clearSelectionBtn" class="btn-bulk-clear"><i class="ri-close-line"></i></button>
             </div>
         </div>
 
-        <!-- Orders Table -->
+        <!-- Tabela de Pedidos -->
         <div class="table-card fade-in">
             <div class="table-wrapper">
                 <table class="orders-table">
                     <thead>
                         <tr>
-                            <th style="width: 40px;">
-                                <input type="checkbox" id="selectAll" class="custom-checkbox">
-                            </th>
+                            <th style="width:40px;"><input type="checkbox" id="selectAll" class="custom-checkbox"></th>
                             <th>ID</th>
                             <th>Cliente</th>
                             <th>Itens</th>
@@ -1160,42 +387,42 @@
                     </tbody>
                 </table>
             </div>
-
-            <!-- Pagination -->
             <div class="pagination-bar">
                 <p class="pagination-info" id="paginationInfo">Mostrando 0 resultados</p>
                 <div class="pagination-btns" id="paginationButtons"></div>
             </div>
         </div>
-    </div>
+
+    </div><!-- /page-container -->
 </main>
 
-<!-- Modal Novo/Editar Pedido -->
+<!-- ============ MODAL NOVO/EDITAR PEDIDO ============ -->
 <div id="orderModal" class="modal-overlay hidden">
     <div class="modal-content modal-lg">
         <div class="modal-header">
             <h3 id="modalTitle">Novo Pedido</h3>
-            <button onclick="closeModal('orderModal')" class="btn-modal-close">
-                <i class="ri-close-line text-xl"></i>
-            </button>
+            <button onclick="closeModal('orderModal')" class="btn-modal-close"><i class="ri-close-line text-xl"></i></button>
         </div>
-        <div class="modal-body">
+        <div class="modal-body" id="orderModalBody">
             <form id="pedidoForm">
                 {% csrf_token %}
                 <input type="hidden" id="pedidoId">
 
                 <div class="form-grid">
+                    <!-- Cliente searchable -->
                     <div class="form-group">
                         <label class="form-label">Cliente *</label>
-                        <div class="searchable-select">
-                            <input type="text" id="clienteSearchInput" placeholder="Pesquisar cliente por nome ou telefone..." class="form-input">
+                        <div style="position:relative;">
+                            <input type="text" id="clienteSearchInput"
+                                   placeholder="Pesquisar cliente por nome ou telefone..."
+                                   class="form-input" autocomplete="off">
                             <input type="hidden" id="clienteSelect" required>
-                            <ul id="clienteList" class="dropdown-list hidden"></ul>
                         </div>
-                        <button type="button" id="newClienteBtn" class="text-blue-600 dark:text-blue-400 text-sm hover:underline mt-1">
+                        <button type="button" id="newClienteBtn" class="text-blue-600 dark:text-blue-400 text-sm hover:underline mt-1" style="text-align:left;">
                             <i class="ri-user-add-line"></i> Cadastrar Novo Cliente
                         </button>
                     </div>
+                    <!-- Cabides -->
                     <div class="form-group">
                         <label class="form-label">Cabides Trazidos</label>
                         <input type="number" id="cabidesInput" value="0" class="form-input" min="0">
@@ -1206,9 +433,9 @@
                 </div>
 
                 <!-- Itens -->
-                <div class="form-group" style="margin-bottom: 1.5rem;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
-                        <label class="form-label" style="margin-bottom: 0;">Itens do Pedido</label>
+                <div class="form-group" style="margin-bottom:1.5rem;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem;">
+                        <label class="form-label" style="margin-bottom:0;">Itens do Pedido</label>
                         <button type="button" id="addItemBtn" class="text-blue-600 dark:text-blue-400 font-medium text-sm flex items-center gap-1 hover:underline">
                             <i class="ri-add-circle-line"></i> Adicionar Item
                         </button>
@@ -1217,439 +444,497 @@
                         <thead>
                             <tr>
                                 <th>Artigo</th>
-                                <th style="width: 80px;">Qtd</th>
-                                <th style="width: 120px;">Preço Unit.</th>
+                                <th style="width:80px;">Qtd</th>
+                                <th style="width:120px;">Preço Unit.</th>
                                 <th>Descrição</th>
-                                <th style="width: 120px;">Total</th>
-                                <th style="width: 50px;"></th>
+                                <th style="width:120px;">Total</th>
+                                <th style="width:50px;"></th>
                             </tr>
                         </thead>
                         <tbody id="itensTableBody"></tbody>
                     </table>
                 </div>
 
-                <!-- Totals -->
+                <!-- Totais -->
                 <div class="totals-card">
                     <div class="totals-row">
-                        <span style="color: #6b7280;">Subtotal</span>
-                        <span id="subtotalLabel" style="font-weight: 500;">0 MT</span>
+                        <span style="color:#6b7280;">Subtotal</span>
+                        <span id="subtotalLabel" style="font-weight:500;">0 MT</span>
                     </div>
-                    <div class="totals-row" style="color: #059669;">
+                    <div class="totals-row" style="color:#059669;">
                         <span>Desconto Cabides</span>
-                        <span id="descontoCabidesLabel" style="font-weight: 500;">- 0 MT</span>
+                        <span id="descontoCabidesLabel" style="font-weight:500;">- 0 MT</span>
                     </div>
                     <div class="totals-row total-final">
                         <span>Total Final</span>
                         <span id="totalFinalLabel">0 MT</span>
                     </div>
                 </div>
-
-                <div class="modal-footer" style="padding-left: 0; padding-right: 0;">
-                    <button type="button" onclick="closeModal('orderModal')" class="btn-secondary">Cancelar</button>
-                    <button type="submit" class="btn-primary">
-                        <i class="ri-save-line"></i> Salvar Pedido
-                    </button>
-                </div>
             </form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" onclick="closeModal('orderModal')" class="btn-secondary">Cancelar</button>
+            <button type="button" id="savePedidoBtn" class="btn-primary"><i class="ri-save-line"></i> Salvar Pedido</button>
         </div>
     </div>
 </div>
 
-<!-- Modal Pagamento -->
+<!-- ============ MODAL PAGAMENTO ============ -->
 <div id="paymentModal" class="modal-overlay hidden">
     <div class="modal-content modal-sm">
         <div class="modal-header">
             <h3>Registrar Pagamento</h3>
-            <button onclick="closeModal('paymentModal')" class="btn-modal-close">
-                <i class="ri-close-line text-xl"></i>
-            </button>
+            <button onclick="closeModal('paymentModal')" class="btn-modal-close"><i class="ri-close-line text-xl"></i></button>
         </div>
         <div class="modal-body">
             <form id="paymentForm">
                 {% csrf_token %}
                 <input type="hidden" id="paymentPedidoId">
-                <div class="form-group" style="margin-bottom: 1.25rem;">
+                <div class="form-group" style="margin-bottom:1.25rem;">
                     <label class="form-label">Valor do Pagamento *</label>
                     <input type="number" id="paymentValor" step="0.01" required class="form-input" placeholder="0.00">
-                    <p class="text-xs" id="saldoInfo" style="margin-top: 0.25rem;"></p>
+                    <p class="text-xs" id="saldoInfo" style="margin-top:.25rem;"></p>
                 </div>
-                <div class="form-group" style="margin-bottom: 1.25rem;">
+                <div class="form-group" style="margin-bottom:1.25rem;">
                     <label class="form-label">Método de Pagamento *</label>
                     <select id="paymentMetodo" required class="form-input">
-                        <option value="numerario">💵 Numerário</option>
-                        <option value="pos">💳 POS (Cartão)</option>
-                        <option value="mpesa">📱 M-Pesa</option>
-                        <option value="emola">📱 e-Mola</option>
-                        <option value="conta_movel">📱 Conta Móvel</option>
-                        <option value="transferencia">🏦 Transferência</option>
+                        <option value="numerario">Numerário</option>
+                        <option value="pos">POS (Cartão)</option>
+                        <option value="mpesa">M-Pesa</option>
+                        <option value="emola">e-Mola</option>
+                        <option value="conta_movel">Conta Móvel</option>
+                        <option value="transferencia">Transferência</option>
                     </select>
                 </div>
-                <div class="form-group" style="margin-bottom: 1.25rem;">
+                <div class="form-group" style="margin-bottom:1.25rem;">
                     <label class="form-label">Referência (Opcional)</label>
                     <input type="text" id="paymentReferencia" class="form-input" placeholder="Nº da transação, comprovante...">
                 </div>
-                <div class="modal-footer" style="padding-left: 0; padding-right: 0;">
-                    <button type="button" onclick="closeModal('paymentModal')" class="btn-secondary">Cancelar</button>
-                    <button type="submit" class="btn-primary" style="background: #059669;">
-                        <i class="ri-check-line"></i> Registrar Pagamento
-                    </button>
-                </div>
             </form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" onclick="closeModal('paymentModal')" class="btn-secondary">Cancelar</button>
+            <button type="button" id="savePaymentBtn" class="btn-primary" style="background:#059669;"><i class="ri-check-line"></i> Registrar</button>
         </div>
     </div>
 </div>
 
-<!-- Modal Visualizar Pedido -->
+<!-- ============ MODAL VISUALIZAR ============ -->
 <div id="viewOrderModal" class="modal-overlay hidden">
     <div class="modal-content modal-lg">
         <div class="modal-header">
             <h3>Detalhes do Pedido</h3>
-            <button onclick="closeModal('viewOrderModal')" class="btn-modal-close">
-                <i class="ri-close-line text-xl"></i>
-            </button>
+            <button onclick="closeModal('viewOrderModal')" class="btn-modal-close"><i class="ri-close-line text-xl"></i></button>
         </div>
         <div class="modal-body" id="viewOrderContent"></div>
     </div>
 </div>
 
-<script>
-    // ============ STATE ============
-    let pedidos = [];
-    let clientes = [];
-    let artigos = [];
-    let currentPage = 1;
-    let totalPages = 1;
-    let selectedPedidos = new Set();
-
-    // ============ UTILS ============
-    function getCSRFToken() {
-        return document.querySelector('[name=csrfmiddlewaretoken]')?.value ||
-               document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
-    }
-
-    function formatMoney(value) {
-        return new Intl.NumberFormat('pt-MZ', {
-            style: 'currency',
-            currency: 'MZN',
-            minimumFractionDigits: 0,
-            maximumFractionDigits: 0
-        }).format(value);
-    }
-
-    const statusLabels = {
-        'pendente': 'Pendente',
-        'completo': 'Completo',
-        'pronto': 'Pronto',
-        'entregue': 'Entregue'
-    };
-
-    const statusBadgeClass = {
-        'pendente': 'badge-pendente',
-        'completo': 'badge-completo',
-        'pronto': 'badge-pronto',
-        'entregue': 'badge-entregue'
-    };
-
-    const statusIcons = {
-        'pendente': 'ri-time-line',
-        'completo': 'ri-check-double-line',
-        'pronto': 'ri-tools-line',
-        'entregue': 'ri-truck-line'
-    };
-
-    // ============ NOTIFICAÇÕES ============
-    function showNotification(message, type = 'info') {
-        const container = document.getElementById('toastContainer');
-        const toast = document.createElement('div');
-        toast.className = `toast toast-${type}`;
-
-        const icons = {
-            success: 'ri-checkbox-circle-line',
-            error: 'ri-error-warning-line',
-            info: 'ri-information-line',
-            warning: 'ri-alert-line'
-        };
-
-        toast.innerHTML = `<i class="${icons[type]}"></i> ${message}`;
-        container.appendChild(toast);
-
-        setTimeout(() => {
-            toast.style.opacity = '0';
-            toast.style.transition = 'opacity 0.3s';
-            setTimeout(() => toast.remove(), 300);
-        }, 3500);
-    }
-
-    // ============ MODAL ============
-    function openModal(modalId) {
-        document.getElementById(modalId).classList.remove('hidden');
-        document.body.style.overflow = 'hidden';
-    }
-
-    function closeModal(modalId) {
-        document.getElementById(modalId).classList.add('hidden');
-        document.body.style.overflow = '';
-    }
-
-    // ============ CLIENTE SEARCH ============
-    function initClienteSearch() {
-        const searchInput = document.getElementById('clienteSearchInput');
-        const hiddenInput = document.getElementById('clienteSelect');
-        const listUl = document.getElementById('clienteList');
-
-        if (!searchInput) return;
-
-        function filterClientes() {
-            const searchTerm = searchInput.value.toLowerCase();
-            const filtered = clientes.filter(c =>
-                c.nome.toLowerCase().includes(searchTerm) ||
-                (c.telefone && c.telefone.includes(searchTerm))
-            );
-
-            if (filtered.length === 0) {
-                listUl.innerHTML = '<li style="padding: 0.75rem; text-align: center; color: #9ca3af;">Nenhum cliente encontrado</li>';
-            } else {
-                listUl.innerHTML = filtered.map(c =>
-                    `<li data-id="${c.id}" data-nome="${c.nome}" data-telefone="${c.telefone || ''}">
-                        <div class="nome">${c.nome}</div>
-                        <div class="info">${c.telefone || 'sem telefone'}</div>
-                    </li>`
-                ).join('');
-
-                listUl.querySelectorAll('li[data-id]').forEach(li => {
-                    li.addEventListener('click', () => {
-                        searchInput.value = li.dataset.nome;
-                        hiddenInput.value = li.dataset.id;
-                        listUl.classList.add('hidden');
-                    });
-                });
-            }
-        }
-
-        searchInput.addEventListener('input', () => {
-            filterClientes();
-            listUl.classList.remove('hidden');
-        });
-
-        searchInput.addEventListener('focus', () => {
-            filterClientes();
-            listUl.classList.remove('hidden');
-        });
-
-        document.addEventListener('click', (e) => {
-            if (!searchInput.parentElement.contains(e.target)) {
-                listUl.classList.add('hidden');
-            }
-        });
-    }
-
-    // ============ ITEM ROW ============
-    function addItemRow(artigoId = null, artigoNome = '', quantidade = 1, preco = 0, descricao = '') {
-        const tbody = document.getElementById('itensTableBody');
-        const rowId = Date.now() + Math.random();
-
-        const tr = document.createElement('tr');
-        tr.id = `item-row-${rowId}`;
-        tr.innerHTML = `
-            <td>
-                <div class="searchable-select" style="min-width: 200px;">
-                    <input type="text" class="artigo-search form-input" placeholder="Pesquisar artigo..." data-row="${rowId}" value="${artigoNome}" style="padding: 0.5rem;">
-                    <ul class="dropdown-list hidden artigo-list"></ul>
-                    <input type="hidden" class="item-artigo-id" data-row="${rowId}" value="${artigoId || ''}">
+<!-- ============ MODAL DELETE ============ -->
+<div id="deleteModal" class="modal-overlay hidden">
+    <div class="modal-content modal-sm">
+        <div class="modal-header">
+            <h3>Confirmar Exclusão</h3>
+            <button onclick="closeModal('deleteModal')" class="btn-modal-close"><i class="ri-close-line text-xl"></i></button>
+        </div>
+        <div class="modal-body">
+            <div class="delete-confirm">
+                <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1rem;">
+                    <i class="ri-delete-bin-line" style="font-size:2rem;color:#dc2626;"></i>
+                    <div>
+                        <p style="font-weight:700;font-size:1.1rem;">Tem certeza?</p>
+                        <p style="font-size:.875rem;color:#6b7280;">Esta ação não pode ser desfeita!</p>
+                    </div>
                 </div>
-            </td>
-            <td>
-                <input type="number" class="item-qtd form-input" data-row="${rowId}" value="${quantidade}" min="1" style="width: 70px; padding: 0.5rem; text-align: center;">
-            </td>
-            <td>
-                <span class="item-preco-unitario" data-row="${rowId}" style="font-weight: 500;">${preco ? formatMoney(preco) : '0 MT'}</span>
-            </td>
-            <td>
-                <input type="text" class="item-descricao form-input" data-row="${rowId}" value="${descricao}" placeholder="Observações (opcional)" maxlength="200" style="padding: 0.5rem; min-width: 150px;">
-            </td>
-            <td>
-                <span class="item-total" data-row="${rowId}" style="font-weight: 600;">${quantidade && preco ? formatMoney(preco * quantidade) : '0 MT'}</span>
-            </td>
-            <td>
-                <button type="button" onclick="removeItemRow('${rowId}')" style="color: #ef4444; padding: 0.25rem; border-radius: 0.5rem;" class="hover:bg-red-50 dark:hover:bg-red-900/20 transition">
-                    <i class="ri-delete-bin-line"></i>
-                </button>
-            </td>
-        `;
-        tbody.appendChild(tr);
+                <p id="deletePedidoInfo" style="margin-bottom:1rem;font-size:.9rem;"></p>
+                <div style="display:flex;justify-content:flex-end;gap:.75rem;">
+                    <button onclick="closeModal('deleteModal')" class="btn-secondary">Cancelar</button>
+                    <button id="confirmDeleteBtn" class="btn-primary" style="background:#dc2626;">
+                        <i class="ri-delete-bin-line"></i> Excluir
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
-        // Inicializar busca de artigo
-        const searchInput = tr.querySelector('.artigo-search');
-        const listUl = tr.querySelector('.artigo-list');
-        const hiddenInput = tr.querySelector('.item-artigo-id');
-        const qtdInput = tr.querySelector('.item-qtd');
+<script>
+/* ================================================================
+   STATE
+================================================================ */
+let pedidos          = [];
+let clientes         = [];
+let artigos          = [];
+let currentPage      = 1;
+let totalPages       = 1;
+let selectedPedidos  = new Set();
+let pedidoToDelete   = null;
+let artigosCarregados = false;
 
-        function filterArtigos() {
-            const searchTerm = searchInput.value.toLowerCase();
-            const filtered = artigos.filter(a => a.nome.toLowerCase().includes(searchTerm));
+/* ================================================================
+   CONSTANTES
+================================================================ */
+const STATUS_BADGE_CLASS = { pendente:'badge-pendente', completo:'badge-completo', pronto:'badge-pronto', entregue:'badge-entregue' };
+const STATUS_ICONS       = { pendente:'ri-time-line', completo:'ri-check-double-line', pronto:'ri-tools-line', entregue:'ri-truck-line' };
+const PAGAMENTO_BADGE    = { nao_pago:'badge-nao-pago', parcial:'badge-parcial', pago:'badge-pago' };
+const STATUS_LABELS      = { pendente:'Pendente', completo:'Completo', pronto:'Pronto', entregue:'Entregue' };
 
-            if (filtered.length === 0) {
-                listUl.innerHTML = '<li style="padding: 0.75rem; text-align: center; color: #9ca3af;">Nenhum artigo encontrado</li>';
-            } else {
-                listUl.innerHTML = filtered.map(a =>
-                    `<li data-id="${a.id}" data-nome="${a.nome}" data-preco="${a.preco_base}">
-                        <div class="nome">${a.nome}</div>
-                        <div class="info">${formatMoney(a.preco_base)}</div>
-                    </li>`
-                ).join('');
+/* ================================================================
+   UTILS
+================================================================ */
+function getCSRFToken() {
+    return document.querySelector('[name=csrfmiddlewaretoken]')?.value ||
+           document.cookie.split('; ').find(r => r.startsWith('csrftoken='))?.split('=')[1];
+}
 
-                listUl.querySelectorAll('li[data-id]').forEach(li => {
-                    li.addEventListener('click', () => {
-                        searchInput.value = li.dataset.nome;
-                        hiddenInput.value = li.dataset.id;
-                        listUl.classList.add('hidden');
-                        tr.querySelector('.item-preco-unitario').textContent = formatMoney(parseFloat(li.dataset.preco));
-                        updateItemTotal(rowId);
-                    });
+function formatMoney(v) {
+    return new Intl.NumberFormat('pt-MZ', { style:'currency', currency:'MZN', minimumFractionDigits:0, maximumFractionDigits:0 }).format(v);
+}
+
+function escapeHtml(t) {
+    if (!t) return '';
+    const d = document.createElement('div');
+    d.textContent = t;
+    return d.innerHTML;
+}
+
+function isDark() { return document.documentElement.classList.contains('dark'); }
+
+/* ================================================================
+   TOAST
+================================================================ */
+function showNotification(msg, type = 'info') {
+    const c = document.getElementById('toastContainer');
+    const t = document.createElement('div');
+    t.className = `toast toast-${type}`;
+    const icons = { success:'ri-checkbox-circle-line', error:'ri-error-warning-line', info:'ri-information-line', warning:'ri-alert-line' };
+    t.innerHTML = `<i class="${icons[type]}"></i> ${msg}`;
+    c.appendChild(t);
+    setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity .3s'; setTimeout(() => t.remove(), 300); }, 3500);
+}
+
+/* ================================================================
+   MODAL
+================================================================ */
+function openModal(id)  { document.getElementById(id).classList.remove('hidden'); document.body.style.overflow = 'hidden'; }
+function closeModal(id) {
+    document.getElementById(id).classList.add('hidden');
+    document.body.style.overflow = '';
+    document.querySelectorAll('.dropdown-portal').forEach(p => p.style.display = 'none');
+}
+
+/* ================================================================
+   DROPDOWN PORTAL
+================================================================ */
+function createPortal(id, isUl = false) {
+    let el = document.getElementById(id);
+    if (!el) {
+        el = document.createElement(isUl ? 'ul' : 'div');
+        el.id = id;
+        el.className = 'dropdown-portal' + (isDark() ? ' dark-portal' : '');
+        el.style.display = 'none';
+        document.body.appendChild(el);
+    }
+    return el;
+}
+
+function positionPortal(portal, anchor) {
+    const r = anchor.getBoundingClientRect();
+    portal.style.top   = (r.bottom + 4) + 'px';
+    portal.style.left  = r.left + 'px';
+    portal.style.width = r.width + 'px';
+    portal.className = 'dropdown-portal' + (isDark() ? ' dark-portal' : '');
+}
+
+/* ================================================================
+   CLIENTE SEARCH
+================================================================ */
+function initClienteSearch() {
+    const input  = document.getElementById('clienteSearchInput');
+    const hidden = document.getElementById('clienteSelect');
+    if (!input) return;
+
+    const portal = createPortal('cliente-dropdown-portal', true);
+
+    function render() {
+        const term = input.value.toLowerCase();
+        const filtered = clientes.filter(c =>
+            c.nome.toLowerCase().includes(term) ||
+            (c.telefone && c.telefone.includes(term))
+        );
+
+        if (filtered.length === 0) {
+            portal.innerHTML = '<li class="dp-item"><span class="dp-item-info">Nenhum cliente encontrado</span></li>';
+        } else {
+            portal.innerHTML = filtered.map(c => `
+                <li class="dp-item" data-id="${c.id}" data-nome="${escapeHtml(c.nome)}">
+                    <div class="dp-item-name">${escapeHtml(c.nome)}</div>
+                    <div class="dp-item-info">${c.telefone || 'sem telefone'}</div>
+                </li>
+            `).join('');
+
+            portal.querySelectorAll('.dp-item[data-id]').forEach(li => {
+                li.addEventListener('mousedown', e => {
+                    e.preventDefault();
+                    input.value  = li.dataset.nome;
+                    hidden.value = li.dataset.id;
+                    portal.style.display = 'none';
                 });
-            }
+            });
         }
 
-        searchInput.addEventListener('input', () => {
-            filterArtigos();
-            listUl.classList.remove('hidden');
-        });
-
-        searchInput.addEventListener('focus', () => {
-            filterArtigos();
-            listUl.classList.remove('hidden');
-        });
-
-        qtdInput.addEventListener('input', () => updateItemTotal(rowId));
-
-        document.addEventListener('click', (e) => {
-            if (!searchInput.parentElement.contains(e.target)) {
-                listUl.classList.add('hidden');
-            }
-        });
-
-        updatePedidoTotals();
+        positionPortal(portal, input);
+        portal.style.display = 'block';
     }
 
-    function removeItemRow(rowId) {
-        const row = document.getElementById(`item-row-${rowId}`);
-        if (row) {
-            row.remove();
+    input.addEventListener('input',  render);
+    input.addEventListener('focus',  render);
+    input.addEventListener('blur',   () => setTimeout(() => { portal.style.display = 'none'; }, 150));
+
+    document.getElementById('orderModalBody')?.addEventListener('scroll', () => {
+        if (portal.style.display !== 'none') positionPortal(portal, input);
+    });
+}
+
+/* ================================================================
+   ARTIGO SEARCH POR LINHA
+================================================================ */
+function initArtigoSearchForRow(rowId) {
+    const row = document.getElementById(`item-row-${rowId}`);
+    if (!row) return;
+
+    const searchInput = row.querySelector('.artigo-search');
+    const hiddenInput = row.querySelector('.item-artigo-id');
+    const qtdInput    = row.querySelector('.item-qtd');
+    if (!searchInput) return;
+
+    const portalId = `artigo-portal-${rowId}`;
+    const portal   = createPortal(portalId, false);
+
+    function render() {
+        const term     = searchInput.value.toLowerCase();
+        const filtered = artigos
+            .filter(a => a.disponivel !== false)
+            .filter(a => a.nome.toLowerCase().includes(term));
+
+        if (filtered.length === 0) {
+            portal.innerHTML = '<div class="dp-item"><span class="dp-item-info">Nenhum artigo encontrado</span></div>';
+        } else {
+            portal.innerHTML = filtered.map(a => `
+                <div class="dp-item" data-id="${a.id}" data-nome="${escapeHtml(a.nome)}" data-preco="${a.preco_base}">
+                    <div class="dp-item-name">${escapeHtml(a.nome)}</div>
+                    <div class="dp-item-info">${formatMoney(a.preco_base)}</div>
+                </div>
+            `).join('');
+
+            portal.querySelectorAll('.dp-item[data-id]').forEach(item => {
+                item.addEventListener('mousedown', e => {
+                    e.preventDefault();
+                    const preco = parseFloat(item.dataset.preco);
+                    searchInput.value = item.dataset.nome;
+                    hiddenInput.value = item.dataset.id;
+                    console.log(`[DEBUG] Artigo selecionado: ID=${item.dataset.id}, Nome=${item.dataset.nome}`);
+                    portal.style.display = 'none';
+
+                    const precoSpan = row.querySelector('.item-preco-unitario');
+                    if (precoSpan) { precoSpan.textContent = formatMoney(preco); precoSpan.dataset.preco = preco; }
+
+                    const qtd = parseInt(qtdInput?.value) || 1;
+                    const totalSpan = row.querySelector('.item-total');
+                    if (totalSpan) totalSpan.textContent = formatMoney(preco * qtd);
+
+                    updatePedidoTotals();
+                });
+            });
+        }
+
+        positionPortal(portal, searchInput);
+        portal.style.display = 'block';
+    }
+
+    searchInput.addEventListener('input',  render);
+    searchInput.addEventListener('focus',  render);
+    searchInput.addEventListener('click',  render);
+    searchInput.addEventListener('blur',   () => setTimeout(() => { portal.style.display = 'none'; }, 150));
+
+    document.getElementById('orderModalBody')?.addEventListener('scroll', () => {
+        if (portal.style.display !== 'none') positionPortal(portal, searchInput);
+    });
+
+    if (qtdInput) {
+        qtdInput.addEventListener('input', () => {
+            const preco = parseFloat(row.querySelector('.item-preco-unitario')?.dataset.preco || 0);
+            const qtd   = parseInt(qtdInput.value) || 0;
+            const totalSpan = row.querySelector('.item-total');
+            if (totalSpan) totalSpan.textContent = formatMoney(preco * qtd);
             updatePedidoTotals();
-        }
-    }
-
-    function updateItemTotal(rowId) {
-        const row = document.getElementById(`item-row-${rowId}`);
-        if (!row) return;
-
-        const precoText = row.querySelector('.item-preco-unitario').textContent;
-        const preco = parseFloat(precoText.replace('MT', '').replace(/\./g, '').replace(',', '.').trim()) || 0;
-        const qtd = parseInt(row.querySelector('.item-qtd').value) || 0;
-        const total = preco * qtd;
-
-        row.querySelector('.item-total').textContent = formatMoney(total);
-        updatePedidoTotals();
-    }
-
-    function updatePedidoTotals() {
-        let subtotal = 0;
-        document.querySelectorAll('#itensTableBody tr').forEach(row => {
-            const totalText = row.querySelector('.item-total')?.textContent || '0 MT';
-            const totalValue = parseFloat(totalText.replace('MT', '').replace(/\./g, '').replace(',', '.').trim()) || 0;
-            subtotal += totalValue;
         });
-
-        const cabides = parseInt(document.getElementById('cabidesInput').value) || 0;
-        const descontoCabides = Math.floor(cabides / 20) * 140;
-
-        document.getElementById('subtotalLabel').textContent = formatMoney(subtotal);
-        document.getElementById('descontoCabidesLabel').textContent = `- ${formatMoney(descontoCabides)}`;
-        document.getElementById('totalFinalLabel').textContent = formatMoney(subtotal - descontoCabides);
     }
 
-    function resetOrderForm() {
-        document.getElementById('pedidoId').value = '';
-        document.getElementById('clienteSearchInput').value = '';
-        document.getElementById('clienteSelect').value = '';
-        document.getElementById('cabidesInput').value = '0';
-        document.getElementById('itensTableBody').innerHTML = '';
-        updatePedidoTotals();
+    new MutationObserver(() => {
+        if (!document.body.contains(row)) portal.remove();
+    }).observe(document.getElementById('itensTableBody'), { childList: true, subtree: false });
+}
+
+/* ================================================================
+   ADICIONAR LINHA DE ITEM
+================================================================ */
+function addItemRow(artigoId = null, artigoNome = '', quantidade = 1, preco = 0, descricao = '') {
+    if (!artigosCarregados || artigos.length === 0) {
+        showNotification('Aguardando carregamento de artigos...', 'warning');
+        loadArtigos().then(() => {
+            if (artigos.length > 0) addItemRow(artigoId, artigoNome, quantidade, preco, descricao);
+            else showNotification('Nenhum artigo cadastrado. Cadastre artigos primeiro.', 'error');
+        });
+        return;
     }
 
-    // ============ API CALLS ============
-    async function loadPedidos(page = 1) {
-        const status = document.getElementById('statusFilter').value;
-        const pagamento = document.getElementById('pagamentoFilter').value;
-        const dataInicio = document.getElementById('dataInicio').value;
-        const dataFim = document.getElementById('dataFim').value;
-        const cliente = document.getElementById('clienteSearch').value;
+    const tbody = document.getElementById('itensTableBody');
+    const rowId = 'r_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
 
-        let url = `/api/pedidos/?page=${page}&per_page=50&status=${status}&pagamento=${pagamento}&data_inicio=${dataInicio}&data_fim=${dataFim}&cliente=${encodeURIComponent(cliente)}`;
+    const tr = document.createElement('tr');
+    tr.id = `item-row-${rowId}`;
+    tr.innerHTML = `
+        <td style="padding:.5rem; min-width:220px;">
+            <input type="text"   class="artigo-search form-input"
+                   placeholder="🔍 Pesquisar artigo..." autocomplete="off"
+                   value="${escapeHtml(artigoNome)}"
+                   style="font-size:.875rem;">
+            <input type="hidden" class="item-artigo-id" value="${artigoId || ''}">
+        </td>
+        <td style="padding:.5rem;">
+            <input type="number" class="item-qtd form-input"
+                   value="${quantidade}" min="1"
+                   style="width:70px;padding:.5rem;text-align:center;">
+        </td>
+        <td style="padding:.5rem;">
+            <span class="item-preco-unitario" data-preco="${preco}" style="font-weight:500;">
+                ${preco ? formatMoney(preco) : '0 MT'}
+            </span>
+        </td>
+        <td style="padding:.5rem;">
+            <input type="text" class="item-descricao form-input"
+                   value="${escapeHtml(descricao)}" placeholder="Observações (opcional)"
+                   maxlength="200" style="width:100%;padding:.5rem;">
+        </td>
+        <td style="padding:.5rem;">
+            <span class="item-total" style="font-weight:600;">
+                ${preco && quantidade ? formatMoney(preco * quantidade) : '0 MT'}
+            </span>
+        </td>
+        <td style="padding:.5rem;text-align:center;">
+            <button type="button" onclick="removeItemRow('${rowId}')"
+                    style="color:#ef4444;background:none;border:none;cursor:pointer;font-size:1.125rem;">
+                <i class="ri-delete-bin-line"></i>
+            </button>
+        </td>
+    `;
+    tbody.appendChild(tr);
+    initArtigoSearchForRow(rowId);
+    updatePedidoTotals();
+}
 
-        try {
-            const response = await fetch(url);
-            const data = await response.json();
-            if (data.success) {
-                pedidos = data.pedidos;
-                currentPage = data.page;
-                totalPages = data.total_pages;
-                renderPedidosTable();
-                renderPaginationButtons();
-            } else {
-                showNotification(data.error || 'Erro ao carregar pedidos', 'error');
-            }
-        } catch (error) {
-            showNotification('Erro de conexão ao carregar pedidos', 'error');
+function removeItemRow(rowId) {
+    document.getElementById(`item-row-${rowId}`)?.remove();
+    updatePedidoTotals();
+}
+
+/* ================================================================
+   TOTAIS
+================================================================ */
+function updatePedidoTotals() {
+    let subtotal = 0;
+    document.querySelectorAll('#itensTableBody .item-total').forEach(el => {
+        const raw = el.textContent.replace(/[^\d,.]/g, '').replace(/\.(?=.*\.)/g, '').replace(',', '.');
+        subtotal += parseFloat(raw) || 0;
+    });
+
+    const cabides         = parseInt(document.getElementById('cabidesInput')?.value) || 0;
+    const descontoCabides = Math.floor(cabides / 20) * 140;
+
+    const sub = document.getElementById('subtotalLabel');
+    const des = document.getElementById('descontoCabidesLabel');
+    const tot = document.getElementById('totalFinalLabel');
+    if (sub) sub.textContent = formatMoney(subtotal);
+    if (des) des.textContent = `- ${formatMoney(descontoCabides)}`;
+    if (tot) tot.textContent = formatMoney(subtotal - descontoCabides);
+}
+
+function resetOrderForm() {
+    document.getElementById('pedidoId').value = '';
+    document.getElementById('clienteSearchInput').value = '';
+    document.getElementById('clienteSelect').value = '';
+    document.getElementById('cabidesInput').value = '0';
+    document.getElementById('itensTableBody').innerHTML = '';
+    document.querySelectorAll('[id^="artigo-portal-"]').forEach(p => p.remove());
+    updatePedidoTotals();
+}
+
+/* ================================================================
+   API — CARREGAR DADOS
+================================================================ */
+async function loadPedidos(page = 1) {
+    const status    = document.getElementById('statusFilter').value;
+    const pagamento = document.getElementById('pagamentoFilter').value;
+    const dataIni   = document.getElementById('dataInicio').value;
+    const dataFim   = document.getElementById('dataFim').value;
+    const cliente   = document.getElementById('clienteSearch').value;
+
+    const url = `/api/pedidos/?page=${page}&per_page=50&status=${status}&pagamento=${pagamento}&data_inicio=${dataIni}&data_fim=${dataFim}&cliente=${encodeURIComponent(cliente)}`;
+
+    try {
+        const r    = await fetch(url);
+        const data = await r.json();
+        if (data.success) {
+            pedidos     = data.pedidos;
+            currentPage = data.page;
+            totalPages  = data.total_pages;
+            renderPedidosTable();
+            renderPaginationButtons();
+        } else {
+            showNotification(data.error || 'Erro ao carregar pedidos', 'error');
         }
+    } catch {
+        showNotification('Erro de conexão ao carregar pedidos', 'error');
     }
+}
 
-    async function loadClientes() {
-        try {
-            const response = await fetch('/api/pedidos/clientes/');
-            const data = await response.json();
-            if (data.success) {
-                clientes = data.clientes;
-                initClienteSearch();
-            }
-        } catch (error) {
-            console.error('Erro ao carregar clientes:', error);
-        }
-    }
+async function loadClientes() {
+    try {
+        const r    = await fetch('/api/pedidos/clientes/');
+        const data = await r.json();
+        if (data.success) { clientes = data.clientes; initClienteSearch(); }
+    } catch { /* silencioso */ }
+}
 
-    async function loadArtigos() {
-        try {
-            const response = await fetch('/api/pedidos/artigos/');
-            const data = await response.json();
-            if (data.success) {
-                artigos = data.artigos;
-            }
-        } catch (error) {
-            console.error('Erro ao carregar artigos:', error);
-        }
-    }
+async function loadArtigos() {
+    try {
+        const r    = await fetch('/api/pedidos/artigos/');
+        const data = await r.json();
+        if (data.success) { artigos = data.artigos; artigosCarregados = true; }
+    } catch { /* silencioso */ }
+}
 
-    // ============ RENDER ============
-    // Na função renderPedidosTable, atualize a parte das ações:
-    function renderPedidosTable() {
+/* ================================================================
+   RENDER TABELA
+================================================================ */
+function renderPedidosTable() {
     const tbody = document.getElementById('pedidosTableBody');
 
     if (pedidos.length === 0) {
         tbody.innerHTML = `
-            <tr>
-                <td colspan="10">
-                    <div class="empty-state">
-                        <i class="ri-inbox-line"></i>
-                        <p>Nenhum pedido encontrado com os filtros atuais</p>
-                        <button onclick="document.getElementById('resetFiltersBtn').click()"
-                                class="btn-filter btn-filter-apply"
-                                style="margin-top: 1rem; display: inline-flex;">
-                            <i class="ri-refresh-line"></i> Limpar Filtros
-                        </button>
-                    </div>
-                </td>
-            </tr>`;
-        document.getElementById('paginationInfo').textContent = 'Nenhum resultado encontrado';
+            <td><td colspan="10">
+                <div class="empty-state">
+                    <i class="ri-inbox-line"></i>
+                    <p>Nenhum pedido encontrado</p>
+                    <button onclick="document.getElementById('resetFiltersBtn').click()"
+                            class="btn-filter btn-filter-apply"
+                            style="margin-top:1rem;display:inline-flex;">
+                        <i class="ri-refresh-line"></i> Limpar Filtros
+                    </button>
+                </div>
+            </td></tr>`;
+        document.getElementById('paginationInfo').textContent = 'Nenhum resultado';
         document.getElementById('paginationButtons').innerHTML = '';
         return;
     }
@@ -1658,812 +943,480 @@
         `Mostrando ${pedidos.length} pedido(s) • Página ${currentPage} de ${totalPages}`;
 
     tbody.innerHTML = pedidos.map(p => {
-        const statusClass = STATUS_BADGE_CLASS[p.status] || 'badge-pendente';
-        const statusIcon = STATUS_ICONS[p.status] || 'ri-time-line';
+        const sClass = STATUS_BADGE_CLASS[p.status] || 'badge-pendente';
+        const pClass = PAGAMENTO_BADGE[p.status_pagamento] || 'badge-nao-pago';
 
-        let statusOptions = [];
-        if (p.status === 'pendente') {
-            statusOptions = [
-                { value: 'pendente', label: '⏳ Pendente', selected: true },
-                { value: 'completo', label: '✅ Completo', selected: false }
-            ];
-        } else if (p.status === 'completo') {
-            statusOptions = [
-                { value: 'completo', label: '✅ Completo', selected: true },
-                { value: 'pronto', label: '🔧 Pronto', selected: false }
-            ];
-        } else if (p.status === 'pronto') {
-            statusOptions = [
-                { value: 'pronto', label: '🔧 Pronto', selected: true },
-                { value: 'entregue', label: '📦 Entregue', selected: false }
-            ];
-        } else {
-            statusOptions = [
-                { value: 'entregue', label: '📦 Entregue', selected: true }
-            ];
-        }
+        let opts = '';
+        if      (p.status === 'pendente') opts = `<option value="pendente" selected> Pendente</option><option value="completo"> Completo</option>`;
+        else if (p.status === 'completo') opts = `<option value="completo" selected> Completo</option><option value="pronto"> Pronto</option>`;
+        else if (p.status === 'pronto')   opts = `<option value="pronto" selected>🔧 Pronto</option><option value="entregue"> Entregue</option>`;
+        else                              opts = `<option value="entregue" selected> Entregue</option>`;
 
-        const pagamentoClass = PAGAMENTO_BADGE_CLASS[p.status_pagamento] || 'badge-nao-pago';
-        const isChecked = selectedPedidos.has(p.id) ? 'checked' : '';
+        const checked = selectedPedidos.has(p.id) ? 'checked' : '';
 
         return `
-            <tr>
-                <td>
-                    <input type="checkbox" class="custom-checkbox pedido-checkbox" value="${p.id}" ${isChecked}>
-                </td>
-                <td>
-                    <span style="font-weight: 700; color: #3b82f6; font-family: monospace; font-size: 0.9rem;">
-                        #${p.id_formatado}
-                    </span>
-                </td>
-                <td>
-                    <div class="cliente-cell">
-                        <div class="cliente-avatar" style="background: linear-gradient(135deg, #dbeafe, #bfdbfe); color: #1e40af;">
-                            ${p.cliente_nome.charAt(0).toUpperCase()}
-                        </div>
-                        <div class="cliente-details">
-                            <span class="cliente-nome" title="${p.cliente_nome}">${p.cliente_nome}</span>
-                            <span class="cliente-telefone">${p.cliente_telefone || '—'}</span>
-                        </div>
+        <tr>
+            <td><input type="checkbox" class="custom-checkbox pedido-checkbox" value="${p.id}" ${checked}></td>
+            <td><span style="font-weight:700;color:#3b82f6;font-family:monospace;">${p.id}</span></td>
+            <td>
+                <div class="cliente-cell">
+                    <div class="cliente-avatar" style="background:linear-gradient(135deg,#dbeafe,#bfdbfe);color:#1e40af;">
+                        ${p.cliente_nome.charAt(0).toUpperCase()}
                     </div>
-                </td>
-                <td>
-                    <span style="font-weight: 500;">${p.itens} item(ns)</span>
-                </td>
-                <td>
-                    <span style="font-weight: 700; font-size: 0.95rem;">${formatMoney(p.total_final)}</span>
-                </td>
-                <td>
-                    <span style="color: #059669; font-weight: 500;">${formatMoney(p.total_pago)}</span>
-                </td>
-                <td>
-                    <span style="font-weight: 700; color: ${p.saldo > 0 ? '#dc2626' : '#059669'};">
-                        ${formatMoney(p.saldo)}
-                    </span>
-                </td>
-                <td>
-                    <select class="status-select ${statusClass}"
-                            data-pedido-id="${p.id}"
-                            onchange="updatePedidoStatus(${p.id}, this.value)"
-                            ${p.status === 'entregue' ? 'disabled' : ''}>
-                        ${statusOptions.map(opt =>
-                            `<option value="${opt.value}" ${opt.selected ? 'selected' : ''}>${opt.label}</option>`
-                        ).join('')}
-                    </select>
-                </td>
-                <td>
-                    <span class="badge-pagamento ${pagamentoClass}">
-                        ${p.status_pagamento_label}
-                    </span>
-                </td>
-                <td>
-                    <div class="action-btns">
-                        <!-- Visualizar -->
-                        <button onclick="viewOrder(${p.id})"
-                                class="btn-action btn-action-view"
-                                title="Visualizar detalhes">
-                            <i class="ri-eye-line"></i>
-                        </button>
-
-                        <!-- Imprimir Recibo -->
-                        <button onclick="printReceipt(${p.id})"
-                                class="btn-action btn-action-print"
-                                title="Imprimir recibo">
-                            <i class="ri-printer-line"></i>
-                        </button>
-
-                        <!-- Registrar Pagamento -->
-                        <button onclick="openPaymentModal(${p.id}, ${p.saldo})"
-                                class="btn-action btn-action-pay"
-                                title="Registrar pagamento">
-                            <i class="ri-money-dollar-circle-line"></i>
-                        </button>
-
-                        <!-- Histórico de Pagamentos -->
-                        <button onclick="viewPaymentsHistory(${p.id})"
-                                class="btn-action btn-action-payments"
-                                title="Histórico de pagamentos">
-                            <i class="ri-bank-card-line"></i>
-                        </button>
-
-                        <!-- Deletar Pedido -->
-                        <button onclick="deletePedido(${p.id}, '${p.id_formatado}')"
-                                class="btn-action btn-action-delete"
-                                title="Excluir pedido">
-                            <i class="ri-delete-bin-line"></i>
-                        </button>
+                    <div class="cliente-details">
+                        <span class="cliente-nome" title="${escapeHtml(p.cliente_nome)}">${escapeHtml(p.cliente_nome)}</span>
+                        <span class="cliente-telefone">${p.cliente_telefone || '—'}</span>
                     </div>
-                </td>
-            </tr>
-        `;
+                </div>
+            </td>
+            <td><span style="font-weight:500;">${p.itens} item(ns)</span></td>
+            <td><span style="font-weight:700;font-size:.95rem;">${formatMoney(p.total_final)}</span></td>
+            <td><span style="color:#059669;font-weight:500;">${formatMoney(p.total_pago)}</span></td>
+            <td><span style="font-weight:700;color:${p.saldo > 0 ? '#dc2626' : '#059669'};">${formatMoney(p.saldo)}</span></td>
+            <td>
+                <select class="status-select ${sClass}"
+                        onchange="updatePedidoStatus(${p.id}, this.value)"
+                        ${p.status === 'entregue' ? 'disabled' : ''}>
+                    ${opts}
+                </select>
+            </td>
+            <td><span class="badge-pagamento ${pClass}">${p.status_pagamento_label}</span></td>
+            <td>
+                <div class="action-btns">
+                    <button onclick="viewOrder(${p.id})"                          class="btn-action btn-action-view"   title="Visualizar"><i class="ri-eye-line"></i></button>
+                    <button onclick="printReceipt(${p.id})"                       class="btn-action btn-action-print"  title="Imprimir"><i class="ri-printer-line"></i></button>
+                    <button onclick="openPaymentModal(${p.id}, ${p.saldo})"       class="btn-action btn-action-pay"    title="Pagamento"><i class="ri-money-dollar-circle-line"></i></button>
+                    <button onclick="openDeleteModal(${p.id}, '${p.id_formatado}')" class="btn-action btn-action-delete" title="Excluir"><i class="ri-delete-bin-line"></i></button>
+                </div>
+            </td>
+        </tr>`;
     }).join('');
 }
 
-    function renderPaginationButtons() {
-        const paginationDiv = document.getElementById('paginationButtons');
-
-        if (totalPages <= 1) {
-            paginationDiv.innerHTML = '';
-            return;
-        }
-
-        let html = '';
-
-        // Previous
-        html += `<button onclick="loadPedidos(${currentPage - 1})" class="btn-page" ${currentPage === 1 ? 'disabled' : ''}>
-            <i class="ri-arrow-left-s-line"></i>
-        </button>`;
-
-        // Pages
-        const maxButtons = 5;
-        let startPage = Math.max(1, currentPage - Math.floor(maxButtons / 2));
-        let endPage = Math.min(totalPages, startPage + maxButtons - 1);
-
-        if (endPage - startPage < maxButtons - 1) {
-            startPage = Math.max(1, endPage - maxButtons + 1);
-        }
-
-        if (startPage > 1) {
-            html += `<button onclick="loadPedidos(1)" class="btn-page">1</button>`;
-            if (startPage > 2) html += `<span class="btn-page" style="border: none;">...</span>`;
-        }
-
-        for (let i = startPage; i <= endPage; i++) {
-            html += `<button onclick="loadPedidos(${i})" class="btn-page ${currentPage === i ? 'active' : ''}">${i}</button>`;
-        }
-
-        if (endPage < totalPages) {
-            if (endPage < totalPages - 1) html += `<span class="btn-page" style="border: none;">...</span>`;
-            html += `<button onclick="loadPedidos(${totalPages})" class="btn-page">${totalPages}</button>`;
-        }
-
-        // Next
-        html += `<button onclick="loadPedidos(${currentPage + 1})" class="btn-page" ${currentPage === totalPages ? 'disabled' : ''}>
-            <i class="ri-arrow-right-s-line"></i>
-        </button>`;
-
-        paginationDiv.innerHTML = html;
-    }
-
-    // ============ STATUS UPDATE ============
-    async function updatePedidoStatus(pedidoId, novoStatus) {
-        const pedido = pedidos.find(p => p.id === pedidoId);
-        if (!pedido) return;
-
-        if (pedido.status === novoStatus) {
-            showNotification(`Pedido já está como "${statusLabels[novoStatus]}"`, 'warning');
-            await loadPedidos(currentPage);
-            return;
-        }
-
-        let transicaoValida = false;
-
-        if (pedido.status === 'pendente' && novoStatus === 'completo') transicaoValida = true;
-        else if (pedido.status === 'completo' && novoStatus === 'pronto') transicaoValida = true;
-        else if (pedido.status === 'pronto' && novoStatus === 'entregue') {
-            if (pedido.saldo > 0) {
-                showNotification(`Saldo pendente de ${formatMoney(pedido.saldo)}. Não é possível entregar.`, 'error');
-                await loadPedidos(currentPage);
-                return;
-            }
-            transicaoValida = true;
-        }
-
-        if (!transicaoValida) {
-            showNotification('Transição de status não permitida!', 'error');
-            await loadPedidos(currentPage);
-            return;
-        }
-
-        try {
-            const response = await fetch(`/api/pedidos/atualizar-status/${pedidoId}/`, {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': getCSRFToken()
-                },
-                body: JSON.stringify({ status: novoStatus })
-            });
-
-            const data = await response.json();
-
-            if (data.success) {
-                showNotification(data.message || `Status atualizado para "${statusLabels[novoStatus]}"`, 'success');
-                await loadPedidos(currentPage);
-            } else {
-                showNotification(data.error || 'Erro ao atualizar status', 'error');
-                await loadPedidos(currentPage);
-            }
-        } catch (error) {
-            showNotification('Erro ao conectar com o servidor', 'error');
-            await loadPedidos(currentPage);
-        }
-    }
-
-    // ============ SAVE PEDIDO ============
-    async function savePedido(event) {
-        event.preventDefault();
-
-        const pedidoId = document.getElementById('pedidoId').value;
-        const cliente_id = document.getElementById('clienteSelect').value;
-        const cabides_trazidos = parseInt(document.getElementById('cabidesInput').value) || 0;
-
-        if (!cliente_id) {
-            showNotification('Selecione um cliente', 'error');
-            return;
-        }
-
-        const itens = [];
-        document.querySelectorAll('#itensTableBody tr').forEach(row => {
-            const artigo_id = row.querySelector('.item-artigo-id')?.value;
-            const quantidade = parseInt(row.querySelector('.item-qtd')?.value) || 0;
-            const descricao = row.querySelector('.item-descricao')?.value || '';
-
-            if (artigo_id && quantidade > 0) {
-                itens.push({ artigo_id, quantidade, descricao });
-            }
-        });
-
-        if (itens.length === 0) {
-            showNotification('Adicione pelo menos um item ao pedido', 'error');
-            return;
-        }
-
-        const url = pedidoId ? `/api/pedidos/editar/${pedidoId}/` : '/api/pedidos/criar/';
-        const method = pedidoId ? 'PUT' : 'POST';
-
-        try {
-            const response = await fetch(url, {
-                method: method,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': getCSRFToken()
-                },
-                body: JSON.stringify({ cliente_id, cabides_trazidos, itens })
-            });
-
-            const data = await response.json();
-
-            if (data.success) {
-                showNotification(data.message || 'Pedido salvo com sucesso!', 'success');
-                closeModal('orderModal');
-                await loadPedidos(currentPage);
-                resetOrderForm();
-            } else {
-                showNotification(data.error || 'Erro ao salvar pedido', 'error');
-            }
-        } catch (error) {
-            showNotification('Erro ao conectar com o servidor', 'error');
-        }
-    }
-
-    // ============ PAYMENT ============
-    function openPaymentModal(pedidoId, saldo) {
-        document.getElementById('paymentPedidoId').value = pedidoId;
-        document.getElementById('paymentValor').value = '';
-        document.getElementById('paymentValor').max = saldo;
-
-        const saldoInfo = document.getElementById('saldoInfo');
-        saldoInfo.innerHTML = `<span style="color: #6b7280;">Saldo pendente: <strong>${formatMoney(saldo)}</strong></span>`;
-
-        if (saldo > 0) {
-            saldoInfo.innerHTML += `<br><span style="color: #d97706; font-size: 0.7rem;">⚠️ O pedido só poderá ser entregue após pagamento total.</span>`;
-        }
-
-        openModal('paymentModal');
-    }
-
-    async function registerPayment(event) {
-        event.preventDefault();
-
-        const pedidoId = document.getElementById('paymentPedidoId').value;
-        const valor = parseFloat(document.getElementById('paymentValor').value);
-        const metodo = document.getElementById('paymentMetodo').value;
-        const referencia = document.getElementById('paymentReferencia').value;
-
-        if (!valor || valor <= 0) {
-            showNotification('Informe um valor válido', 'error');
-            return;
-        }
-
-        try {
-            const response = await fetch(`/api/pedidos/pagamento/${pedidoId}/`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': getCSRFToken()
-                },
-                body: JSON.stringify({ valor, metodo, referencia })
-            });
-
-            const data = await response.json();
-
-            if (data.success) {
-                showNotification(data.message || 'Pagamento registrado com sucesso!', 'success');
-                closeModal('paymentModal');
-                await loadPedidos(currentPage);
-            } else {
-                showNotification(data.error || 'Erro ao registrar pagamento', 'error');
-            }
-        } catch (error) {
-            showNotification('Erro ao conectar com o servidor', 'error');
-        }
-    }
-
-    // ============ VIEW ORDER ============
-    async function viewOrder(id) {
-        try {
-            const response = await fetch(`/api/pedidos/detalhes/${id}/`);
-            const data = await response.json();
-
-            if (data.success) {
-                const p = data.pedido;
-                const content = document.getElementById('viewOrderContent');
-
-                content.innerHTML = `
-                    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
-                        <div style="background: #eff6ff; border-radius: 1rem; padding: 1.5rem;">
-                            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                                <div>
-                                    <p style="font-size: 0.8rem; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600;">Pedido #${p.id_formatado}</p>
-                                    <h4 style="font-size: 1.25rem; font-weight: 700; margin-top: 0.25rem;">${p.cliente_nome}</h4>
-                                    <p style="font-size: 0.875rem; color: #6b7280;">${p.cliente_telefone || 'Sem telefone cadastrado'}</p>
-                                </div>
-                                <span class="badge-status ${statusBadgeClass[p.status]}">
-                                    <i class="${statusIcons[p.status]}"></i>
-                                    ${statusLabels[p.status]}
-                                </span>
-                            </div>
-                        </div>
-
-                        <div>
-                            <h5 style="font-weight: 700; margin-bottom: 0.75rem; font-size: 0.95rem;">Itens do Pedido</h5>
-                            <table class="itens-table">
-                                <thead>
-                                    <tr>
-                                        <th>Item</th>
-                                        <th style="text-align: center;">Qtd</th>
-                                        <th style="text-align: right;">Preço</th>
-                                        <th>Descrição</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    ${p.itens.map(i => `
-                                        <tr>
-                                            <td style="font-weight: 500;">${i.nome}</td>
-                                            <td style="text-align: center;">${i.quantidade}</td>
-                                            <td style="text-align: right; font-weight: 500;">${formatMoney(i.preco_total)}</td>
-                                            <td style="color: #6b7280; font-size: 0.85rem;">${i.descricao || '—'}</td>
-                                        </tr>
-                                    `).join('')}
-                                </tbody>
-                            </table>
-                        </div>
-
-                        <div class="totals-card" style="margin-top: 0;">
-                            <div class="totals-row">
-                                <span style="color: #6b7280;">Subtotal</span>
-                                <span>${formatMoney(p.subtotal)}</span>
-                            </div>
-                            ${p.desconto_cabides > 0 ? `
-                            <div class="totals-row" style="color: #059669;">
-                                <span>Desconto Cabides</span>
-                                <span>- ${formatMoney(p.desconto_cabides)}</span>
-                            </div>
-                            ` : ''}
-                            <div class="totals-row total-final">
-                                <span>Total</span>
-                                <span>${formatMoney(p.total_final)}</span>
-                            </div>
-                            <div class="totals-row" style="color: #059669;">
-                                <span>Pago</span>
-                                <span>${formatMoney(p.total_pago)}</span>
-                            </div>
-                            ${p.saldo > 0 ? `
-                            <div class="totals-row" style="color: #dc2626;">
-                                <span>Saldo Pendente</span>
-                                <span>${formatMoney(p.saldo)}</span>
-                            </div>
-                            ` : ''}
-                        </div>
-
-                        <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
-                            <button onclick="closeModal('viewOrderModal')" class="btn-secondary">Fechar</button>
-                            ${p.saldo > 0 ? `
-                            <button onclick="closeModal('viewOrderModal'); openPaymentModal(${p.id}, ${p.saldo})" class="btn-primary" style="background: #059669;">
-                                <i class="ri-money-dollar-circle-line"></i> Registrar Pagamento
-                            </button>
-                            ` : ''}
-                        </div>
-                    </div>
-                `;
-
-                openModal('viewOrderModal');
-            } else {
-                showNotification('Erro ao carregar detalhes do pedido', 'error');
-            }
-        } catch (error) {
-            showNotification('Erro de conexão', 'error');
-        }
-    }
-
-    function printReceipt(pedidoId) {
-        window.open(`/imprimir-recibo-imagem/${pedidoId}/`, '_blank');
-        showNotification('Recibo aberto em nova aba! Use Ctrl+P para imprimir', 'info');
-    }
-
-    // ============ BULK ACTIONS ============
-    function updateBulkActionsBar() {
-        const bar = document.getElementById('bulkActionsBar');
-        const count = selectedPedidos.size;
-        document.getElementById('selectedCount').textContent = count;
-
-        if (count > 0) {
-            bar.classList.remove('hidden');
-        } else {
-            bar.classList.add('hidden');
-        }
-    }
-
-    async function applyBulkAction() {
-        const action = document.getElementById('bulkActionSelect').value;
-        const selectedIds = Array.from(selectedPedidos);
-
-        if (selectedIds.length === 0) {
-            showNotification('Selecione pelo menos um pedido', 'warning');
-            return;
-        }
-
-        if (!action) {
-            showNotification('Selecione uma ação', 'warning');
-            return;
-        }
-
-        const actionNames = {
-            'completo': 'marcar como Completo',
-            'pronto': 'marcar como Pronto',
-            'entregue': 'marcar como Entregue',
-            'sms': 'enviar SMS'
-        };
-
-        if (!confirm(`Tem certeza que deseja ${actionNames[action]} ${selectedIds.length} pedido(s)?`)) {
-            return;
-        }
-
-        let sucessos = 0;
-        let erros = 0;
-
-        for (const pedidoId of selectedIds) {
-            const pedido = pedidos.find(p => p.id === pedidoId);
-            if (!pedido) continue;
-
-            let success = false;
-
-            switch (action) {
-                case 'completo':
-                case 'pronto':
-                    success = await updatePedidoStatusAPI(pedidoId, action);
-                    break;
-                case 'entregue':
-                    if (pedido.saldo > 0) {
-                        showNotification(`Pedido #${pedido.id_formatado}: saldo pendente impede entrega`, 'warning');
-                        success = false;
-                    } else {
-                        success = await updatePedidoStatusAPI(pedidoId, 'entregue');
-                    }
-                    break;
-                case 'sms':
-                    success = await enviarSmsPedidoPronto(pedidoId, pedido);
-                    break;
-            }
-
-            if (success) sucessos++;
-            else erros++;
-        }
-
-        await loadPedidos(currentPage);
-        selectedPedidos.clear();
-        updateBulkActionsBar();
-
-        if (erros === 0) {
-            showNotification(`✅ ${sucessos} pedido(s) processado(s) com sucesso!`, 'success');
-        } else {
-            showNotification(`⚠️ ${sucessos} sucesso(s), ${erros} erro(s)`, 'warning');
-        }
-    }
-
-    async function updatePedidoStatusAPI(pedidoId, novoStatus) {
-        try {
-            const response = await fetch(`/api/pedidos/atualizar-status/${pedidoId}/`, {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': getCSRFToken()
-                },
-                body: JSON.stringify({ status: novoStatus })
-            });
-            const data = await response.json();
-            return data.success;
-        } catch (error) {
-            return false;
-        }
-    }
-
-    async function enviarSmsPedidoPronto(pedidoId, pedido) {
-        if (!pedido || pedido.status !== 'pronto') {
-            showNotification(`Pedido #${pedido.id_formatado} não está com status "Pronto"`, 'warning');
-            return false;
-        }
-
-        if (!pedido.cliente_telefone) {
-            showNotification(`Cliente do pedido #${pedido.id_formatado} não tem telefone`, 'error');
-            return false;
-        }
-
-        try {
-            const response = await fetch(`/api/pedidos/enviar-sms/${pedidoId}/`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': getCSRFToken()
-                }
-            });
-            const data = await response.json();
-            return data.success;
-        } catch (error) {
-            return false;
-        }
-    }
-    // ============ HISTÓRICO DE PAGAMENTOS ============
-    async function viewPaymentsHistory(pedidoId) {
-    try {
-        showNotification('Carregando histórico de pagamentos...', 'info');
-
-        const data = await apiFetch(`/api/pedidos/${pedidoId}/pagamentos/`);
-
-        if (data.success && data.pagamentos) {
-            renderPaymentsModal(pedidoId, data.pagamentos);
-        } else {
-            throw new Error(data.error || 'Erro ao carregar pagamentos');
-        }
-    } catch (error) {
-        console.error('❌ Erro ao carregar pagamentos:', error);
-        showNotification(error.message || 'Erro ao carregar histórico de pagamentos', 'error');
-    }
+function renderPaginationButtons() {
+    const div = document.getElementById('paginationButtons');
+    if (totalPages <= 1) { div.innerHTML = ''; return; }
+
+    let html = `<button onclick="loadPedidos(${currentPage-1})" class="btn-page" ${currentPage===1?'disabled':''}><i class="ri-arrow-left-s-line"></i></button>`;
+
+    const max = 5;
+    let start = Math.max(1, currentPage - Math.floor(max/2));
+    let end   = Math.min(totalPages, start + max - 1);
+    if (end - start < max - 1) start = Math.max(1, end - max + 1);
+
+    if (start > 1) { html += `<button onclick="loadPedidos(1)" class="btn-page">1</button>`; if (start > 2) html += `<span class="btn-page" style="border:none;">…</span>`; }
+    for (let i = start; i <= end; i++) html += `<button onclick="loadPedidos(${i})" class="btn-page ${currentPage===i?'active':''}">${i}</button>`;
+    if (end < totalPages) { if (end < totalPages-1) html += `<span class="btn-page" style="border:none;">…</span>`; html += `<button onclick="loadPedidos(${totalPages})" class="btn-page">${totalPages}</button>`; }
+
+    html += `<button onclick="loadPedidos(${currentPage+1})" class="btn-page" ${currentPage===totalPages?'disabled':''}><i class="ri-arrow-right-s-line"></i></button>`;
+    div.innerHTML = html;
 }
 
-    function renderPaymentsModal(pedidoId, pagamentos) {
-    // Criar modal dinâmico se não existir
-    let modal = document.getElementById('paymentsHistoryModal');
-
-    if (!modal) {
-        modal = document.createElement('div');
-        modal.id = 'paymentsHistoryModal';
-        modal.className = 'modal-overlay hidden';
-        modal.innerHTML = `
-            <div class="modal-content modal-lg">
-                <div class="modal-header">
-                    <h3>Histórico de Pagamentos</h3>
-                    <button onclick="closeModal('paymentsHistoryModal')" class="btn-modal-close">
-                        <i class="ri-close-line text-xl"></i>
-                    </button>
-                </div>
-                <div class="modal-body" id="paymentsHistoryContent"></div>
-            </div>
-        `;
-        document.body.appendChild(modal);
-    }
-
+/* ================================================================
+   STATUS UPDATE
+================================================================ */
+async function updatePedidoStatus(pedidoId, novoStatus) {
     const pedido = pedidos.find(p => p.id === pedidoId);
-    const pedidoInfo = pedido ? `
-        <div style="background: #f0f9ff; border-radius: 0.75rem; padding: 1rem; margin-bottom: 1.5rem;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <div>
-                    <span style="font-weight: 700; color: #3b82f6;">Pedido #${pedido.id_formatado}</span>
-                    <span style="margin-left: 0.75rem; color: #6b7280;">${pedido.cliente_nome}</span>
-                </div>
-                <div style="text-align: right;">
-                    <div style="font-size: 0.8rem; color: #6b7280;">Total: ${formatMoney(pedido.total_final)}</div>
-                    <div style="font-size: 0.8rem; color: #059669;">Pago: ${formatMoney(pedido.total_pago)}</div>
-                    ${pedido.saldo > 0 ? `<div style="font-size: 0.8rem; color: #dc2626;">Saldo: ${formatMoney(pedido.saldo)}</div>` : ''}
-                </div>
-            </div>
-        </div>
-    ` : '';
+    if (!pedido) return;
 
-    const content = document.getElementById('paymentsHistoryContent');
+    if (pedido.status === novoStatus) { await loadPedidos(currentPage); return; }
 
-    if (pagamentos.length === 0) {
-        content.innerHTML = `
-            ${pedidoInfo}
-            <div class="empty-state">
-                <i class="ri-money-dollar-circle-line"></i>
-                <p>Nenhum pagamento registrado para este pedido</p>
-                <button onclick="closeModal('paymentsHistoryModal'); openPaymentModal(${pedidoId}, ${pedido?.saldo || 0})"
-                        class="btn-primary"
-                        style="margin-top: 1rem; display: inline-flex; align-items: center; gap: 0.5rem;">
-                    <i class="ri-add-line"></i> Registrar Pagamento
-                </button>
-            </div>
-        `;
-    } else {
-        content.innerHTML = `
-            ${pedidoInfo}
-            <div style="overflow-x: auto;">
-                <table class="itens-table" style="width: 100%;">
-                    <thead>
-                        <tr>
-                            <th>Data</th>
-                            <th>Valor</th>
-                            <th>Método</th>
-                            <th>Referência</th>
-                            <th>Registrado por</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${pagamentos.map(pag => `
-                            <tr>
-                                <td style="font-size: 0.85rem;">${pag.data || '—'}</td>
-                                <td style="font-weight: 600; color: #059669;">${formatMoney(pag.valor)}</td>
-                                <td>
-                                    <span style="background: #f3f4f6; padding: 0.25rem 0.5rem; border-radius: 0.5rem; font-size: 0.75rem;">
-                                        ${getMetodoLabel(pag.metodo)}
-                                    </span>
-                                </td>
-                                <td style="font-size: 0.85rem; color: #6b7280;">${pag.referencia || '—'}</td>
-                                <td style="font-size: 0.85rem;">${pag.registrado_por || '—'}</td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
-            </div>
-            <div style="margin-top: 1.5rem; display: flex; justify-content: flex-end; gap: 0.75rem;">
-                <button onclick="closeModal('paymentsHistoryModal')" class="btn-secondary">Fechar</button>
-                <button onclick="closeModal('paymentsHistoryModal'); openPaymentModal(${pedidoId}, ${pedido?.saldo || 0})"
-                        class="btn-primary"
-                        style="background: #059669;">
-                    <i class="ri-add-line"></i> Novo Pagamento
-                </button>
-            </div>
-        `;
+    const transicoes = { pendente:'completo', completo:'pronto', pronto:'entregue' };
+    if (transicoes[pedido.status] !== novoStatus) {
+        showNotification('Transição de status não permitida!', 'error');
+        await loadPedidos(currentPage); return;
     }
 
-    openModal('paymentsHistoryModal');
-}
-
-    function getMetodoLabel(metodo) {
-    const metodos = {
-        'numerario': '💵 Numerário',
-        'pos': '💳 POS',
-        'mpesa': '📱 M-Pesa',
-        'emola': '📱 e-Mola',
-        'conta_movel': '📱 Conta Móvel',
-        'transferencia': '🏦 Transferência'
-    };
-    return metodos[metodo] || metodo;
-}
-
-    // ============ DELETAR PEDIDO ============
-    async function deletePedido(pedidoId, pedidoFormatado) {
-    const confirmed = await confirmAction(
-        `⚠️ Tem certeza que deseja excluir o pedido ${pedidoFormatado}?\n\n` +
-        `Esta ação não pode ser desfeita! Todos os dados do pedido, incluindo itens e pagamentos, serão permanentemente removidos.`
-    );
-
-    if (!confirmed) return;
-
-    // Segunda confirmação para ações destrutivas
-    const doubleConfirmed = await confirmAction(
-        `🚨 Confirmação final: Deseja realmente EXCLUIR o pedido ${pedidoFormatado}?`
-    );
-
-    if (!doubleConfirmed) return;
+    if (novoStatus === 'entregue' && pedido.saldo > 0) {
+        showNotification(`Saldo pendente de ${formatMoney(pedido.saldo)}. Não é possível entregar.`, 'error');
+        await loadPedidos(currentPage); return;
+    }
 
     try {
-        showNotification(`Excluindo pedido ${pedidoFormatado}...`, 'info');
-
-        const data = await apiFetch(`/api/pedidos/${pedidoId}/deletar/`, {
-            method: 'DELETE'
+        const r    = await fetch(`/api/pedidos/atualizar-status/${pedidoId}/`, {
+            method: 'PATCH',
+            headers: { 'Content-Type':'application/json', 'X-CSRFToken': getCSRFToken() },
+            body: JSON.stringify({ status: novoStatus })
         });
+        const data = await r.json();
+        if (data.success) showNotification(data.message || `Status → ${STATUS_LABELS[novoStatus]}`, 'success');
+        else               showNotification(data.error  || 'Erro ao atualizar', 'error');
+    } catch {
+        showNotification('Erro de conexão', 'error');
+    }
+    await loadPedidos(currentPage);
+}
+
+/* ================================================================
+   SALVAR PEDIDO - CORRIGIDO
+================================================================ */
+async function savePedido() {
+    const pedidoId         = document.getElementById('pedidoId').value;
+    const cliente_id       = document.getElementById('clienteSelect').value;
+    const cabides_trazidos = parseInt(document.getElementById('cabidesInput').value) || 0;
+
+    if (!cliente_id) {
+        showNotification('Selecione um cliente', 'error');
+        return;
+    }
+
+    const itens = [];
+    document.querySelectorAll('#itensTableBody tr').forEach(row => {
+        const artigo_id = row.querySelector('.item-artigo-id')?.value;
+        const quantidade = parseInt(row.querySelector('.item-qtd')?.value) || 0;
+        const descricao  = row.querySelector('.item-descricao')?.value || '';
+        if (artigo_id && quantidade > 0) {
+            itens.push({
+                artigo_id: parseInt(artigo_id),
+                quantidade: parseInt(quantidade),
+                descricao: descricao
+            });
+        }
+    });
+
+    if (itens.length === 0) {
+        showNotification('Adicione pelo menos um item ao pedido', 'error');
+        return;
+    }
+
+    const requestBody = {
+        cliente_id: parseInt(cliente_id),
+        cabides_trazidos: cabides_trazidos,
+        itens: itens
+    };
+
+    console.log('📤 Enviando pedido:', JSON.stringify(requestBody, null, 2));
+
+    const url    = pedidoId ? `/api/pedidos/editar/${pedidoId}/` : '/api/pedidos/criar/';
+    const method = pedidoId ? 'PUT' : 'POST';
+
+    try {
+        const response = await fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken()
+            },
+            body: JSON.stringify(requestBody)
+        });
+
+        const data = await response.json();
+        console.log('📥 Resposta do servidor:', data);
 
         if (data.success) {
-            showNotification(data.message || `Pedido ${pedidoFormatado} excluído com sucesso!`, 'success');
-
-            // Remover da seleção se estiver selecionado
-            selectedPedidos.delete(pedidoId);
-            updateBulkActionsBar();
-
-            // Recarregar a página atual
+            showNotification(data.message || 'Pedido salvo com sucesso!', 'success');
+            closeModal('orderModal');
+            resetOrderForm();
             await loadPedidos(currentPage);
         } else {
-            throw new Error(data.error || 'Erro ao excluir pedido');
+            showNotification(data.error || 'Erro ao salvar pedido', 'error');
         }
     } catch (error) {
-        console.error('❌ Erro ao excluir pedido:', error);
-        showNotification(error.message || 'Erro ao excluir pedido', 'error');
+        console.error('❌ Erro na requisição:', error);
+        showNotification('Erro ao conectar com o servidor', 'error');
     }
 }
 
-    // ============ EVENT LISTENERS ============
-    document.addEventListener('DOMContentLoaded', () => {
-        // Buttons
-        document.getElementById('newOrderBtn').addEventListener('click', () => {
-            resetOrderForm();
-            addItemRow();
-            openModal('orderModal');
+/* ================================================================
+   PAGAMENTO
+================================================================ */
+function openPaymentModal(pedidoId, saldo) {
+    document.getElementById('paymentPedidoId').value = pedidoId;
+    document.getElementById('paymentValor').value    = '';
+    document.getElementById('paymentValor').max      = saldo;
+    document.getElementById('paymentReferencia').value = '';
+
+    const info = document.getElementById('saldoInfo');
+    info.innerHTML = `<span style="color:#6b7280;">Saldo pendente: <strong>${formatMoney(saldo)}</strong></span>`;
+    if (saldo > 0) info.innerHTML += `<br><span style="color:#d97706;font-size:.7rem;">⚠️ O pedido só poderá ser entregue após pagamento total.</span>`;
+
+    openModal('paymentModal');
+}
+
+async function registerPayment() {
+    const pedidoId  = document.getElementById('paymentPedidoId').value;
+    const valor     = parseFloat(document.getElementById('paymentValor').value);
+    const metodo    = document.getElementById('paymentMetodo').value;
+    const referencia = document.getElementById('paymentReferencia').value;
+
+    if (!valor || valor <= 0) {
+        showNotification('Informe um valor válido', 'error');
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/pedidos/pagamento/${pedidoId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken()
+            },
+            body: JSON.stringify({ valor, metodo, referencia })
         });
 
-        document.getElementById('applyFiltersBtn').addEventListener('click', () => loadPedidos(1));
+        const data = await response.json();
+        if (data.success) {
+            showNotification(data.message || 'Pagamento registrado!', 'success');
+            closeModal('paymentModal');
+            await loadPedidos(currentPage);
+        } else {
+            showNotification(data.error || 'Erro ao registrar pagamento', 'error');
+        }
+    } catch {
+        showNotification('Erro de conexão', 'error');
+    }
+}
 
-        document.getElementById('resetFiltersBtn').addEventListener('click', () => {
-            document.getElementById('statusFilter').value = 'all';
-            document.getElementById('pagamentoFilter').value = 'all';
-            document.getElementById('dataInicio').value = '';
-            document.getElementById('dataFim').value = '';
-            document.getElementById('clienteSearch').value = '';
-            loadPedidos(1);
+/* ================================================================
+   VISUALIZAR PEDIDO
+================================================================ */
+async function viewOrder(id) {
+    try {
+        const response = await fetch(`/api/pedidos/detalhes/${id}/`);
+        const data = await response.json();
+        if (!data.success) { showNotification('Erro ao carregar detalhes', 'error'); return; }
+
+        const p = data.pedido;
+        document.getElementById('viewOrderContent').innerHTML = `
+            <div style="display:flex;flex-direction:column;gap:1.5rem;">
+                <div style="background:#eff6ff;border-radius:1rem;padding:1.5rem;">
+                    <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+                        <div>
+                            <p style="font-size:.8rem;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;font-weight:600;">Pedido #${p.id_formatado}</p>
+                            <h4 style="font-size:1.25rem;font-weight:700;margin-top:.25rem;">${escapeHtml(p.cliente_nome)}</h4>
+                            <p style="font-size:.875rem;color:#6b7280;">${p.cliente_telefone || 'Sem telefone cadastrado'}</p>
+                        </div>
+                        <span class="badge-status ${STATUS_BADGE_CLASS[p.status]}">
+                            <i class="${STATUS_ICONS[p.status]}"></i> ${STATUS_LABELS[p.status]}
+                        </span>
+                    </div>
+                </div>
+                <div>
+                    <h5 style="font-weight:700;margin-bottom:.75rem;font-size:.95rem;">Itens do Pedido</h5>
+                    <table class="itens-table">
+                        <thead><tr><th>Item</th><th style="text-align:center;">Qtd</th><th style="text-align:right;">Preço</th><th>Descrição</th></tr></thead>
+                        <tbody>
+                            ${p.itens.map(i => `
+                                <td>
+                                    <td style="font-weight:500;">${escapeHtml(i.nome)}</td>
+                                    <td style="text-align:center;">${i.quantidade}</td>
+                                    <td style="text-align:right;font-weight:500;">${formatMoney(i.preco_total)}</td>
+                                    <td style="color:#6b7280;font-size:.85rem;">${escapeHtml(i.descricao) || '—'}</td>
+                                </tr>`).join('')}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="totals-card" style="margin-top:0;">
+                    <div class="totals-row"><span style="color:#6b7280;">Subtotal</span><span>${formatMoney(p.subtotal)}</span></div>
+                    ${p.desconto_cabides > 0 ? `<div class="totals-row" style="color:#059669;"><span>Desconto Cabides</span><span>- ${formatMoney(p.desconto_cabides)}</span></div>` : ''}
+                    <div class="totals-row total-final"><span>Total</span><span>${formatMoney(p.total_final)}</span></div>
+                    <div class="totals-row" style="color:#059669;"><span>Pago</span><span>${formatMoney(p.total_pago)}</span></div>
+                    ${p.saldo > 0 ? `<div class="totals-row" style="color:#dc2626;"><span>Saldo Pendente</span><span>${formatMoney(p.saldo)}</span></div>` : ''}
+                </div>
+                <div style="display:flex;justify-content:flex-end;gap:.75rem;">
+                    <button onclick="closeModal('viewOrderModal')" class="btn-secondary">Fechar</button>
+                    ${p.saldo > 0 ? `<button onclick="closeModal('viewOrderModal');openPaymentModal(${p.id},${p.saldo})" class="btn-primary" style="background:#059669;"><i class="ri-money-dollar-circle-line"></i> Registrar Pagamento</button>` : ''}
+                </div>
+            </div>`;
+
+        openModal('viewOrderModal');
+    } catch {
+        showNotification('Erro de conexão', 'error');
+    }
+}
+
+function printReceipt(pedidoId) {
+    window.open(`/imprimir-recibo-imagem/${pedidoId}/`, '_blank');
+    showNotification('Recibo aberto! Use Ctrl+P para imprimir', 'info');
+}
+
+/* ================================================================
+   DELETE
+================================================================ */
+function openDeleteModal(pedidoId, idFormatado) {
+    pedidoToDelete = pedidoId;
+    document.getElementById('deletePedidoInfo').innerHTML =
+        `Deseja excluir o pedido <strong>#${idFormatado}</strong>?<br>Todos os dados serão removidos permanentemente.`;
+    openModal('deleteModal');
+}
+
+async function confirmDelete() {
+    if (!pedidoToDelete) return;
+    try {
+        const response = await fetch(`/api/pedidos/excluir/${pedidoToDelete}/`, {
+            method: 'DELETE',
+            headers: { 'X-CSRFToken': getCSRFToken() }
         });
-
-        document.getElementById('applyBulkActionBtn').addEventListener('click', applyBulkAction);
-
-        document.getElementById('clearSelectionBtn').addEventListener('click', () => {
-            selectedPedidos.clear();
+        const data = await response.json();
+        if (data.success) {
+            showNotification('Pedido excluído com sucesso!', 'success');
+            closeModal('deleteModal');
+            selectedPedidos.delete(pedidoToDelete);
+            pedidoToDelete = null;
+            await loadPedidos(currentPage);
             updateBulkActionsBar();
-            renderPedidosTable();
-            document.getElementById('selectAll').checked = false;
+        } else {
+            showNotification(data.error || 'Erro ao excluir', 'error');
+        }
+    } catch {
+        showNotification('Erro de conexão', 'error');
+    }
+}
+
+/* ================================================================
+   BULK ACTIONS
+================================================================ */
+function updateBulkActionsBar() {
+    const bar = document.getElementById('bulkActionsBar');
+    document.getElementById('selectedCount').textContent = selectedPedidos.size;
+    bar.classList.toggle('hidden', selectedPedidos.size === 0);
+}
+
+async function applyBulkAction() {
+    const action = document.getElementById('bulkActionSelect').value;
+    const ids    = Array.from(selectedPedidos);
+
+    if (!ids.length)  { showNotification('Selecione pelo menos um pedido', 'warning'); return; }
+    if (!action)      { showNotification('Selecione uma ação', 'warning'); return; }
+
+    const labels = { completo:'marcar como Completo', pronto:'marcar como Pronto', entregue:'marcar como Entregue', sms:'enviar SMS' };
+    if (!confirm(`Tem certeza que deseja ${labels[action]} ${ids.length} pedido(s)?`)) return;
+
+    let ok = 0, err = 0;
+    for (const pedidoId of ids) {
+        const pedido = pedidos.find(p => p.id === pedidoId);
+        if (!pedido) continue;
+
+        let success = false;
+        if (action === 'completo' || action === 'pronto') {
+            success = await updatePedidoStatusAPI(pedidoId, action);
+        } else if (action === 'entregue') {
+            if (pedido.saldo > 0) { showNotification(`#${pedido.id_formatado}: saldo pendente impede entrega`, 'warning'); }
+            else success = await updatePedidoStatusAPI(pedidoId, 'entregue');
+        } else if (action === 'sms') {
+            success = await enviarSmsPedidoPronto(pedidoId, pedido);
+        }
+        success ? ok++ : err++;
+    }
+
+    await loadPedidos(currentPage);
+    selectedPedidos.clear();
+    updateBulkActionsBar();
+
+    if (err === 0) showNotification(`✅ ${ok} pedido(s) processado(s)!`, 'success');
+    else           showNotification(`⚠️ ${ok} sucesso(s), ${err} erro(s)`, 'warning');
+}
+
+async function updatePedidoStatusAPI(pedidoId, novoStatus) {
+    try {
+        const r = await fetch(`/api/pedidos/atualizar-status/${pedidoId}/`, {
+            method: 'PATCH',
+            headers: { 'Content-Type':'application/json', 'X-CSRFToken': getCSRFToken() },
+            body: JSON.stringify({ status: novoStatus })
         });
+        return (await r.json()).success;
+    } catch { return false; }
+}
 
-        // Select All
-        document.getElementById('selectAll').addEventListener('change', (e) => {
-            if (e.target.checked) {
-                pedidos.forEach(p => selectedPedidos.add(p.id));
-            } else {
-                pedidos.forEach(p => selectedPedidos.delete(p.id));
-            }
-            updateBulkActionsBar();
-            renderPedidosTable();
+async function enviarSmsPedidoPronto(pedidoId, pedido) {
+    if (pedido?.status !== 'pronto') { showNotification(`#${pedido?.id_formatado}: não está "Pronto"`, 'warning'); return false; }
+    if (!pedido?.cliente_telefone)   { showNotification(`#${pedido?.id_formatado}: sem telefone`, 'error'); return false; }
+    try {
+        const r = await fetch(`/api/pedidos/enviar-sms/${pedidoId}/`, {
+            method: 'POST',
+            headers: { 'Content-Type':'application/json', 'X-CSRFToken': getCSRFToken() }
         });
+        return (await r.json()).success;
+    } catch { return false; }
+}
 
-        // Individual checkboxes (delegated)
-        document.getElementById('pedidosTableBody').addEventListener('change', (e) => {
-            if (e.target.classList.contains('pedido-checkbox')) {
-                const id = parseInt(e.target.value);
-                if (e.target.checked) {
-                    selectedPedidos.add(id);
-                } else {
-                    selectedPedidos.delete(id);
-                }
-                updateBulkActionsBar();
+/* ================================================================
+   EVENT LISTENERS
+================================================================ */
+document.addEventListener('DOMContentLoaded', async () => {
+    await loadClientes();
+    await loadArtigos();
+    await loadPedidos(1);
 
-                const allCheckboxes = document.querySelectorAll('.pedido-checkbox');
-                const allChecked = allCheckboxes.length > 0 &&
-                    Array.from(allCheckboxes).every(cb => cb.checked);
-                document.getElementById('selectAll').checked = allChecked;
-            }
-        });
+    /* Novo Pedido */
+    document.getElementById('newOrderBtn').addEventListener('click', async () => {
+        if (!artigosCarregados || artigos.length === 0) {
+            showNotification('Carregando artigos...', 'info');
+            await loadArtigos();
+            if (artigos.length === 0) { showNotification('Nenhum artigo cadastrado.', 'error'); return; }
+        }
+        resetOrderForm();
+        addItemRow();
+        document.getElementById('modalTitle').textContent = 'Novo Pedido';
+        openModal('orderModal');
+    });
 
-        // Forms
-        document.getElementById('pedidoForm').addEventListener('submit', savePedido);
-        document.getElementById('paymentForm').addEventListener('submit', registerPayment);
-        document.getElementById('addItemBtn').addEventListener('click', () => addItemRow());
-        document.getElementById('cabidesInput').addEventListener('input', updatePedidoTotals);
+    /* Salvar pedido */
+    document.getElementById('savePedidoBtn').addEventListener('click', savePedido);
 
-        // Close modals on overlay click
-        document.querySelectorAll('.modal-overlay').forEach(overlay => {
-            overlay.addEventListener('click', (e) => {
-                if (e.target === overlay) {
-                    overlay.classList.add('hidden');
-                    document.body.style.overflow = '';
-                }
-            });
-        });
+    /* Salvar pagamento */
+    document.getElementById('savePaymentBtn').addEventListener('click', registerPayment);
 
-        // Init
-        loadClientes();
-        loadArtigos();
+    /* Adicionar item */
+    document.getElementById('addItemBtn').addEventListener('click', () => addItemRow());
+
+    /* Cabides */
+    document.getElementById('cabidesInput').addEventListener('input', updatePedidoTotals);
+
+    /* Filtros */
+    document.getElementById('applyFiltersBtn').addEventListener('click', () => loadPedidos(1));
+    document.getElementById('resetFiltersBtn').addEventListener('click', () => {
+        ['statusFilter','pagamentoFilter'].forEach(id => document.getElementById(id).value = 'all');
+        ['dataInicio','dataFim','clienteSearch'].forEach(id => document.getElementById(id).value = '');
         loadPedidos(1);
     });
 
+    /* Delete confirm */
+    document.getElementById('confirmDeleteBtn').addEventListener('click', confirmDelete);
+
+    /* Bulk */
+    document.getElementById('applyBulkActionBtn').addEventListener('click', applyBulkAction);
+    document.getElementById('clearSelectionBtn').addEventListener('click', () => {
+        selectedPedidos.clear();
+        updateBulkActionsBar();
+        renderPedidosTable();
+        document.getElementById('selectAll').checked = false;
+    });
+
+    /* Select all */
+    document.getElementById('selectAll').addEventListener('change', e => {
+        if (e.target.checked) pedidos.forEach(p => selectedPedidos.add(p.id));
+        else                  pedidos.forEach(p => selectedPedidos.delete(p.id));
+        updateBulkActionsBar();
+        renderPedidosTable();
+    });
+
+    /* Checkbox individual */
+    document.getElementById('pedidosTableBody').addEventListener('change', e => {
+        if (!e.target.classList.contains('pedido-checkbox')) return;
+        const id = parseInt(e.target.value);
+        e.target.checked ? selectedPedidos.add(id) : selectedPedidos.delete(id);
+        updateBulkActionsBar();
+        const all = document.querySelectorAll('.pedido-checkbox');
+        document.getElementById('selectAll').checked = all.length > 0 && Array.from(all).every(cb => cb.checked);
+    });
+
+    /* Fechar modal clicando no overlay */
+    document.querySelectorAll('.modal-overlay').forEach(overlay => {
+        overlay.addEventListener('click', e => {
+            if (e.target === overlay) closeModal(overlay.id);
+        });
+    });
+
+    /* Fechar portais ao clicar fora */
+    document.addEventListener('click', e => {
+        if (!e.target.closest('.dropdown-portal') &&
+            !e.target.closest('.artigo-search') &&
+            !e.target.closest('#clienteSearchInput')) {
+            document.querySelectorAll('.dropdown-portal').forEach(p => p.style.display = 'none');
+        }
+    });
+});
 </script>
 
 {% endblock %}
