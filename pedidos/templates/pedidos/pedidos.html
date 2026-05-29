@@ -3,6 +3,7 @@
 {% block content %}
 
 <style>
+    /* ============ ANIMAÇÕES ============ */
     .fade-in {
         animation: fadeIn 0.4s ease-out;
     }
@@ -12,15 +13,7 @@
         to { opacity: 1; transform: translateY(0); }
     }
 
-    .modal {
-        transition: all 0.3s ease;
-    }
-
-    .modal.hidden {
-        display: none;
-    }
-
-    .toast {
+    .slide-in {
         animation: slideIn 0.3s ease-out;
     }
 
@@ -29,149 +22,842 @@
         to { opacity: 1; transform: translateX(0); }
     }
 
-    .status-badge {
-        transition: all 0.2s;
-        display: inline-flex;
+    /* ============ CONTAINER PRINCIPAL ============ */
+    .page-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+
+    /* ============ CABEÇALHO ============ */
+    .page-header {
+        background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+        border-radius: 1.5rem;
+        padding: 2rem 2.5rem;
+        margin-bottom: 2rem;
+        display: flex;
+        justify-content: space-between;
         align-items: center;
-        white-space: nowrap;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
     }
 
-    .status-badge:hover {
-        transform: scale(1.05);
-    }
-
-    .table-container {
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-    }
-
-    .pedidos-table {
-        min-width: 1000px;
-        width: 100%;
-        white-space: nowrap;
-    }
-
-    .pedidos-table td,
-    .pedidos-table th {
-        white-space: nowrap;
-        vertical-align: middle;
-    }
-
-    .badge-status {
-        display: inline-flex;
-        align-items: center;
-        white-space: nowrap;
-        gap: 0.25rem;
-    }
-
-    .cliente-info {
+    .page-header h2 {
+        font-size: 1.875rem;
+        font-weight: 700;
+        color: white;
         display: flex;
         align-items: center;
         gap: 0.75rem;
-        min-width: 160px;
     }
 
-    .cliente-avatar {
-        flex-shrink: 0;
+    .page-header h2 i {
+        font-size: 2rem;
+        opacity: 0.9;
     }
 
-    .cliente-detalhes {
-        min-width: 0;
-    }
-
-    .cliente-nome {
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        max-width: 140px;
-    }
-
-    .action-buttons {
+    .btn-new-order {
+        background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
+        color: white;
+        padding: 0.875rem 2rem;
+        border-radius: 1rem;
+        font-weight: 600;
+        font-size: 0.95rem;
         display: flex;
+        align-items: center;
         gap: 0.5rem;
-        flex-wrap: nowrap;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
     }
 
-    @media (max-width: 768px) {
-        .table-container {
-            overflow-x: scroll;
-        }
+    .btn-new-order:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(59, 130, 246, 0.5);
     }
 
-    input, select, textarea {
-        transition: all 0.2s ease;
+    /* ============ CARDS DE FILTROS ============ */
+    .filter-card {
+        background: white;
+        border-radius: 1.5rem;
+        padding: 1.75rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e5e7eb;
     }
 
-    input:focus, select:focus, textarea:focus {
-        outline: none;
-        ring: 2px solid #3b82f6;
+    .dark .filter-card {
+        background: #1f2937;
+        border-color: #374151;
     }
 
-    .status-select {
-        cursor: pointer;
-        appearance: auto;
-        -webkit-appearance: auto;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236B7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
-        background-position: right 0.5rem center;
-        background-repeat: no-repeat;
-        background-size: 1.2em;
-        padding-right: 2rem;
+    .filter-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.25rem;
+        margin-bottom: 1.5rem;
     }
 
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .filter-group label {
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #6b7280;
+    }
+
+    .dark .filter-group label {
+        color: #9ca3af;
+    }
+
+    .filter-input {
+        padding: 0.75rem 1rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 0.75rem;
+        background: #f9fafb;
+        font-size: 0.9rem;
+        transition: all 0.2s;
+    }
+
+    .filter-input:focus {
+        border-color: #3b82f6;
+        background: white;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .dark .filter-input {
+        background: #374151;
+        border-color: #4b5563;
+        color: white;
+    }
+
+    .dark .filter-input:focus {
+        border-color: #60a5fa;
+        background: #374151;
+    }
+
+    .filter-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.75rem;
+    }
+
+    .btn-filter {
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.75rem;
+        font-weight: 500;
+        font-size: 0.9rem;
+        transition: all 0.2s;
+    }
+
+    .btn-filter-clear {
+        background: white;
+        border: 2px solid #e5e7eb;
+        color: #6b7280;
+    }
+
+    .btn-filter-clear:hover {
+        background: #f3f4f6;
+        border-color: #d1d5db;
+    }
+
+    .btn-filter-apply {
+        background: #3b82f6;
+        color: white;
+        border: none;
+    }
+
+    .btn-filter-apply:hover {
+        background: #2563eb;
+    }
+
+    .dark .btn-filter-clear {
+        background: #374151;
+        border-color: #4b5563;
+        color: #d1d5db;
+    }
+
+    .dark .btn-filter-clear:hover {
+        background: #4b5563;
+    }
+
+    /* ============ BARRA DE AÇÕES EM LOTE ============ */
     .bulk-actions-bar {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         border-radius: 1rem;
-        padding: 0.75rem 1.5rem;
+        padding: 1rem 1.5rem;
         margin-bottom: 1.5rem;
         display: flex;
         justify-content: space-between;
         align-items: center;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        transition: all 0.3s ease;
     }
 
-    .bulk-actions-bar .info {
+    .bulk-actions-bar.hidden {
+        display: none;
+    }
+
+    .bulk-info {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
         color: white;
+        font-weight: 500;
+    }
+
+    .bulk-info i {
+        font-size: 1.5rem;
+    }
+
+    .bulk-controls {
         display: flex;
         align-items: center;
         gap: 0.75rem;
     }
 
-    .bulk-actions-bar select {
-        background: white;
+    .bulk-select {
+        padding: 0.625rem 1rem;
+        border-radius: 0.75rem;
         border: none;
-        border-radius: 0.5rem;
-        padding: 0.5rem 1rem;
+        background: white;
         font-size: 0.875rem;
+        min-width: 200px;
     }
 
-    .bulk-actions-bar button {
+    .btn-bulk-apply {
         background: #1e293b;
         color: white;
         border: none;
-        border-radius: 0.5rem;
-        padding: 0.5rem 1rem;
-        cursor: pointer;
+        padding: 0.625rem 1.25rem;
+        border-radius: 0.75rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
         transition: all 0.2s;
     }
 
-    .bulk-actions-bar button:hover {
+    .btn-bulk-apply:hover {
         background: #0f172a;
         transform: scale(1.02);
     }
 
-    /* Estilos para selects com busca */
+    .btn-bulk-clear {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        border: none;
+        padding: 0.625rem;
+        border-radius: 0.75rem;
+        transition: all 0.2s;
+    }
+
+    .btn-bulk-clear:hover {
+        background: rgba(255, 255, 255, 0.3);
+    }
+
+    /* ============ TABELA ============ */
+    .table-card {
+        background: white;
+        border-radius: 1.5rem;
+        overflow: hidden;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e5e7eb;
+    }
+
+    .dark .table-card {
+        background: #1f2937;
+        border-color: #374151;
+    }
+
+    .table-wrapper {
+        overflow-x: auto;
+    }
+
+    .orders-table {
+        width: 100%;
+        min-width: 1200px;
+        border-collapse: collapse;
+    }
+
+    .orders-table thead {
+        background: #f8fafc;
+        border-bottom: 2px solid #e5e7eb;
+    }
+
+    .dark .orders-table thead {
+        background: #111827;
+        border-bottom-color: #374151;
+    }
+
+    .orders-table th {
+        padding: 1rem 1.25rem;
+        text-align: left;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: #6b7280;
+        white-space: nowrap;
+    }
+
+    .dark .orders-table th {
+        color: #9ca3af;
+    }
+
+    .orders-table td {
+        padding: 1.125rem 1.25rem;
+        vertical-align: middle;
+        border-bottom: 1px solid #f3f4f6;
+    }
+
+    .dark .orders-table td {
+        border-bottom-color: #374151;
+    }
+
+    .orders-table tbody tr {
+        transition: background 0.15s;
+    }
+
+    .orders-table tbody tr:hover {
+        background: #f9fafb;
+    }
+
+    .dark .orders-table tbody tr:hover {
+        background: #374151;
+    }
+
+    /* Checkbox personalizado */
+    .custom-checkbox {
+        width: 1.125rem;
+        height: 1.125rem;
+        border: 2px solid #d1d5db;
+        border-radius: 0.25rem;
+        cursor: pointer;
+        accent-color: #3b82f6;
+    }
+
+    /* Cliente info */
+    .cliente-cell {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        min-width: 180px;
+    }
+
+    .cliente-avatar {
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 0.75rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 0.875rem;
+        flex-shrink: 0;
+    }
+
+    .cliente-details {
+        display: flex;
+        flex-direction: column;
+        gap: 0.125rem;
+    }
+
+    .cliente-nome {
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: #111827;
+        max-width: 150px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .dark .cliente-nome {
+        color: #f9fafb;
+    }
+
+    .cliente-telefone {
+        font-size: 0.75rem;
+        color: #6b7280;
+    }
+
+    .dark .cliente-telefone {
+        color: #9ca3af;
+    }
+
+    /* Badges */
+    .badge-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+        padding: 0.375rem 0.75rem;
+        border-radius: 2rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .badge-status i {
+        font-size: 0.875rem;
+    }
+
+    .badge-pendente {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .badge-completo {
+        background: #dbeafe;
+        color: #1e40af;
+    }
+
+    .badge-pronto {
+        background: #d1fae5;
+        color: #065f46;
+    }
+
+    .badge-entregue {
+        background: #ede9fe;
+        color: #5b21b6;
+    }
+
+    .dark .badge-pendente { background: rgba(251, 191, 36, 0.15); }
+    .dark .badge-completo { background: rgba(59, 130, 246, 0.15); }
+    .dark .badge-pronto { background: rgba(16, 185, 129, 0.15); }
+    .dark .badge-entregue { background: rgba(139, 92, 246, 0.15); }
+
+    .badge-pagamento {
+        padding: 0.25rem 0.625rem;
+        border-radius: 2rem;
+        font-size: 0.7rem;
+        font-weight: 700;
+    }
+
+    .badge-pago {
+        background: #d1fae5;
+        color: #065f46;
+    }
+
+    .badge-parcial {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .badge-nao-pago {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    /* Status Select */
+    .status-select {
+        padding: 0.375rem 0.75rem;
+        border-radius: 2rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        border: 2px solid transparent;
+        cursor: pointer;
+        transition: all 0.2s;
+        appearance: none;
+        -webkit-appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236B7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 0.5rem center;
+        background-size: 1rem;
+        padding-right: 2rem;
+    }
+
+    .status-select:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .status-select:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    /* Action Buttons */
+    .action-btns {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .btn-action {
+        width: 2.25rem;
+        height: 2.25rem;
+        border-radius: 0.75rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+        font-size: 1.125rem;
+    }
+
+    .btn-action-view {
+        background: #eff6ff;
+        color: #3b82f6;
+    }
+
+    .btn-action-view:hover {
+        background: #dbeafe;
+    }
+
+    .btn-action-print {
+        background: #f3f4f6;
+        color: #6b7280;
+    }
+
+    .btn-action-print:hover {
+        background: #e5e7eb;
+    }
+
+    .btn-action-pay {
+        background: #f5f3ff;
+        color: #7c3aed;
+    }
+
+    .btn-action-pay:hover {
+        background: #ede9fe;
+    }
+
+    .dark .btn-action-view { background: rgba(59, 130, 246, 0.15); }
+    .dark .btn-action-print { background: rgba(107, 114, 128, 0.15); }
+    .dark .btn-action-pay { background: rgba(124, 58, 237, 0.15); }
+
+    /* ============ PAGINAÇÃO ============ */
+    .pagination-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1.25rem 1.5rem;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .dark .pagination-bar {
+        border-top-color: #374151;
+    }
+
+    .pagination-info {
+        font-size: 0.875rem;
+        color: #6b7280;
+    }
+
+    .pagination-btns {
+        display: flex;
+        gap: 0.375rem;
+    }
+
+    .btn-page {
+        min-width: 2.25rem;
+        height: 2.25rem;
+        border-radius: 0.625rem;
+        border: 1px solid #e5e7eb;
+        background: white;
+        font-size: 0.875rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+    }
+
+    .btn-page:hover {
+        background: #f3f4f6;
+    }
+
+    .btn-page.active {
+        background: #3b82f6;
+        color: white;
+        border-color: #3b82f6;
+    }
+
+    .btn-page:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+    }
+
+    .dark .btn-page {
+        background: #374151;
+        border-color: #4b5563;
+        color: #d1d5db;
+    }
+
+    .dark .btn-page:hover {
+        background: #4b5563;
+    }
+
+    /* ============ MODAIS ============ */
+    .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(4px);
+        z-index: 50;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1.5rem;
+    }
+
+    .modal-overlay.hidden {
+        display: none;
+    }
+
+    .modal-content {
+        background: white;
+        border-radius: 1.5rem;
+        width: 100%;
+        max-width: 900px;
+        max-height: 85vh;
+        overflow-y: auto;
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+    }
+
+    .modal-content.modal-sm {
+        max-width: 480px;
+    }
+
+    .modal-content.modal-lg {
+        max-width: 1100px;
+    }
+
+    .dark .modal-content {
+        background: #1f2937;
+    }
+
+    .modal-header {
+        position: sticky;
+        top: 0;
+        background: white;
+        border-bottom: 1px solid #e5e7eb;
+        padding: 1.25rem 1.75rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        z-index: 10;
+        border-radius: 1.5rem 1.5rem 0 0;
+    }
+
+    .dark .modal-header {
+        background: #1f2937;
+        border-bottom-color: #374151;
+    }
+
+    .modal-header h3 {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #111827;
+    }
+
+    .dark .modal-header h3 {
+        color: #f9fafb;
+    }
+
+    .btn-modal-close {
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 0.75rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #6b7280;
+        transition: all 0.2s;
+    }
+
+    .btn-modal-close:hover {
+        background: #f3f4f6;
+        color: #111827;
+    }
+
+    .dark .btn-modal-close:hover {
+        background: #374151;
+        color: #f9fafb;
+    }
+
+    .modal-body {
+        padding: 1.75rem;
+    }
+
+    .modal-footer {
+        padding: 1.25rem 1.75rem;
+        border-top: 1px solid #e5e7eb;
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.75rem;
+    }
+
+    .dark .modal-footer {
+        border-top-color: #374151;
+    }
+
+    /* Form Styles */
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .form-label {
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #6b7280;
+    }
+
+    .dark .form-label {
+        color: #9ca3af;
+    }
+
+    .form-input {
+        padding: 0.75rem 1rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 0.75rem;
+        font-size: 0.9rem;
+        transition: all 0.2s;
+        background: #f9fafb;
+    }
+
+    .form-input:focus {
+        border-color: #3b82f6;
+        background: white;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        outline: none;
+    }
+
+    .dark .form-input {
+        background: #374151;
+        border-color: #4b5563;
+        color: white;
+    }
+
+    .dark .form-input:focus {
+        border-color: #60a5fa;
+        background: #374151;
+    }
+
+    .btn-primary {
+        background: #3b82f6;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.75rem;
+        font-weight: 600;
+        border: none;
+        transition: all 0.2s;
+    }
+
+    .btn-primary:hover {
+        background: #2563eb;
+    }
+
+    .btn-secondary {
+        background: white;
+        color: #6b7280;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.75rem;
+        font-weight: 500;
+        border: 2px solid #e5e7eb;
+        transition: all 0.2s;
+    }
+
+    .btn-secondary:hover {
+        background: #f3f4f6;
+    }
+
+    .dark .btn-secondary {
+        background: #374151;
+        border-color: #4b5563;
+        color: #d1d5db;
+    }
+
+    .dark .btn-secondary:hover {
+        background: #4b5563;
+    }
+
+    /* Itens Table */
+    .itens-table {
+        width: 100%;
+        border-collapse: collapse;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.75rem;
+        overflow: hidden;
+    }
+
+    .itens-table thead {
+        background: #f8fafc;
+    }
+
+    .dark .itens-table thead {
+        background: #111827;
+    }
+
+    .itens-table th {
+        padding: 0.75rem 1rem;
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #6b7280;
+        text-align: left;
+    }
+
+    .itens-table td {
+        padding: 0.75rem 1rem;
+        border-top: 1px solid #f3f4f6;
+    }
+
+    .dark .itens-table td {
+        border-top-color: #374151;
+    }
+
+    .totals-card {
+        background: #f8fafc;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        margin-top: 1.5rem;
+    }
+
+    .dark .totals-card {
+        background: #111827;
+    }
+
+    .totals-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.5rem 0;
+    }
+
+    .totals-row.total-final {
+        border-top: 2px solid #e5e7eb;
+        padding-top: 1rem;
+        margin-top: 0.5rem;
+        font-size: 1.125rem;
+        font-weight: 700;
+    }
+
+    .dark .totals-row.total-final {
+        border-top-color: #374151;
+    }
+
+    /* Searchable Select */
     .searchable-select {
         position: relative;
     }
 
-    .searchable-select input {
-        width: 100%;
-        padding: 0.5rem;
-        border: 1px solid #d1d5db;
-        border-radius: 0.5rem;
-        font-size: 0.875rem;
-    }
-
-    .searchable-select ul {
+    .searchable-select .dropdown-list {
         position: absolute;
         top: 100%;
         left: 0;
@@ -179,154 +865,255 @@
         max-height: 200px;
         overflow-y: auto;
         background: white;
-        border: 1px solid #d1d5db;
-        border-radius: 0.5rem;
-        z-index: 10;
-        display: none;
-        list-style: none;
-        padding: 0;
-        margin: 0;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.75rem;
+        z-index: 20;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
     }
 
-    .searchable-select ul li {
-        padding: 0.5rem;
+    .dark .searchable-select .dropdown-list {
+        background: #374151;
+        border-color: #4b5563;
+    }
+
+    .dropdown-list li {
+        padding: 0.625rem 1rem;
         cursor: pointer;
-        transition: background 0.2s;
+        font-size: 0.875rem;
     }
 
-    .searchable-select ul li:hover {
+    .dropdown-list li:hover {
         background: #f3f4f6;
     }
 
-    .dark .searchable-select input {
-        background: #1f2937;
-        border-color: #4b5563;
+    .dark .dropdown-list li:hover {
+        background: #4b5563;
+    }
+
+    .dropdown-list li .nome {
+        font-weight: 500;
+    }
+
+    .dropdown-list li .info {
+        font-size: 0.75rem;
+        color: #6b7280;
+    }
+
+    /* Toast */
+    .toast-container {
+        position: fixed;
+        bottom: 1.5rem;
+        right: 1.5rem;
+        z-index: 100;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .toast {
+        padding: 1rem 1.25rem;
+        border-radius: 1rem;
         color: white;
+        font-size: 0.9rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        animation: slideIn 0.3s ease-out;
     }
 
-    .dark .searchable-select ul {
-        background: #1f2937;
-        border-color: #4b5563;
+    .toast-success { background: linear-gradient(135deg, #059669, #10b981); }
+    .toast-error { background: linear-gradient(135deg, #dc2626, #ef4444); }
+    .toast-info { background: linear-gradient(135deg, #2563eb, #3b82f6); }
+    .toast-warning { background: linear-gradient(135deg, #d97706, #f59e0b); }
+
+    .toast i { font-size: 1.25rem; }
+
+    /* Loading */
+    .loading-cell {
+        text-align: center;
+        padding: 3rem !important;
     }
 
-    .dark .searchable-select ul li:hover {
-        background: #374151;
+    .loading-spinner {
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.75rem;
+        color: #6b7280;
     }
 
-    /* Coluna de descrição mais larga */
-    .descricao-coluna {
-        min-width: 200px;
+    .loading-spinner i {
+        font-size: 2.5rem;
+        animation: spin 1s linear infinite;
     }
 
-    .descricao-input {
-        width: 100%;
-        min-width: 180px;
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: #6b7280;
+    }
+
+    .empty-state i {
+        font-size: 3rem;
+        margin-bottom: 0.75rem;
+        opacity: 0.5;
+    }
+
+    .empty-state p {
+        font-size: 1rem;
+        font-weight: 500;
+    }
+
+    /* Responsividade */
+    @media (max-width: 768px) {
+        .page-container {
+            padding: 1rem;
+        }
+
+        .page-header {
+            flex-direction: column;
+            gap: 1rem;
+            text-align: center;
+            padding: 1.5rem;
+        }
+
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .bulk-actions-bar {
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .bulk-controls {
+            flex-wrap: wrap;
+        }
     }
 </style>
 
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
+
 <!-- Main Content -->
-<main class="flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-900">
-    <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10 shadow-sm px-8 py-4">
-        <div class="flex justify-between items-center">
-            <h2 class="text-2xl font-semibold text-gray-800 dark:text-white">Pedidos</h2>
-            <button id="newOrderBtn"
-                    class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-6 py-2 rounded-lg flex items-center space-x-2 shadow-lg transition transform hover:scale-105">
+<main class="flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-900 min-h-screen">
+    <div class="page-container">
+
+        <!-- Page Header -->
+        <div class="page-header fade-in">
+            <h2>
+                <i class="ri-shopping-bag-3-line"></i>
+                Pedidos
+            </h2>
+            <button id="newOrderBtn" class="btn-new-order">
                 <i class="ri-add-line text-xl"></i>
                 <span>Novo Pedido</span>
             </button>
         </div>
-    </div>
 
-    <div class="p-8 fade-in">
         <!-- Filters -->
-        <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm mb-6">
-            <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Status</label>
-                    <select id="statusFilter" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500">
-                        <option value="all">Todos</option>
-                        <option value="pendente">Pendente</option>
-                        <option value="completo">Completo</option>
-                        <option value="pronto">Pronto</option>
-                        <option value="entregue">Entregue</option>
+        <div class="filter-card fade-in">
+            <div class="filter-grid">
+                <div class="filter-group">
+                    <label>Status</label>
+                    <select id="statusFilter" class="filter-input">
+                        <option value="all">Todos os Status</option>
+                        <option value="pendente">⏳ Pendente</option>
+                        <option value="completo">✅ Completo</option>
+                        <option value="pronto">🔧 Pronto</option>
+                        <option value="entregue">📦 Entregue</option>
                     </select>
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Pagamento</label>
-                    <select id="pagamentoFilter" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500">
+                <div class="filter-group">
+                    <label>Pagamento</label>
+                    <select id="pagamentoFilter" class="filter-input">
                         <option value="all">Todos</option>
-                        <option value="pago">Pago</option>
-                        <option value="nao_pago">Não Pago</option>
-                        <option value="parcial">Parcial</option>
+                        <option value="pago">💰 Pago</option>
+                        <option value="nao_pago">❌ Não Pago</option>
+                        <option value="parcial">⚠️ Parcial</option>
                     </select>
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Data Início</label>
-                    <input type="date" id="dataInicio" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500">
+                <div class="filter-group">
+                    <label>Data Início</label>
+                    <input type="date" id="dataInicio" class="filter-input">
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Data Fim</label>
-                    <input type="date" id="dataFim" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500">
+                <div class="filter-group">
+                    <label>Data Fim</label>
+                    <input type="date" id="dataFim" class="filter-input">
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Cliente</label>
-                    <input type="text" id="clienteSearch" placeholder="Buscar cliente..." class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500">
+                <div class="filter-group">
+                    <label>Cliente</label>
+                    <input type="text" id="clienteSearch" placeholder="Buscar por nome ou telefone..." class="filter-input">
                 </div>
             </div>
-            <div class="mt-4 flex justify-end space-x-3">
-                <button id="resetFiltersBtn" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition">Limpar</button>
-                <button id="applyFiltersBtn" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition">Aplicar Filtros</button>
+            <div class="filter-actions">
+                <button id="resetFiltersBtn" class="btn-filter btn-filter-clear">
+                    <i class="ri-refresh-line"></i> Limpar Filtros
+                </button>
+                <button id="applyFiltersBtn" class="btn-filter btn-filter-apply">
+                    <i class="ri-search-line"></i> Aplicar Filtros
+                </button>
             </div>
         </div>
 
         <!-- Bulk Actions Bar -->
         <div id="bulkActionsBar" class="bulk-actions-bar hidden">
-            <div class="info">
-                <i class="ri-checkbox-multiple-line text-xl"></i>
-                <span id="selectedCount">0</span> pedido(s) selecionado(s)
+            <div class="bulk-info">
+                <i class="ri-checkbox-multiple-line"></i>
+                <span><strong id="selectedCount">0</strong> pedido(s) selecionado(s)</span>
             </div>
-            <div class="flex items-center gap-3">
-                <select id="bulkActionSelect" class="bg-white dark:bg-gray-700 text-gray-800 dark:text-white">
-                    <option value="">Selecione uma ação</option>
+            <div class="bulk-controls">
+                <select id="bulkActionSelect" class="bulk-select">
+                    <option value="">Selecione uma ação...</option>
                     <option value="completo">✅ Marcar como Completo</option>
                     <option value="pronto">🔧 Marcar como Pronto</option>
                     <option value="entregue">📦 Marcar como Entregue</option>
                     <option value="sms">📱 Enviar SMS - Pedido Pronto</option>
                 </select>
-                <button id="applyBulkActionBtn" class="bg-blue-600 hover:bg-blue-700 text-white">
-                    <i class="ri-play-fill mr-1"></i> Aplicar
+                <button id="applyBulkActionBtn" class="btn-bulk-apply">
+                    <i class="ri-play-fill"></i> Aplicar
                 </button>
-                <button id="clearSelectionBtn" class="bg-gray-500 hover:bg-gray-600 text-white">
+                <button id="clearSelectionBtn" class="btn-bulk-clear">
                     <i class="ri-close-line"></i>
                 </button>
             </div>
         </div>
 
         <!-- Orders Table -->
-        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm overflow-hidden">
-            <div class="table-container">
-                <table class="pedidos-table">
-                    <thead class="bg-gray-50 dark:bg-gray-700">
+        <div class="table-card fade-in">
+            <div class="table-wrapper">
+                <table class="orders-table">
+                    <thead>
                         <tr>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                <input type="checkbox" id="selectAll" class="rounded dark:bg-gray-600">
+                            <th style="width: 40px;">
+                                <input type="checkbox" id="selectAll" class="custom-checkbox">
                             </th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">ID</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Cliente</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Itens</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Total</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Pago</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Saldo</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Pagamento</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Ações</th>
+                            <th>ID</th>
+                            <th>Cliente</th>
+                            <th>Itens</th>
+                            <th>Total</th>
+                            <th>Pago</th>
+                            <th>Saldo</th>
+                            <th>Status</th>
+                            <th>Pagamento</th>
+                            <th>Ações</th>
                         </tr>
                     </thead>
-                    <tbody id="pedidosTableBody" class="divide-y divide-gray-200 dark:divide-gray-700">
+                    <tbody id="pedidosTableBody">
                         <tr>
-                            <td colspan="10" class="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
-                                <i class="ri-loader-4-line text-4xl animate-spin"></i>
-                                <p class="mt-2">Carregando pedidos...</p>
+                            <td colspan="10" class="loading-cell">
+                                <div class="loading-spinner">
+                                    <i class="ri-loader-4-line"></i>
+                                    <p>Carregando pedidos...</p>
+                                </div>
                             </td>
                         </tr>
                     </tbody>
@@ -334,91 +1121,93 @@
             </div>
 
             <!-- Pagination -->
-            <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center">
-                <p class="text-sm text-gray-600 dark:text-gray-400" id="paginationInfo">Mostrando 0 resultados</p>
-                <div class="flex space-x-2" id="paginationButtons"></div>
+            <div class="pagination-bar">
+                <p class="pagination-info" id="paginationInfo">Mostrando 0 resultados</p>
+                <div class="pagination-btns" id="paginationButtons"></div>
             </div>
         </div>
     </div>
 </main>
 
 <!-- Modal Novo/Editar Pedido -->
-<div id="orderModal" class="modal hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-    <div class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-5xl max-h-[90vh] overflow-y-auto">
-        <div class="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex justify-between items-center">
-            <h3 class="text-xl font-semibold text-gray-800 dark:text-white" id="modalTitle">Novo Pedido</h3>
-            <button onclick="closeModal('orderModal')" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-                <i class="ri-close-line text-2xl"></i>
+<div id="orderModal" class="modal-overlay hidden">
+    <div class="modal-content modal-lg">
+        <div class="modal-header">
+            <h3 id="modalTitle">Novo Pedido</h3>
+            <button onclick="closeModal('orderModal')" class="btn-modal-close">
+                <i class="ri-close-line text-xl"></i>
             </button>
         </div>
-        <div class="p-6">
+        <div class="modal-body">
             <form id="pedidoForm">
                 {% csrf_token %}
                 <input type="hidden" id="pedidoId">
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Cliente *</label>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Cliente *</label>
                         <div class="searchable-select">
-                            <input type="text" id="clienteSearchInput" placeholder="Pesquisar cliente..." class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500">
+                            <input type="text" id="clienteSearchInput" placeholder="Pesquisar cliente por nome ou telefone..." class="form-input">
                             <input type="hidden" id="clienteSelect" required>
-                            <ul id="clienteList" class="hidden"></ul>
+                            <ul id="clienteList" class="dropdown-list hidden"></ul>
                         </div>
-                        <button type="button" id="newClienteBtn" class="mt-2 text-blue-600 dark:text-blue-400 text-sm hover:underline">+ Novo Cliente</button>
+                        <button type="button" id="newClienteBtn" class="text-blue-600 dark:text-blue-400 text-sm hover:underline mt-1">
+                            <i class="ri-user-add-line"></i> Cadastrar Novo Cliente
+                        </button>
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Cabides Trazidos</label>
-                        <input type="number" id="cabidesInput" value="0" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500">
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Cada 20 cabides = 140 MT de desconto</p>
+                    <div class="form-group">
+                        <label class="form-label">Cabides Trazidos</label>
+                        <input type="number" id="cabidesInput" value="0" class="form-input" min="0">
+                        <p class="text-xs text-gray-500 dark:text-gray-400">
+                            <i class="ri-information-line"></i> A cada 20 cabides = 140 MT de desconto
+                        </p>
                     </div>
                 </div>
 
-                <!-- Itens Table com Descrição mais larga -->
-                <div class="mb-6">
-                    <div class="flex justify-between items-center mb-3">
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Itens do Pedido</label>
-                        <button type="button" id="addItemBtn" class="text-blue-600 dark:text-blue-400 text-sm flex items-center hover:underline">
-                            <i class="ri-add-line"></i> Adicionar Item
+                <!-- Itens -->
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                        <label class="form-label" style="margin-bottom: 0;">Itens do Pedido</label>
+                        <button type="button" id="addItemBtn" class="text-blue-600 dark:text-blue-400 font-medium text-sm flex items-center gap-1 hover:underline">
+                            <i class="ri-add-circle-line"></i> Adicionar Item
                         </button>
                     </div>
-                    <div class="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
-                        <table class="w-full">
-                            <thead class="bg-gray-50 dark:bg-gray-700">
-                                <tr>
-                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300">Artigo</th>
-                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300">Qtd</th>
-                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300">Preço Unit.</th>
-                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 descricao-coluna">Descrição</th>
-                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300">Total</th>
-                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300"></th>
-                                </tr>
-                            </thead>
-                            <tbody id="itensTableBody" class="divide-y divide-gray-200 dark:divide-gray-700"></tbody>
-                        </table>
-                    </div>
+                    <table class="itens-table">
+                        <thead>
+                            <tr>
+                                <th>Artigo</th>
+                                <th style="width: 80px;">Qtd</th>
+                                <th style="width: 120px;">Preço Unit.</th>
+                                <th>Descrição</th>
+                                <th style="width: 120px;">Total</th>
+                                <th style="width: 50px;"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="itensTableBody"></tbody>
+                    </table>
                 </div>
 
                 <!-- Totals -->
-                <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-6 mb-6">
-                    <div class="space-y-2">
-                        <div class="flex justify-between">
-                            <span class="text-gray-600 dark:text-gray-400">Subtotal:</span>
-                            <span class="font-medium text-gray-800 dark:text-white" id="subtotalLabel">0 MT</span>
-                        </div>
-                        <div class="flex justify-between text-green-600 dark:text-green-400">
-                            <span>Desconto Cabides:</span>
-                            <span id="descontoCabidesLabel">- 0 MT</span>
-                        </div>
-                        <div class="flex justify-between text-lg font-bold pt-2 border-t border-gray-200 dark:border-gray-600">
-                            <span class="text-gray-800 dark:text-white">Total Final:</span>
-                            <span class="text-gray-800 dark:text-white" id="totalFinalLabel">0 MT</span>
-                        </div>
+                <div class="totals-card">
+                    <div class="totals-row">
+                        <span style="color: #6b7280;">Subtotal</span>
+                        <span id="subtotalLabel" style="font-weight: 500;">0 MT</span>
+                    </div>
+                    <div class="totals-row" style="color: #059669;">
+                        <span>Desconto Cabides</span>
+                        <span id="descontoCabidesLabel" style="font-weight: 500;">- 0 MT</span>
+                    </div>
+                    <div class="totals-row total-final">
+                        <span>Total Final</span>
+                        <span id="totalFinalLabel">0 MT</span>
                     </div>
                 </div>
 
-                <div class="flex justify-end space-x-3">
-                    <button type="button" onclick="closeModal('orderModal')" class="px-6 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition">Cancelar</button>
-                    <button type="submit" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition">Salvar Pedido</button>
+                <div class="modal-footer" style="padding-left: 0; padding-right: 0;">
+                    <button type="button" onclick="closeModal('orderModal')" class="btn-secondary">Cancelar</button>
+                    <button type="submit" class="btn-primary">
+                        <i class="ri-save-line"></i> Salvar Pedido
+                    </button>
                 </div>
             </form>
         </div>
@@ -426,43 +1215,43 @@
 </div>
 
 <!-- Modal Pagamento -->
-<div id="paymentModal" class="modal hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-    <div class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-md">
-        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-            <h3 class="text-xl font-semibold text-gray-800 dark:text-white">Registrar Pagamento</h3>
-            <button onclick="closeModal('paymentModal')" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-                <i class="ri-close-line text-2xl"></i>
+<div id="paymentModal" class="modal-overlay hidden">
+    <div class="modal-content modal-sm">
+        <div class="modal-header">
+            <h3>Registrar Pagamento</h3>
+            <button onclick="closeModal('paymentModal')" class="btn-modal-close">
+                <i class="ri-close-line text-xl"></i>
             </button>
         </div>
-        <div class="p-6">
+        <div class="modal-body">
             <form id="paymentForm">
                 {% csrf_token %}
                 <input type="hidden" id="paymentPedidoId">
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Valor do Pagamento *</label>
-                        <input type="number" id="paymentValor" step="0.01" required class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500">
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1" id="saldoInfo">Saldo pendente: 0 MT</p>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Método de Pagamento *</label>
-                        <select id="paymentMetodo" required class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500">
-                            <option value="numerario">Numerário</option>
-                            <option value="pos">POS (Cartão)</option>
-                            <option value="mpesa">M-Pesa</option>
-                            <option value="emola">e-Mola</option>
-                            <option value="conta_movel">Conta Móvel</option>
-                            <option value="transferencia">Transferência</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Referência (Opcional)</label>
-                        <input type="text" id="paymentReferencia" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500" placeholder="Nº de transação, comprovante...">
-                    </div>
+                <div class="form-group" style="margin-bottom: 1.25rem;">
+                    <label class="form-label">Valor do Pagamento *</label>
+                    <input type="number" id="paymentValor" step="0.01" required class="form-input" placeholder="0.00">
+                    <p class="text-xs" id="saldoInfo" style="margin-top: 0.25rem;"></p>
                 </div>
-                <div class="flex justify-end space-x-3 mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
-                    <button type="button" onclick="closeModal('paymentModal')" class="px-6 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition">Cancelar</button>
-                    <button type="submit" class="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition">Registrar Pagamento</button>
+                <div class="form-group" style="margin-bottom: 1.25rem;">
+                    <label class="form-label">Método de Pagamento *</label>
+                    <select id="paymentMetodo" required class="form-input">
+                        <option value="numerario">💵 Numerário</option>
+                        <option value="pos">💳 POS (Cartão)</option>
+                        <option value="mpesa">📱 M-Pesa</option>
+                        <option value="emola">📱 e-Mola</option>
+                        <option value="conta_movel">📱 Conta Móvel</option>
+                        <option value="transferencia">🏦 Transferência</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin-bottom: 1.25rem;">
+                    <label class="form-label">Referência (Opcional)</label>
+                    <input type="text" id="paymentReferencia" class="form-input" placeholder="Nº da transação, comprovante...">
+                </div>
+                <div class="modal-footer" style="padding-left: 0; padding-right: 0;">
+                    <button type="button" onclick="closeModal('paymentModal')" class="btn-secondary">Cancelar</button>
+                    <button type="submit" class="btn-primary" style="background: #059669;">
+                        <i class="ri-check-line"></i> Registrar Pagamento
+                    </button>
                 </div>
             </form>
         </div>
@@ -470,36 +1259,40 @@
 </div>
 
 <!-- Modal Visualizar Pedido -->
-<div id="viewOrderModal" class="modal hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-    <div class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-2xl max-h-[80vh] overflow-y-auto">
-        <div class="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex justify-between items-center">
-            <h3 class="text-xl font-semibold text-gray-800 dark:text-white">Detalhes do Pedido</h3>
-            <button onclick="closeModal('viewOrderModal')" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-                <i class="ri-close-line text-2xl"></i>
+<div id="viewOrderModal" class="modal-overlay hidden">
+    <div class="modal-content modal-lg">
+        <div class="modal-header">
+            <h3>Detalhes do Pedido</h3>
+            <button onclick="closeModal('viewOrderModal')" class="btn-modal-close">
+                <i class="ri-close-line text-xl"></i>
             </button>
         </div>
-        <div class="p-6" id="viewOrderContent"></div>
+        <div class="modal-body" id="viewOrderContent"></div>
     </div>
 </div>
 
 <script>
+    // ============ STATE ============
     let pedidos = [];
     let clientes = [];
-    let clientesList = [];
     let artigos = [];
-    let artigosList = [];
     let currentPage = 1;
     let totalPages = 1;
-    let itemsPerPage = 50;
     let selectedPedidos = new Set();
 
+    // ============ UTILS ============
     function getCSRFToken() {
         return document.querySelector('[name=csrfmiddlewaretoken]')?.value ||
                document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
     }
 
     function formatMoney(value) {
-        return new Intl.NumberFormat('pt-MZ', { style: 'currency', currency: 'MZN' }).format(value);
+        return new Intl.NumberFormat('pt-MZ', {
+            style: 'currency',
+            currency: 'MZN',
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0
+        }).format(value);
     }
 
     const statusLabels = {
@@ -509,8 +1302,55 @@
         'entregue': 'Entregue'
     };
 
-    // ========== SELECT COM BUSCA PARA CLIENTE ==========
+    const statusBadgeClass = {
+        'pendente': 'badge-pendente',
+        'completo': 'badge-completo',
+        'pronto': 'badge-pronto',
+        'entregue': 'badge-entregue'
+    };
 
+    const statusIcons = {
+        'pendente': 'ri-time-line',
+        'completo': 'ri-check-double-line',
+        'pronto': 'ri-tools-line',
+        'entregue': 'ri-truck-line'
+    };
+
+    // ============ NOTIFICAÇÕES ============
+    function showNotification(message, type = 'info') {
+        const container = document.getElementById('toastContainer');
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
+
+        const icons = {
+            success: 'ri-checkbox-circle-line',
+            error: 'ri-error-warning-line',
+            info: 'ri-information-line',
+            warning: 'ri-alert-line'
+        };
+
+        toast.innerHTML = `<i class="${icons[type]}"></i> ${message}`;
+        container.appendChild(toast);
+
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transition = 'opacity 0.3s';
+            setTimeout(() => toast.remove(), 300);
+        }, 3500);
+    }
+
+    // ============ MODAL ============
+    function openModal(modalId) {
+        document.getElementById(modalId).classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal(modalId) {
+        document.getElementById(modalId).classList.add('hidden');
+        document.body.style.overflow = '';
+    }
+
+    // ============ CLIENTE SEARCH ============
     function initClienteSearch() {
         const searchInput = document.getElementById('clienteSearchInput');
         const hiddenInput = document.getElementById('clienteSelect');
@@ -526,16 +1366,16 @@
             );
 
             if (filtered.length === 0) {
-                listUl.innerHTML = '<li class="text-gray-500 text-center">Nenhum cliente encontrado</li>';
+                listUl.innerHTML = '<li style="padding: 0.75rem; text-align: center; color: #9ca3af;">Nenhum cliente encontrado</li>';
             } else {
                 listUl.innerHTML = filtered.map(c =>
                     `<li data-id="${c.id}" data-nome="${c.nome}" data-telefone="${c.telefone || ''}">
-                        <div class="font-medium">${c.nome}</div>
-                        <div class="text-xs text-gray-500">${c.telefone || 'sem telefone'}</div>
+                        <div class="nome">${c.nome}</div>
+                        <div class="info">${c.telefone || 'sem telefone'}</div>
                     </li>`
                 ).join('');
 
-                listUl.querySelectorAll('li').forEach(li => {
+                listUl.querySelectorAll('li[data-id]').forEach(li => {
                     li.addEventListener('click', () => {
                         searchInput.value = li.dataset.nome;
                         hiddenInput.value = li.dataset.id;
@@ -556,91 +1396,147 @@
         });
 
         document.addEventListener('click', (e) => {
-            if (!searchInput.contains(e.target) && !listUl.contains(e.target)) {
+            if (!searchInput.parentElement.contains(e.target)) {
                 listUl.classList.add('hidden');
             }
         });
     }
 
-    // ========== SELECT COM BUSCA PARA ARTIGO (nas linhas) ==========
+    // ============ ITEM ROW ============
+    function addItemRow(artigoId = null, artigoNome = '', quantidade = 1, preco = 0, descricao = '') {
+        const tbody = document.getElementById('itensTableBody');
+        const rowId = Date.now() + Math.random();
 
-    function createArtigoSelect(rowId, selectedId = null) {
-        const selectDiv = document.createElement('div');
-        selectDiv.className = 'searchable-select-item relative';
-        selectDiv.style.minWidth = '180px';
+        const tr = document.createElement('tr');
+        tr.id = `item-row-${rowId}`;
+        tr.innerHTML = `
+            <td>
+                <div class="searchable-select" style="min-width: 200px;">
+                    <input type="text" class="artigo-search form-input" placeholder="Pesquisar artigo..." data-row="${rowId}" value="${artigoNome}" style="padding: 0.5rem;">
+                    <ul class="dropdown-list hidden artigo-list"></ul>
+                    <input type="hidden" class="item-artigo-id" data-row="${rowId}" value="${artigoId || ''}">
+                </div>
+            </td>
+            <td>
+                <input type="number" class="item-qtd form-input" data-row="${rowId}" value="${quantidade}" min="1" style="width: 70px; padding: 0.5rem; text-align: center;">
+            </td>
+            <td>
+                <span class="item-preco-unitario" data-row="${rowId}" style="font-weight: 500;">${preco ? formatMoney(preco) : '0 MT'}</span>
+            </td>
+            <td>
+                <input type="text" class="item-descricao form-input" data-row="${rowId}" value="${descricao}" placeholder="Observações (opcional)" maxlength="200" style="padding: 0.5rem; min-width: 150px;">
+            </td>
+            <td>
+                <span class="item-total" data-row="${rowId}" style="font-weight: 600;">${quantidade && preco ? formatMoney(preco * quantidade) : '0 MT'}</span>
+            </td>
+            <td>
+                <button type="button" onclick="removeItemRow('${rowId}')" style="color: #ef4444; padding: 0.25rem; border-radius: 0.5rem;" class="hover:bg-red-50 dark:hover:bg-red-900/20 transition">
+                    <i class="ri-delete-bin-line"></i>
+                </button>
+            </td>
+        `;
+        tbody.appendChild(tr);
 
-        const input = document.createElement('input');
-        input.type = 'text';
-        input.placeholder = 'Pesquisar artigo...';
-        input.className = 'w-full border border-gray-300 dark:border-gray-600 rounded-lg px-2 py-1 bg-white dark:bg-gray-700 text-gray-800 dark:text-white text-sm';
-        input.setAttribute('data-row', rowId);
-
-        const ul = document.createElement('ul');
-        ul.className = 'absolute top-full left-0 right-0 max-h-48 overflow-y-auto bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg z-10 hidden';
-
-        const hiddenInput = document.createElement('input');
-        hiddenInput.type = 'hidden';
-        hiddenInput.className = 'item-artigo-id';
-        hiddenInput.setAttribute('data-row', rowId);
-        if (selectedId) hiddenInput.value = selectedId;
+        // Inicializar busca de artigo
+        const searchInput = tr.querySelector('.artigo-search');
+        const listUl = tr.querySelector('.artigo-list');
+        const hiddenInput = tr.querySelector('.item-artigo-id');
+        const qtdInput = tr.querySelector('.item-qtd');
 
         function filterArtigos() {
-            const searchTerm = input.value.toLowerCase();
-            const filtered = artigos.filter(a =>
-                a.nome.toLowerCase().includes(searchTerm)
-            );
+            const searchTerm = searchInput.value.toLowerCase();
+            const filtered = artigos.filter(a => a.nome.toLowerCase().includes(searchTerm));
 
             if (filtered.length === 0) {
-                ul.innerHTML = '<li class="text-gray-500 text-center p-2">Nenhum artigo encontrado</li>';
+                listUl.innerHTML = '<li style="padding: 0.75rem; text-align: center; color: #9ca3af;">Nenhum artigo encontrado</li>';
             } else {
-                ul.innerHTML = filtered.map(a =>
-                    `<li data-id="${a.id}" data-nome="${a.nome}" data-preco="${a.preco_base}" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer">
-                        <div class="font-medium">${a.nome}</div>
-                        <div class="text-xs text-gray-500">${formatMoney(a.preco_base)}</div>
+                listUl.innerHTML = filtered.map(a =>
+                    `<li data-id="${a.id}" data-nome="${a.nome}" data-preco="${a.preco_base}">
+                        <div class="nome">${a.nome}</div>
+                        <div class="info">${formatMoney(a.preco_base)}</div>
                     </li>`
                 ).join('');
 
-                ul.querySelectorAll('li').forEach(li => {
+                listUl.querySelectorAll('li[data-id]').forEach(li => {
                     li.addEventListener('click', () => {
-                        input.value = li.dataset.nome;
+                        searchInput.value = li.dataset.nome;
                         hiddenInput.value = li.dataset.id;
-                        ul.classList.add('hidden');
-                        // Atualizar preço e total
-                        const precoSpan = document.querySelector(`#item-row-${rowId} .item-preco-unitario`);
-                        if (precoSpan) {
-                            precoSpan.textContent = formatMoney(parseFloat(li.dataset.preco));
-                            updateItemTotal(rowId);
-                        }
+                        listUl.classList.add('hidden');
+                        tr.querySelector('.item-preco-unitario').textContent = formatMoney(parseFloat(li.dataset.preco));
+                        updateItemTotal(rowId);
                     });
                 });
             }
         }
 
-        input.addEventListener('input', () => {
+        searchInput.addEventListener('input', () => {
             filterArtigos();
-            ul.classList.remove('hidden');
+            listUl.classList.remove('hidden');
         });
 
-        input.addEventListener('focus', () => {
+        searchInput.addEventListener('focus', () => {
             filterArtigos();
-            ul.classList.remove('hidden');
+            listUl.classList.remove('hidden');
         });
+
+        qtdInput.addEventListener('input', () => updateItemTotal(rowId));
 
         document.addEventListener('click', (e) => {
-            if (!input.contains(e.target) && !ul.contains(e.target)) {
-                ul.classList.add('hidden');
+            if (!searchInput.parentElement.contains(e.target)) {
+                listUl.classList.add('hidden');
             }
         });
 
-        selectDiv.appendChild(input);
-        selectDiv.appendChild(ul);
-        selectDiv.appendChild(hiddenInput);
-
-        return selectDiv;
+        updatePedidoTotals();
     }
 
-    // ========== API CALLS ==========
+    function removeItemRow(rowId) {
+        const row = document.getElementById(`item-row-${rowId}`);
+        if (row) {
+            row.remove();
+            updatePedidoTotals();
+        }
+    }
 
+    function updateItemTotal(rowId) {
+        const row = document.getElementById(`item-row-${rowId}`);
+        if (!row) return;
+
+        const precoText = row.querySelector('.item-preco-unitario').textContent;
+        const preco = parseFloat(precoText.replace('MT', '').replace(/\./g, '').replace(',', '.').trim()) || 0;
+        const qtd = parseInt(row.querySelector('.item-qtd').value) || 0;
+        const total = preco * qtd;
+
+        row.querySelector('.item-total').textContent = formatMoney(total);
+        updatePedidoTotals();
+    }
+
+    function updatePedidoTotals() {
+        let subtotal = 0;
+        document.querySelectorAll('#itensTableBody tr').forEach(row => {
+            const totalText = row.querySelector('.item-total')?.textContent || '0 MT';
+            const totalValue = parseFloat(totalText.replace('MT', '').replace(/\./g, '').replace(',', '.').trim()) || 0;
+            subtotal += totalValue;
+        });
+
+        const cabides = parseInt(document.getElementById('cabidesInput').value) || 0;
+        const descontoCabides = Math.floor(cabides / 20) * 140;
+
+        document.getElementById('subtotalLabel').textContent = formatMoney(subtotal);
+        document.getElementById('descontoCabidesLabel').textContent = `- ${formatMoney(descontoCabides)}`;
+        document.getElementById('totalFinalLabel').textContent = formatMoney(subtotal - descontoCabides);
+    }
+
+    function resetOrderForm() {
+        document.getElementById('pedidoId').value = '';
+        document.getElementById('clienteSearchInput').value = '';
+        document.getElementById('clienteSelect').value = '';
+        document.getElementById('cabidesInput').value = '0';
+        document.getElementById('itensTableBody').innerHTML = '';
+        updatePedidoTotals();
+    }
+
+    // ============ API CALLS ============
     async function loadPedidos(page = 1) {
         const status = document.getElementById('statusFilter').value;
         const pagamento = document.getElementById('pagamentoFilter').value;
@@ -648,7 +1544,7 @@
         const dataFim = document.getElementById('dataFim').value;
         const cliente = document.getElementById('clienteSearch').value;
 
-        let url = `/api/pedidos/?page=${page}&per_page=50&status=${status}&pagamento=${pagamento}&data_inicio=${dataInicio}&data_fim=${dataFim}&cliente=${cliente}`;
+        let url = `/api/pedidos/?page=${page}&per_page=50&status=${status}&pagamento=${pagamento}&data_inicio=${dataInicio}&data_fim=${dataFim}&cliente=${encodeURIComponent(cliente)}`;
 
         try {
             const response = await fetch(url);
@@ -658,10 +1554,12 @@
                 currentPage = data.page;
                 totalPages = data.total_pages;
                 renderPedidosTable();
-                renderPaginationButtons(totalPages);
+                renderPaginationButtons();
+            } else {
+                showNotification(data.error || 'Erro ao carregar pedidos', 'error');
             }
         } catch (error) {
-            showNotification('Erro ao carregar pedidos', 'error');
+            showNotification('Erro de conexão ao carregar pedidos', 'error');
         }
     }
 
@@ -674,7 +1572,7 @@
                 initClienteSearch();
             }
         } catch (error) {
-            console.error('Erro:', error);
+            console.error('Erro ao carregar clientes:', error);
         }
     }
 
@@ -686,11 +1584,456 @@
                 artigos = data.artigos;
             }
         } catch (error) {
-            console.error('Erro:', error);
+            console.error('Erro ao carregar artigos:', error);
         }
     }
 
-    // ========== BULK ACTIONS ==========
+    // ============ RENDER ============
+    function renderPedidosTable() {
+        const tbody = document.getElementById('pedidosTableBody');
+
+        if (pedidos.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="10">
+                        <div class="empty-state">
+                            <i class="ri-inbox-line"></i>
+                            <p>Nenhum pedido encontrado</p>
+                        </div>
+                    </td>
+                </tr>`;
+            document.getElementById('paginationInfo').textContent = 'Nenhum resultado';
+            document.getElementById('paginationButtons').innerHTML = '';
+            return;
+        }
+
+        document.getElementById('paginationInfo').textContent =
+            `Mostrando ${pedidos.length} pedido(s) • Página ${currentPage} de ${totalPages}`;
+
+        tbody.innerHTML = pedidos.map(p => {
+            const statusClass = statusBadgeClass[p.status] || 'badge-pendente';
+            const statusIcon = statusIcons[p.status] || 'ri-time-line';
+
+            let statusOptions = [];
+            if (p.status === 'pendente') {
+                statusOptions = [
+                    { value: 'pendente', label: 'Pendente', selected: true },
+                    { value: 'completo', label: 'Completo', selected: false }
+                ];
+            } else if (p.status === 'completo') {
+                statusOptions = [
+                    { value: 'completo', label: 'Completo', selected: true },
+                    { value: 'pronto', label: 'Pronto', selected: false }
+                ];
+            } else if (p.status === 'pronto') {
+                statusOptions = [
+                    { value: 'pronto', label: 'Pronto', selected: true },
+                    { value: 'entregue', label: 'Entregue', selected: false }
+                ];
+            } else {
+                statusOptions = [
+                    { value: 'entregue', label: 'Entregue', selected: true }
+                ];
+            }
+
+            const pagamentoClass = p.status_pagamento === 'pago' ? 'badge-pago' :
+                                   p.status_pagamento === 'parcial' ? 'badge-parcial' : 'badge-nao-pago';
+
+            const isChecked = selectedPedidos.has(p.id) ? 'checked' : '';
+
+            return `
+                <tr>
+                    <td>
+                        <input type="checkbox" class="custom-checkbox pedido-checkbox" value="${p.id}" ${isChecked}>
+                    </td>
+                    <td>
+                        <span style="font-weight: 700; color: #3b82f6; font-family: monospace; font-size: 0.9rem;">
+                            #${p.id_formatado}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="cliente-cell">
+                            <div class="cliente-avatar" style="background: linear-gradient(135deg, #dbeafe, #bfdbfe); color: #1e40af;">
+                                ${p.cliente_nome.charAt(0).toUpperCase()}
+                            </div>
+                            <div class="cliente-details">
+                                <span class="cliente-nome" title="${p.cliente_nome}">${p.cliente_nome}</span>
+                                <span class="cliente-telefone">${p.cliente_telefone || '—'}</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <span style="font-weight: 500;">${p.itens} item(ns)</span>
+                    </td>
+                    <td>
+                        <span style="font-weight: 700; font-size: 0.95rem;">${formatMoney(p.total_final)}</span>
+                    </td>
+                    <td>
+                        <span style="color: #059669; font-weight: 500;">${formatMoney(p.total_pago)}</span>
+                    </td>
+                    <td>
+                        <span style="font-weight: 700; color: ${p.saldo > 0 ? '#dc2626' : '#059669'};">
+                            ${formatMoney(p.saldo)}
+                        </span>
+                    </td>
+                    <td>
+                        <select class="status-select ${statusClass}"
+                                data-pedido-id="${p.id}"
+                                onchange="updatePedidoStatus(${p.id}, this.value)"
+                                ${p.status === 'entregue' ? 'disabled' : ''}>
+                            ${statusOptions.map(opt =>
+                                `<option value="${opt.value}" ${opt.selected ? 'selected' : ''}>${opt.label}</option>`
+                            ).join('')}
+                        </select>
+                    </td>
+                    <td>
+                        <span class="badge-pagamento ${pagamentoClass}">
+                            ${p.status_pagamento_label}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="action-btns">
+                            <button onclick="viewOrder(${p.id})" class="btn-action btn-action-view" title="Visualizar">
+                                <i class="ri-eye-line"></i>
+                            </button>
+                            <button onclick="printReceipt(${p.id})" class="btn-action btn-action-print" title="Imprimir Recibo">
+                                <i class="ri-printer-line"></i>
+                            </button>
+                            <button onclick="openPaymentModal(${p.id}, ${p.saldo})" class="btn-action btn-action-pay" title="Registrar Pagamento">
+                                <i class="ri-money-dollar-circle-line"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    function renderPaginationButtons() {
+        const paginationDiv = document.getElementById('paginationButtons');
+
+        if (totalPages <= 1) {
+            paginationDiv.innerHTML = '';
+            return;
+        }
+
+        let html = '';
+
+        // Previous
+        html += `<button onclick="loadPedidos(${currentPage - 1})" class="btn-page" ${currentPage === 1 ? 'disabled' : ''}>
+            <i class="ri-arrow-left-s-line"></i>
+        </button>`;
+
+        // Pages
+        const maxButtons = 5;
+        let startPage = Math.max(1, currentPage - Math.floor(maxButtons / 2));
+        let endPage = Math.min(totalPages, startPage + maxButtons - 1);
+
+        if (endPage - startPage < maxButtons - 1) {
+            startPage = Math.max(1, endPage - maxButtons + 1);
+        }
+
+        if (startPage > 1) {
+            html += `<button onclick="loadPedidos(1)" class="btn-page">1</button>`;
+            if (startPage > 2) html += `<span class="btn-page" style="border: none;">...</span>`;
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+            html += `<button onclick="loadPedidos(${i})" class="btn-page ${currentPage === i ? 'active' : ''}">${i}</button>`;
+        }
+
+        if (endPage < totalPages) {
+            if (endPage < totalPages - 1) html += `<span class="btn-page" style="border: none;">...</span>`;
+            html += `<button onclick="loadPedidos(${totalPages})" class="btn-page">${totalPages}</button>`;
+        }
+
+        // Next
+        html += `<button onclick="loadPedidos(${currentPage + 1})" class="btn-page" ${currentPage === totalPages ? 'disabled' : ''}>
+            <i class="ri-arrow-right-s-line"></i>
+        </button>`;
+
+        paginationDiv.innerHTML = html;
+    }
+
+    // ============ STATUS UPDATE ============
+    async function updatePedidoStatus(pedidoId, novoStatus) {
+        const pedido = pedidos.find(p => p.id === pedidoId);
+        if (!pedido) return;
+
+        if (pedido.status === novoStatus) {
+            showNotification(`Pedido já está como "${statusLabels[novoStatus]}"`, 'warning');
+            await loadPedidos(currentPage);
+            return;
+        }
+
+        let transicaoValida = false;
+
+        if (pedido.status === 'pendente' && novoStatus === 'completo') transicaoValida = true;
+        else if (pedido.status === 'completo' && novoStatus === 'pronto') transicaoValida = true;
+        else if (pedido.status === 'pronto' && novoStatus === 'entregue') {
+            if (pedido.saldo > 0) {
+                showNotification(`Saldo pendente de ${formatMoney(pedido.saldo)}. Não é possível entregar.`, 'error');
+                await loadPedidos(currentPage);
+                return;
+            }
+            transicaoValida = true;
+        }
+
+        if (!transicaoValida) {
+            showNotification('Transição de status não permitida!', 'error');
+            await loadPedidos(currentPage);
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/pedidos/atualizar-status/${pedidoId}/`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCSRFToken()
+                },
+                body: JSON.stringify({ status: novoStatus })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                showNotification(data.message || `Status atualizado para "${statusLabels[novoStatus]}"`, 'success');
+                await loadPedidos(currentPage);
+            } else {
+                showNotification(data.error || 'Erro ao atualizar status', 'error');
+                await loadPedidos(currentPage);
+            }
+        } catch (error) {
+            showNotification('Erro ao conectar com o servidor', 'error');
+            await loadPedidos(currentPage);
+        }
+    }
+
+    // ============ SAVE PEDIDO ============
+    async function savePedido(event) {
+        event.preventDefault();
+
+        const pedidoId = document.getElementById('pedidoId').value;
+        const cliente_id = document.getElementById('clienteSelect').value;
+        const cabides_trazidos = parseInt(document.getElementById('cabidesInput').value) || 0;
+
+        if (!cliente_id) {
+            showNotification('Selecione um cliente', 'error');
+            return;
+        }
+
+        const itens = [];
+        document.querySelectorAll('#itensTableBody tr').forEach(row => {
+            const artigo_id = row.querySelector('.item-artigo-id')?.value;
+            const quantidade = parseInt(row.querySelector('.item-qtd')?.value) || 0;
+            const descricao = row.querySelector('.item-descricao')?.value || '';
+
+            if (artigo_id && quantidade > 0) {
+                itens.push({ artigo_id, quantidade, descricao });
+            }
+        });
+
+        if (itens.length === 0) {
+            showNotification('Adicione pelo menos um item ao pedido', 'error');
+            return;
+        }
+
+        const url = pedidoId ? `/api/pedidos/editar/${pedidoId}/` : '/api/pedidos/criar/';
+        const method = pedidoId ? 'PUT' : 'POST';
+
+        try {
+            const response = await fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCSRFToken()
+                },
+                body: JSON.stringify({ cliente_id, cabides_trazidos, itens })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                showNotification(data.message || 'Pedido salvo com sucesso!', 'success');
+                closeModal('orderModal');
+                await loadPedidos(currentPage);
+                resetOrderForm();
+            } else {
+                showNotification(data.error || 'Erro ao salvar pedido', 'error');
+            }
+        } catch (error) {
+            showNotification('Erro ao conectar com o servidor', 'error');
+        }
+    }
+
+    // ============ PAYMENT ============
+    function openPaymentModal(pedidoId, saldo) {
+        document.getElementById('paymentPedidoId').value = pedidoId;
+        document.getElementById('paymentValor').value = '';
+        document.getElementById('paymentValor').max = saldo;
+
+        const saldoInfo = document.getElementById('saldoInfo');
+        saldoInfo.innerHTML = `<span style="color: #6b7280;">Saldo pendente: <strong>${formatMoney(saldo)}</strong></span>`;
+
+        if (saldo > 0) {
+            saldoInfo.innerHTML += `<br><span style="color: #d97706; font-size: 0.7rem;">⚠️ O pedido só poderá ser entregue após pagamento total.</span>`;
+        }
+
+        openModal('paymentModal');
+    }
+
+    async function registerPayment(event) {
+        event.preventDefault();
+
+        const pedidoId = document.getElementById('paymentPedidoId').value;
+        const valor = parseFloat(document.getElementById('paymentValor').value);
+        const metodo = document.getElementById('paymentMetodo').value;
+        const referencia = document.getElementById('paymentReferencia').value;
+
+        if (!valor || valor <= 0) {
+            showNotification('Informe um valor válido', 'error');
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/pedidos/pagamento/${pedidoId}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCSRFToken()
+                },
+                body: JSON.stringify({ valor, metodo, referencia })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                showNotification(data.message || 'Pagamento registrado com sucesso!', 'success');
+                closeModal('paymentModal');
+                await loadPedidos(currentPage);
+            } else {
+                showNotification(data.error || 'Erro ao registrar pagamento', 'error');
+            }
+        } catch (error) {
+            showNotification('Erro ao conectar com o servidor', 'error');
+        }
+    }
+
+    // ============ VIEW ORDER ============
+    async function viewOrder(id) {
+        try {
+            const response = await fetch(`/api/pedidos/detalhes/${id}/`);
+            const data = await response.json();
+
+            if (data.success) {
+                const p = data.pedido;
+                const content = document.getElementById('viewOrderContent');
+
+                content.innerHTML = `
+                    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                        <div style="background: #eff6ff; border-radius: 1rem; padding: 1.5rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                                <div>
+                                    <p style="font-size: 0.8rem; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600;">Pedido #${p.id_formatado}</p>
+                                    <h4 style="font-size: 1.25rem; font-weight: 700; margin-top: 0.25rem;">${p.cliente_nome}</h4>
+                                    <p style="font-size: 0.875rem; color: #6b7280;">${p.cliente_telefone || 'Sem telefone cadastrado'}</p>
+                                </div>
+                                <span class="badge-status ${statusBadgeClass[p.status]}">
+                                    <i class="${statusIcons[p.status]}"></i>
+                                    ${statusLabels[p.status]}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h5 style="font-weight: 700; margin-bottom: 0.75rem; font-size: 0.95rem;">Itens do Pedido</h5>
+                            <table class="itens-table">
+                                <thead>
+                                    <tr>
+                                        <th>Item</th>
+                                        <th style="text-align: center;">Qtd</th>
+                                        <th style="text-align: right;">Preço</th>
+                                        <th>Descrição</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${p.itens.map(i => `
+                                        <tr>
+                                            <td style="font-weight: 500;">${i.nome}</td>
+                                            <td style="text-align: center;">${i.quantidade}</td>
+                                            <td style="text-align: right; font-weight: 500;">${formatMoney(i.preco_total)}</td>
+                                            <td style="color: #6b7280; font-size: 0.85rem;">${i.descricao || '—'}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="totals-card" style="margin-top: 0;">
+                            <div class="totals-row">
+                                <span style="color: #6b7280;">Subtotal</span>
+                                <span>${formatMoney(p.subtotal)}</span>
+                            </div>
+                            ${p.desconto_cabides > 0 ? `
+                            <div class="totals-row" style="color: #059669;">
+                                <span>Desconto Cabides</span>
+                                <span>- ${formatMoney(p.desconto_cabides)}</span>
+                            </div>
+                            ` : ''}
+                            <div class="totals-row total-final">
+                                <span>Total</span>
+                                <span>${formatMoney(p.total_final)}</span>
+                            </div>
+                            <div class="totals-row" style="color: #059669;">
+                                <span>Pago</span>
+                                <span>${formatMoney(p.total_pago)}</span>
+                            </div>
+                            ${p.saldo > 0 ? `
+                            <div class="totals-row" style="color: #dc2626;">
+                                <span>Saldo Pendente</span>
+                                <span>${formatMoney(p.saldo)}</span>
+                            </div>
+                            ` : ''}
+                        </div>
+
+                        <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+                            <button onclick="closeModal('viewOrderModal')" class="btn-secondary">Fechar</button>
+                            ${p.saldo > 0 ? `
+                            <button onclick="closeModal('viewOrderModal'); openPaymentModal(${p.id}, ${p.saldo})" class="btn-primary" style="background: #059669;">
+                                <i class="ri-money-dollar-circle-line"></i> Registrar Pagamento
+                            </button>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+
+                openModal('viewOrderModal');
+            } else {
+                showNotification('Erro ao carregar detalhes do pedido', 'error');
+            }
+        } catch (error) {
+            showNotification('Erro de conexão', 'error');
+        }
+    }
+
+    function printReceipt(pedidoId) {
+        window.open(`/imprimir-recibo-imagem/${pedidoId}/`, '_blank');
+        showNotification('Recibo aberto em nova aba! Use Ctrl+P para imprimir', 'info');
+    }
+
+    // ============ BULK ACTIONS ============
+    function updateBulkActionsBar() {
+        const bar = document.getElementById('bulkActionsBar');
+        const count = selectedPedidos.size;
+        document.getElementById('selectedCount').textContent = count;
+
+        if (count > 0) {
+            bar.classList.remove('hidden');
+        } else {
+            bar.classList.add('hidden');
+        }
+    }
 
     async function applyBulkAction() {
         const action = document.getElementById('bulkActionSelect').value;
@@ -717,8 +2060,6 @@
             return;
         }
 
-        showNotification(`Processando ${selectedIds.length} pedido(s)...`, 'info');
-
         let sucessos = 0;
         let erros = 0;
 
@@ -730,14 +2071,12 @@
 
             switch (action) {
                 case 'completo':
-                    success = await updatePedidoStatusAPI(pedidoId, 'completo');
-                    break;
                 case 'pronto':
-                    success = await updatePedidoStatusAPI(pedidoId, 'pronto');
+                    success = await updatePedidoStatusAPI(pedidoId, action);
                     break;
                 case 'entregue':
                     if (pedido.saldo > 0) {
-                        showNotification(`Pedido #${pedidoId}: Não pode ser entregue (saldo pendente)`, 'warning');
+                        showNotification(`Pedido #${pedido.id_formatado}: saldo pendente impede entrega`, 'warning');
                         success = false;
                     } else {
                         success = await updatePedidoStatusAPI(pedidoId, 'entregue');
@@ -748,11 +2087,8 @@
                     break;
             }
 
-            if (success) {
-                sucessos++;
-            } else {
-                erros++;
-            }
+            if (success) sucessos++;
+            else erros++;
         }
 
         await loadPedidos(currentPage);
@@ -785,16 +2121,14 @@
 
     async function enviarSmsPedidoPronto(pedidoId, pedido) {
         if (!pedido || pedido.status !== 'pronto') {
-            showNotification(`Pedido #${pedidoId} não está com status "Pronto"`, 'warning');
+            showNotification(`Pedido #${pedido.id_formatado} não está com status "Pronto"`, 'warning');
             return false;
         }
 
         if (!pedido.cliente_telefone) {
-            showNotification('Cliente não tem telefone cadastrado', 'error');
+            showNotification(`Cliente do pedido #${pedido.id_formatado} não tem telefone`, 'error');
             return false;
         }
-
-        showNotification(`Enviando SMS para ${pedido.cliente_nome}...`, 'info');
 
         try {
             const response = await fetch(`/api/pedidos/enviar-sms/${pedidoId}/`, {
@@ -805,570 +2139,91 @@
                 }
             });
             const data = await response.json();
-            if (data.success) {
-                showNotification(`✅ ${data.message}`, 'success');
-                return true;
-            } else {
-                showNotification(`❌ ${data.error}`, 'error');
-                return false;
-            }
+            return data.success;
         } catch (error) {
-            console.error('Erro:', error);
-            showNotification('Erro ao enviar SMS', 'error');
             return false;
         }
     }
 
-    function updateBulkActionsBar() {
-        const bar = document.getElementById('bulkActionsBar');
-        const count = selectedPedidos.size;
-        document.getElementById('selectedCount').textContent = count;
+    // ============ EVENT LISTENERS ============
+    document.addEventListener('DOMContentLoaded', () => {
+        // Buttons
+        document.getElementById('newOrderBtn').addEventListener('click', () => {
+            resetOrderForm();
+            addItemRow();
+            openModal('orderModal');
+        });
 
-        if (count > 0) {
-            bar.classList.remove('hidden');
-        } else {
-            bar.classList.add('hidden');
-        }
-    }
+        document.getElementById('applyFiltersBtn').addEventListener('click', () => loadPedidos(1));
 
-    // ========== RENDER FUNCTIONS ==========
+        document.getElementById('resetFiltersBtn').addEventListener('click', () => {
+            document.getElementById('statusFilter').value = 'all';
+            document.getElementById('pagamentoFilter').value = 'all';
+            document.getElementById('dataInicio').value = '';
+            document.getElementById('dataFim').value = '';
+            document.getElementById('clienteSearch').value = '';
+            loadPedidos(1);
+        });
 
-    function renderPedidosTable() {
-        const tbody = document.getElementById('pedidosTableBody');
+        document.getElementById('applyBulkActionBtn').addEventListener('click', applyBulkAction);
 
-        document.getElementById('paginationInfo').innerHTML = `Mostrando ${pedidos.length} de ${pedidos.length} resultados`;
+        document.getElementById('clearSelectionBtn').addEventListener('click', () => {
+            selectedPedidos.clear();
+            updateBulkActionsBar();
+            renderPedidosTable();
+            document.getElementById('selectAll').checked = false;
+        });
 
-        if (pedidos.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="10" class="px-6 py-12 text-center text-gray-500 dark:text-gray-400">Nenhum pedido encontrado</td></tr>`;
-            return;
-        }
-
-        const pagamentoColors = { 'nao_pago': 'red', 'parcial': 'yellow', 'pago': 'green' };
-
-        tbody.innerHTML = pedidos.map(p => {
-            const statusAtual = p.status;
-            let opcoesDisponiveis = [];
-
-            if (statusAtual === 'pendente') {
-                opcoesDisponiveis = [
-                    { value: 'pendente', label: 'Pendente', selected: true },
-                    { value: 'completo', label: 'Completo', selected: false }
-                ];
-            } else if (statusAtual === 'completo') {
-                opcoesDisponiveis = [
-                    { value: 'completo', label: 'Completo', selected: true },
-                    { value: 'pronto', label: 'Pronto', selected: false }
-                ];
-            } else if (statusAtual === 'pronto') {
-                opcoesDisponiveis = [
-                    { value: 'pronto', label: 'Pronto', selected: true },
-                    { value: 'entregue', label: 'Entregue', selected: false }
-                ];
-            } else {
-                opcoesDisponiveis = [
-                    { value: 'entregue', label: 'Entregue', selected: true }
-                ];
-            }
-
-            const statusClass = p.status === 'pendente' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400' :
-                                p.status === 'completo' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' :
-                                p.status === 'pronto' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
-                                'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400';
-
-            return `
-                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition">
-                    <td class="px-4 py-3">
-                        <input type="checkbox" class="rounded dark:bg-gray-600 pedido-checkbox" value="${p.id}" ${selectedPedidos.has(p.id) ? 'checked' : ''}>
-                     </td>
-                    <td class="px-4 py-3 text-sm font-medium text-gray-900 dark:text-white">${p.id_formatado}</td>
-                    <td class="px-4 py-3">
-                        <div class="cliente-info">
-                            <div class="cliente-avatar w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
-                                <i class="ri-user-line text-blue-600 dark:text-blue-400 text-sm"></i>
-                            </div>
-                            <div class="cliente-detalhes">
-                                <p class="cliente-nome text-sm font-medium text-gray-900 dark:text-white" title="${p.cliente_nome}">${p.cliente_nome}</p>
-                                <p class="text-xs text-gray-500 dark:text-gray-400">${p.cliente_telefone || 'sem telefone'}</p>
-                            </div>
-                        </div>
-                     </td>
-                    <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">${p.itens} item(s)</td>
-                    <td class="px-4 py-3 text-sm font-semibold text-gray-900 dark:text-white">${formatMoney(p.total_final)}</td>
-                    <td class="px-4 py-3 text-sm text-green-600 dark:text-green-400">${formatMoney(p.total_pago)}</td>
-                    <td class="px-4 py-3 text-sm font-semibold ${p.saldo > 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}">${formatMoney(p.saldo)}</td>
-                    <td class="px-4 py-3">
-                        <select class="status-select text-xs rounded-full px-2 py-1 border-0 focus:ring-2 focus:ring-blue-500 cursor-pointer ${statusClass}"
-                                data-pedido-id="${p.id}"
-                                onchange="updatePedidoStatus(${p.id}, this.value)"
-                                ${p.status === 'entregue' ? 'disabled' : ''}>
-                            ${opcoesDisponiveis.map(opt => `<option value="${opt.value}" ${opt.selected ? 'selected' : ''}>${opt.label}</option>`).join('')}
-                        </select>
-                     </td>
-                    <td class="px-4 py-3">
-                        <span class="status-badge px-2 py-1 text-xs rounded-full bg-${pagamentoColors[p.status_pagamento]}-100 dark:bg-${pagamentoColors[p.status_pagamento]}-900/30 text-${pagamentoColors[p.status_pagamento]}-800 dark:text-${pagamentoColors[p.status_pagamento]}-400">
-                            ${p.status_pagamento_label}
-                        </span>
-                     </td>
-                    <td class="px-4 py-3">
-                        <div class="action-buttons">
-                            <button onclick="viewOrder(${p.id})" class="text-blue-600 dark:text-blue-400 hover:text-blue-800 transition" title="Visualizar">
-                                <i class="ri-eye-line text-lg"></i>
-                            </button>
-                            <button onclick="printReceipt(${p.id})" class="text-gray-600 dark:text-gray-400 hover:text-gray-800 transition" title="Imprimir Recibo">
-                                <i class="ri-printer-line text-lg"></i>
-                            </button>
-                            <button onclick="openPaymentModal(${p.id}, ${p.saldo})" class="text-purple-600 dark:text-purple-400 hover:text-purple-800 transition" title="Registrar Pagamento">
-                                <i class="ri-money-dollar-circle-line text-lg"></i>
-                            </button>
-                        </div>
-                     </td>
-                 </tr>
-            `;
-        }).join('');
-    }
-
-    function renderPaginationButtons(totalPages) {
-        const paginationDiv = document.getElementById('paginationButtons');
-        if (totalPages <= 1) {
-            paginationDiv.innerHTML = '';
-            return;
-        }
-
-        let html = `<button onclick="loadPedidos(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''} class="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''}">
-            <i class="ri-arrow-left-s-line"></i>
-        </button>`;
-
-        const maxButtons = 5;
-        let startPage = Math.max(1, currentPage - Math.floor(maxButtons / 2));
-        let endPage = Math.min(totalPages, startPage + maxButtons - 1);
-
-        if (endPage - startPage < maxButtons - 1) {
-            startPage = Math.max(1, endPage - maxButtons + 1);
-        }
-
-        for (let i = startPage; i <= endPage; i++) {
-            html += `<button onclick="loadPedidos(${i})" class="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg ${currentPage === i ? 'bg-blue-600 text-white' : 'hover:bg-gray-50 dark:hover:bg-gray-700'}">${i}</button>`;
-        }
-
-        html += `<button onclick="loadPedidos(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''} class="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''}">
-            <i class="ri-arrow-right-s-line"></i>
-        </button>`;
-
-        paginationDiv.innerHTML = html;
-    }
-
-    // Função para atualizar o status do pedido
-    async function updatePedidoStatus(pedidoId, novoStatus) {
-        const pedidoAtual = pedidos.find(p => p.id === pedidoId);
-        if (!pedidoAtual) {
-            showNotification('Pedido não encontrado', 'error');
-            const select = document.querySelector(`.status-select[data-pedido-id="${pedidoId}"]`);
-            if (select) select.value = pedidoAtual?.status || '';
-            return;
-        }
-
-        if (pedidoAtual.status === novoStatus) {
-            showNotification(`O pedido já está como ${novoStatus}!`, 'warning');
-            return;
-        }
-
-        let transicaoValida = false;
-
-        if (pedidoAtual.status === 'pendente' && novoStatus === 'completo') {
-            transicaoValida = true;
-        } else if (pedidoAtual.status === 'completo' && novoStatus === 'pronto') {
-            transicaoValida = true;
-        } else if (pedidoAtual.status === 'pronto' && novoStatus === 'entregue') {
-            if (pedidoAtual.saldo > 0) {
-                showNotification(`Não é possível entregar: saldo pendente de ${formatMoney(pedidoAtual.saldo)}`, 'error');
-                const select = document.querySelector(`.status-select[data-pedido-id="${pedidoId}"]`);
-                if (select) select.value = pedidoAtual.status;
-                return;
-            }
-            transicaoValida = true;
-        }
-
-        if (!transicaoValida) {
-            showNotification(`Transição inválida! Não é possível alterar de "${pedidoAtual.status}" para "${novoStatus}"`, 'error');
-            const select = document.querySelector(`.status-select[data-pedido-id="${pedidoId}"]`);
-            if (select) select.value = pedidoAtual.status;
-            return;
-        }
-
-        showNotification(`Atualizando status...`, 'info');
-
-        try {
-            const response = await fetch(`/api/pedidos/atualizar-status/${pedidoId}/`, {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': getCSRFToken()
-                },
-                body: JSON.stringify({ status: novoStatus })
-            });
-
-            const data = await response.json();
-
-            if (data.success) {
-                showNotification(data.message || `Status atualizado para ${novoStatus}!`, 'success');
-                await loadPedidos(currentPage);
-            } else {
-                showNotification(data.error || 'Erro ao atualizar status', 'error');
-                const select = document.querySelector(`.status-select[data-pedido-id="${pedidoId}"]`);
-                if (select) select.value = pedidoAtual.status;
-            }
-        } catch (error) {
-            console.error('[ERROR]', error);
-            showNotification('Erro ao conectar com o servidor', 'error');
-            const select = document.querySelector(`.status-select[data-pedido-id="${pedidoId}"]`);
-            if (select) select.value = pedidoAtual.status;
-        }
-    }
-
-    function printReceipt(pedidoId) {
-        window.open(`/imprimir-recibo-imagem/${pedidoId}/`, '_blank');
-        showNotification('Recibo aberto! Use Ctrl+P para imprimir', 'success');
-    }
-
-    // ========== EVENT LISTENERS ==========
-
-    document.getElementById('newOrderBtn').onclick = () => { resetOrderForm(); addItemRow(); openModal('orderModal'); };
-    document.getElementById('applyFiltersBtn').onclick = () => { loadPedidos(1); };
-    document.getElementById('resetFiltersBtn').onclick = () => {
-        document.getElementById('statusFilter').value = 'all';
-        document.getElementById('pagamentoFilter').value = 'all';
-        document.getElementById('dataInicio').value = '';
-        document.getElementById('dataFim').value = '';
-        document.getElementById('clienteSearch').value = '';
-        loadPedidos(1);
-    };
-    document.getElementById('applyBulkActionBtn').onclick = applyBulkAction;
-    document.getElementById('clearSelectionBtn').onclick = () => {
-        selectedPedidos.clear();
-        updateBulkActionsBar();
-        renderPedidosTable();
-    };
-    document.getElementById('selectAll').addEventListener('change', (e) => {
-        if (e.target.checked) {
-            pedidos.forEach(p => selectedPedidos.add(p.id));
-        } else {
-            pedidos.forEach(p => selectedPedidos.delete(p.id));
-        }
-        updateBulkActionsBar();
-        renderPedidosTable();
-    });
-
-    document.addEventListener('change', (e) => {
-        if (e.target.classList && e.target.classList.contains('pedido-checkbox')) {
-            const id = parseInt(e.target.value);
+        // Select All
+        document.getElementById('selectAll').addEventListener('change', (e) => {
             if (e.target.checked) {
-                selectedPedidos.add(id);
+                pedidos.forEach(p => selectedPedidos.add(p.id));
             } else {
-                selectedPedidos.delete(id);
+                pedidos.forEach(p => selectedPedidos.delete(p.id));
             }
             updateBulkActionsBar();
-            const allCheckboxes = document.querySelectorAll('.pedido-checkbox');
-            const allChecked = allCheckboxes.length === Array.from(allCheckboxes).filter(cb => cb.checked).length;
-            document.getElementById('selectAll').checked = allChecked;
-        }
+            renderPedidosTable();
+        });
+
+        // Individual checkboxes (delegated)
+        document.getElementById('pedidosTableBody').addEventListener('change', (e) => {
+            if (e.target.classList.contains('pedido-checkbox')) {
+                const id = parseInt(e.target.value);
+                if (e.target.checked) {
+                    selectedPedidos.add(id);
+                } else {
+                    selectedPedidos.delete(id);
+                }
+                updateBulkActionsBar();
+
+                const allCheckboxes = document.querySelectorAll('.pedido-checkbox');
+                const allChecked = allCheckboxes.length > 0 &&
+                    Array.from(allCheckboxes).every(cb => cb.checked);
+                document.getElementById('selectAll').checked = allChecked;
+            }
+        });
+
+        // Forms
+        document.getElementById('pedidoForm').addEventListener('submit', savePedido);
+        document.getElementById('paymentForm').addEventListener('submit', registerPayment);
+        document.getElementById('addItemBtn').addEventListener('click', () => addItemRow());
+        document.getElementById('cabidesInput').addEventListener('input', updatePedidoTotals);
+
+        // Close modals on overlay click
+        document.querySelectorAll('.modal-overlay').forEach(overlay => {
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) {
+                    overlay.classList.add('hidden');
+                    document.body.style.overflow = '';
+                }
+            });
+        });
+
+        // Init
+        loadClientes();
+        loadArtigos();
+        loadPedidos(1);
     });
-
-    // ========== ITEMS MANAGEMENT COM DESCRIÇÃO E BUSCA ==========
-
-    function updateItemTotal(rowId) {
-        const precoSpan = document.querySelector(`#item-row-${rowId} .item-preco-unitario`);
-        const qtdInput = document.querySelector(`#item-row-${rowId} .item-qtd`);
-        const totalSpan = document.querySelector(`#item-row-${rowId} .item-total`);
-
-        if (precoSpan && qtdInput) {
-            const precoText = precoSpan.textContent;
-            const preco = parseFloat(precoText.replace('MT', '').replace(/\./g, '').replace(',', '.').trim()) || 0;
-            const qtd = parseInt(qtdInput.value) || 0;
-            const total = preco * qtd;
-            totalSpan.textContent = formatMoney(total);
-            updatePedidoTotals();
-        }
-    }
-
-    function addItemRow() {
-        const tbody = document.getElementById('itensTableBody');
-        const rowId = Date.now();
-
-        const html = `
-            <tr id="item-row-${rowId}">
-                <td class="px-4 py-2" style="min-width: 200px;">
-                    <div class="searchable-select-item relative" id="artigo-select-${rowId}">
-                        <input type="text" class="artigo-search w-full border border-gray-300 dark:border-gray-600 rounded-lg px-2 py-1 bg-white dark:bg-gray-700 text-gray-800 dark:text-white text-sm"
-                               placeholder="Pesquisar artigo..." data-row="${rowId}">
-                        <ul class="artigo-list absolute top-full left-0 right-0 max-h-48 overflow-y-auto bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg z-10 hidden"></ul>
-                        <input type="hidden" class="item-artigo-id" data-row="${rowId}">
-                    </div>
-                 </td>
-                <td class="px-4 py-2">
-                    <input type="number" class="item-qtd w-20 border rounded-lg px-2 py-1 bg-white dark:bg-gray-700" data-row="${rowId}" value="1" min="1">
-                 </td>
-                <td class="px-4 py-2"><span class="item-preco-unitario" data-row="${rowId}">0 MT</span></td>
-                <td class="px-4 py-2">
-                    <input type="text" class="item-descricao w-full border rounded-lg px-2 py-1 bg-white dark:bg-gray-700" data-row="${rowId}"
-                           placeholder="Observações (opcional)" maxlength="200" style="min-width: 200px;">
-                 </td>
-                <td class="px-4 py-2"><span class="item-total" data-row="${rowId}">0 MT</span></td>
-                <td class="px-4 py-2"><button type="button" onclick="removeItemRow(${rowId})" class="text-red-500 hover:text-red-700"><i class="ri-delete-bin-line"></i></button></td>
-             </tr>
-        `;
-
-        tbody.insertAdjacentHTML('beforeend', html);
-
-        // Inicializar busca de artigo para esta linha
-        const searchInput = document.querySelector(`#item-row-${rowId} .artigo-search`);
-        const listUl = document.querySelector(`#item-row-${rowId} .artigo-list`);
-        const hiddenInput = document.querySelector(`#item-row-${rowId} .item-artigo-id`);
-        const qtdInput = document.querySelector(`#item-row-${rowId} .item-qtd`);
-
-        function filterArtigos() {
-            const searchTerm = searchInput.value.toLowerCase();
-            const filtered = artigos.filter(a => a.nome.toLowerCase().includes(searchTerm));
-
-            if (filtered.length === 0) {
-                listUl.innerHTML = '<li class="text-gray-500 text-center p-2">Nenhum artigo encontrado</li>';
-            } else {
-                listUl.innerHTML = filtered.map(a =>
-                    `<li data-id="${a.id}" data-nome="${a.nome}" data-preco="${a.preco_base}" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer">
-                        <div class="font-medium">${a.nome}</div>
-                        <div class="text-xs text-gray-500">${formatMoney(a.preco_base)}</div>
-                    </li>`
-                ).join('');
-
-                listUl.querySelectorAll('li').forEach(li => {
-                    li.addEventListener('click', () => {
-                        searchInput.value = li.dataset.nome;
-                        hiddenInput.value = li.dataset.id;
-                        listUl.classList.add('hidden');
-                        const precoSpan = document.querySelector(`#item-row-${rowId} .item-preco-unitario`);
-                        if (precoSpan) {
-                            precoSpan.textContent = formatMoney(parseFloat(li.dataset.preco));
-                            updateItemTotal(rowId);
-                        }
-                    });
-                });
-            }
-        }
-
-        searchInput.addEventListener('input', () => {
-            filterArtigos();
-            listUl.classList.remove('hidden');
-        });
-
-        searchInput.addEventListener('focus', () => {
-            filterArtigos();
-            listUl.classList.remove('hidden');
-        });
-
-        qtdInput.addEventListener('input', () => updateItemTotal(rowId));
-
-        document.addEventListener('click', (e) => {
-            if (!searchInput.contains(e.target) && !listUl.contains(e.target)) {
-                listUl.classList.add('hidden');
-            }
-        });
-    }
-
-    function removeItemRow(rowId) {
-        document.getElementById(`item-row-${rowId}`).remove();
-        updatePedidoTotals();
-    }
-
-    function updatePedidoTotals() {
-        let subtotal = 0;
-        document.querySelectorAll('#itensTableBody tr').forEach(row => {
-            const totalText = row.querySelector('.item-total')?.textContent || '0 MT';
-            const totalValue = parseFloat(totalText.replace('MT', '').replace(/\./g, '').replace(',', '.').trim()) || 0;
-            subtotal += totalValue;
-        });
-
-        const cabides = parseInt(document.getElementById('cabidesInput').value) || 0;
-        const descontoCabides = Math.floor(cabides / 20) * 140;
-
-        document.getElementById('subtotalLabel').textContent = formatMoney(subtotal);
-        document.getElementById('descontoCabidesLabel').textContent = `- ${formatMoney(descontoCabides)}`;
-        document.getElementById('totalFinalLabel').textContent = formatMoney(subtotal - descontoCabides);
-    }
-
-    function resetOrderForm() {
-        document.getElementById('pedidoId').value = '';
-        document.getElementById('clienteSearchInput').value = '';
-        document.getElementById('clienteSelect').value = '';
-        document.getElementById('cabidesInput').value = '0';
-        document.getElementById('itensTableBody').innerHTML = '';
-        updatePedidoTotals();
-    }
-
-    async function savePedido(event) {
-        event.preventDefault();
-        const pedidoId = document.getElementById('pedidoId').value;
-        const cliente_id = document.getElementById('clienteSelect').value;
-        const cabides_trazidos = parseInt(document.getElementById('cabidesInput').value) || 0;
-
-        if (!cliente_id) { showNotification('Selecione um cliente', 'error'); return; }
-
-        const itens = [];
-        document.querySelectorAll('#itensTableBody tr').forEach(row => {
-            const hiddenInput = row.querySelector('.item-artigo-id');
-            const artigo_id = hiddenInput?.value;
-            const quantidade = parseInt(row.querySelector('.item-qtd')?.value) || 0;
-            const descricao = row.querySelector('.item-descricao')?.value || '';
-            if (artigo_id && quantidade > 0) {
-                itens.push({ artigo_id, quantidade, descricao });
-            }
-        });
-
-        if (itens.length === 0) { showNotification('Adicione pelo menos um item', 'error'); return; }
-
-        const url = pedidoId ? `/api/pedidos/editar/${pedidoId}/` : '/api/pedidos/criar/';
-        const method = pedidoId ? 'PUT' : 'POST';
-
-        try {
-            const response = await fetch(url, {
-                method: method,
-                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCSRFToken() },
-                body: JSON.stringify({ cliente_id, cabides_trazidos, itens })
-            });
-            const data = await response.json();
-            if (data.success) {
-                showNotification(data.message, 'success');
-                closeModal('orderModal');
-                loadPedidos(currentPage);
-                resetOrderForm();
-            } else { showNotification(data.error, 'error'); }
-        } catch (error) { showNotification('Erro ao salvar', 'error'); }
-    }
-
-    async function registerPayment(event) {
-        event.preventDefault();
-        const pedidoId = document.getElementById('paymentPedidoId').value;
-        const valor = parseFloat(document.getElementById('paymentValor').value);
-        const metodo = document.getElementById('paymentMetodo').value;
-        const referencia = document.getElementById('paymentReferencia').value;
-
-        if (!valor || valor <= 0) { showNotification('Valor inválido', 'error'); return; }
-
-        try {
-            const response = await fetch(`/api/pedidos/pagamento/${pedidoId}/`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCSRFToken() },
-                body: JSON.stringify({ valor, metodo, referencia })
-            });
-            const data = await response.json();
-            if (data.success) {
-                showNotification(data.message, 'success');
-                closeModal('paymentModal');
-                loadPedidos(currentPage);
-            } else { showNotification(data.error, 'error'); }
-        } catch (error) { showNotification('Erro ao registrar pagamento', 'error'); }
-    }
-
-    function openPaymentModal(pedidoId, saldo) {
-        document.getElementById('paymentPedidoId').value = pedidoId;
-        document.getElementById('paymentValor').value = '';
-        document.getElementById('paymentValor').max = saldo;
-        const saldoInfo = document.getElementById('saldoInfo');
-        saldoInfo.innerHTML = `Saldo pendente: ${formatMoney(saldo)}`;
-        if (saldo > 0) {
-            saldoInfo.innerHTML += `<br><span class="text-yellow-600 dark:text-yellow-400 text-xs">⚠️ O pedido só poderá ser entregue após o pagamento total.</span>`;
-        }
-        openModal('paymentModal');
-    }
-
-    async function viewOrder(id) {
-        try {
-            const response = await fetch(`/api/pedidos/detalhes/${id}/`);
-            const data = await response.json();
-            if (data.success) {
-                const p = data.pedido;
-                const content = document.getElementById('viewOrderContent');
-                content.innerHTML = `
-                    <div class="space-y-4">
-                        <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
-                            <div class="flex justify-between">
-                                <div>
-                                    <p class="text-sm text-gray-500">Pedido #${p.id}</p>
-                                    <h4 class="text-lg font-semibold">${p.cliente_nome}</h4>
-                                    <p class="text-sm text-gray-500">${p.cliente_telefone || 'sem telefone'}</p>
-                                </div>
-                                <div class="text-right">
-                                    <span class="status-badge px-2 py-1 text-xs rounded-full bg-${p.status === 'pendente' ? 'yellow' : p.status === 'completo' ? 'blue' : p.status === 'pronto' ? 'green' : 'purple'}-100 text-${p.status === 'pendente' ? 'yellow' : p.status === 'completo' ? 'blue' : p.status === 'pronto' ? 'green' : 'purple'}-800">
-                                        ${statusLabels[p.status]}
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                        <div>
-                            <h5 class="font-medium mb-2">Itens</h5>
-                            <div class="border rounded-lg overflow-hidden">
-                                <table class="w-full text-sm">
-                                    <thead class="bg-gray-50 dark:bg-gray-700">
-                                        <tr>
-                                            <th class="px-4 py-2 text-left">Item</th>
-                                            <th class="px-4 py-2 text-center">Qtd</th>
-                                            <th class="px-4 py-2 text-right">Preço</th>
-                                            <th class="px-4 py-2 text-left">Descrição</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        ${p.itens.map(i => `
-                                            <tr class="border-t dark:border-gray-700">
-                                                <td class="px-4 py-2">${i.nome}</td>
-                                                <td class="px-4 py-2 text-center">${i.quantidade}</td>
-                                                <td class="px-4 py-2 text-right">${formatMoney(i.preco_total)}</td>
-                                                <td class="px-4 py-2 text-left text-gray-500 text-sm">${i.descricao || '—'}</td>
-                                             </tr>
-                                        `).join('')}
-                                    </tbody>
-                                 </table>
-                            </div>
-                        </div>
-                        <div class="bg-gray-50 p-4 rounded-lg">
-                            <div class="space-y-1">
-                                <div class="flex justify-between"><span>Subtotal:</span><span>${formatMoney(p.subtotal)}</span></div>
-                                ${p.desconto_cabides > 0 ? `<div class="flex justify-between text-green-600"><span>Desconto Cabides:</span><span>- ${formatMoney(p.desconto_cabides)}</span></div>` : ''}
-                                <div class="flex justify-between font-bold pt-2 border-t"><span>Total:</span><span>${formatMoney(p.total_final)}</span></div>
-                                <div class="flex justify-between"><span>Pago:</span><span class="text-green-600">${formatMoney(p.total_pago)}</span></div>
-                                ${p.saldo > 0 ? `<div class="flex justify-between text-red-600"><span>Saldo:</span><span>${formatMoney(p.saldo)}</span></div>` : ''}
-                            </div>
-                        </div>
-                        <div class="flex justify-end">
-                            <button onclick="closeModal('viewOrderModal')" class="px-4 py-2 border rounded-lg">Fechar</button>
-                            ${p.saldo > 0 ? `<button onclick="closeModal('viewOrderModal'); openPaymentModal(${p.id}, ${p.saldo})" class="px-4 py-2 bg-purple-600 text-white rounded-lg ml-2">Pagar</button>` : ''}
-                        </div>
-                    </div>
-                `;
-                openModal('viewOrderModal');
-            }
-        } catch (error) { showNotification('Erro ao carregar detalhes', 'error'); }
-    }
-
-    function showNotification(message, type) {
-        const toast = document.createElement('div');
-        const colors = { success: 'bg-green-500', error: 'bg-red-500', info: 'bg-blue-500', warning: 'bg-yellow-500' };
-        toast.className = `fixed bottom-4 right-4 px-4 py-3 rounded-lg text-white z-50 fade-in ${colors[type]} shadow-lg`;
-        toast.innerHTML = `<i class="ri-${type === 'success' ? 'checkbox-circle' : type === 'error' ? 'error-warning' : 'information'}-line mr-2"></i>${message}`;
-        document.body.appendChild(toast);
-        setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 3000);
-    }
-
-    function openModal(modalId) { document.getElementById(modalId).classList.remove('hidden'); }
-    function closeModal(modalId) { document.getElementById(modalId).classList.add('hidden'); }
-
-    // Event Listeners
-    document.getElementById('addItemBtn').onclick = addItemRow;
-    document.getElementById('pedidoForm').onsubmit = savePedido;
-    document.getElementById('paymentForm').onsubmit = registerPayment;
-    document.getElementById('cabidesInput').addEventListener('input', updatePedidoTotals);
-
-    // Inicializar
-    loadClientes();
-    loadArtigos();
-    loadPedidos(1);
 </script>
 
 {% endblock %}
