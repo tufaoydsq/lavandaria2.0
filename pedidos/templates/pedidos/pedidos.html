@@ -24,7 +24,7 @@
 
     /* ============ CONTAINER PRINCIPAL ============ */
     .page-container {
-        max-width: 1400px;
+        max-width: 1600px;
         margin: 0 auto;
         padding: 2rem;
     }
@@ -67,6 +67,47 @@
         gap: 0.5rem;
         transition: all 0.3s ease;
         box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+    }
+    /* Adicione estes estilos ao seu bloco <style> existente */
+
+    /* Botão de Histórico de Pagamentos */
+    .btn-action-payments {
+        background: #fef3c7;
+        color: #d97706;
+    }
+
+    .btn-action-payments:hover {
+        background: #fde68a;
+        color: #b45309;
+    }
+
+    .dark .btn-action-payments {
+        background: rgba(217, 119, 6, 0.15);
+        color: #fbbf24;
+    }
+
+    .dark .btn-action-payments:hover {
+        background: rgba(217, 119, 6, 0.25);
+    }
+
+    /* Botão de Deletar */
+    .btn-action-delete {
+        background: #fee2e2;
+        color: #dc2626;
+    }
+
+    .btn-action-delete:hover {
+        background: #fecaca;
+        color: #b91c1c;
+    }
+
+    .dark .btn-action-delete {
+        background: rgba(220, 38, 38, 0.15);
+        color: #f87171;
+    }
+
+    .dark .btn-action-delete:hover {
+        background: rgba(220, 38, 38, 0.25);
     }
 
     .btn-new-order:hover {
@@ -1589,125 +1630,154 @@
     }
 
     // ============ RENDER ============
+    // Na função renderPedidosTable, atualize a parte das ações:
     function renderPedidosTable() {
-        const tbody = document.getElementById('pedidosTableBody');
+    const tbody = document.getElementById('pedidosTableBody');
 
-        if (pedidos.length === 0) {
-            tbody.innerHTML = `
-                <tr>
-                    <td colspan="10">
-                        <div class="empty-state">
-                            <i class="ri-inbox-line"></i>
-                            <p>Nenhum pedido encontrado</p>
-                        </div>
-                    </td>
-                </tr>`;
-            document.getElementById('paginationInfo').textContent = 'Nenhum resultado';
-            document.getElementById('paginationButtons').innerHTML = '';
-            return;
+    if (pedidos.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="10">
+                    <div class="empty-state">
+                        <i class="ri-inbox-line"></i>
+                        <p>Nenhum pedido encontrado com os filtros atuais</p>
+                        <button onclick="document.getElementById('resetFiltersBtn').click()"
+                                class="btn-filter btn-filter-apply"
+                                style="margin-top: 1rem; display: inline-flex;">
+                            <i class="ri-refresh-line"></i> Limpar Filtros
+                        </button>
+                    </div>
+                </td>
+            </tr>`;
+        document.getElementById('paginationInfo').textContent = 'Nenhum resultado encontrado';
+        document.getElementById('paginationButtons').innerHTML = '';
+        return;
+    }
+
+    document.getElementById('paginationInfo').textContent =
+        `Mostrando ${pedidos.length} pedido(s) • Página ${currentPage} de ${totalPages}`;
+
+    tbody.innerHTML = pedidos.map(p => {
+        const statusClass = STATUS_BADGE_CLASS[p.status] || 'badge-pendente';
+        const statusIcon = STATUS_ICONS[p.status] || 'ri-time-line';
+
+        let statusOptions = [];
+        if (p.status === 'pendente') {
+            statusOptions = [
+                { value: 'pendente', label: '⏳ Pendente', selected: true },
+                { value: 'completo', label: '✅ Completo', selected: false }
+            ];
+        } else if (p.status === 'completo') {
+            statusOptions = [
+                { value: 'completo', label: '✅ Completo', selected: true },
+                { value: 'pronto', label: '🔧 Pronto', selected: false }
+            ];
+        } else if (p.status === 'pronto') {
+            statusOptions = [
+                { value: 'pronto', label: '🔧 Pronto', selected: true },
+                { value: 'entregue', label: '📦 Entregue', selected: false }
+            ];
+        } else {
+            statusOptions = [
+                { value: 'entregue', label: '📦 Entregue', selected: true }
+            ];
         }
 
-        document.getElementById('paginationInfo').textContent =
-            `Mostrando ${pedidos.length} pedido(s) • Página ${currentPage} de ${totalPages}`;
+        const pagamentoClass = PAGAMENTO_BADGE_CLASS[p.status_pagamento] || 'badge-nao-pago';
+        const isChecked = selectedPedidos.has(p.id) ? 'checked' : '';
 
-        tbody.innerHTML = pedidos.map(p => {
-            const statusClass = statusBadgeClass[p.status] || 'badge-pendente';
-            const statusIcon = statusIcons[p.status] || 'ri-time-line';
-
-            let statusOptions = [];
-            if (p.status === 'pendente') {
-                statusOptions = [
-                    { value: 'pendente', label: 'Pendente', selected: true },
-                    { value: 'completo', label: 'Completo', selected: false }
-                ];
-            } else if (p.status === 'completo') {
-                statusOptions = [
-                    { value: 'completo', label: 'Completo', selected: true },
-                    { value: 'pronto', label: 'Pronto', selected: false }
-                ];
-            } else if (p.status === 'pronto') {
-                statusOptions = [
-                    { value: 'pronto', label: 'Pronto', selected: true },
-                    { value: 'entregue', label: 'Entregue', selected: false }
-                ];
-            } else {
-                statusOptions = [
-                    { value: 'entregue', label: 'Entregue', selected: true }
-                ];
-            }
-
-            const pagamentoClass = p.status_pagamento === 'pago' ? 'badge-pago' :
-                                   p.status_pagamento === 'parcial' ? 'badge-parcial' : 'badge-nao-pago';
-
-            const isChecked = selectedPedidos.has(p.id) ? 'checked' : '';
-
-            return `
-                <tr>
-                    <td>
-                        <input type="checkbox" class="custom-checkbox pedido-checkbox" value="${p.id}" ${isChecked}>
-                    </td>
-                    <td>
-                        <span style="font-weight: 700; color: #3b82f6; font-family: monospace; font-size: 0.9rem;">
-                            #${p.id_formatado}
-                        </span>
-                    </td>
-                    <td>
-                        <div class="cliente-cell">
-                            <div class="cliente-avatar" style="background: linear-gradient(135deg, #dbeafe, #bfdbfe); color: #1e40af;">
-                                ${p.cliente_nome.charAt(0).toUpperCase()}
-                            </div>
-                            <div class="cliente-details">
-                                <span class="cliente-nome" title="${p.cliente_nome}">${p.cliente_nome}</span>
-                                <span class="cliente-telefone">${p.cliente_telefone || '—'}</span>
-                            </div>
+        return `
+            <tr>
+                <td>
+                    <input type="checkbox" class="custom-checkbox pedido-checkbox" value="${p.id}" ${isChecked}>
+                </td>
+                <td>
+                    <span style="font-weight: 700; color: #3b82f6; font-family: monospace; font-size: 0.9rem;">
+                        #${p.id_formatado}
+                    </span>
+                </td>
+                <td>
+                    <div class="cliente-cell">
+                        <div class="cliente-avatar" style="background: linear-gradient(135deg, #dbeafe, #bfdbfe); color: #1e40af;">
+                            ${p.cliente_nome.charAt(0).toUpperCase()}
                         </div>
-                    </td>
-                    <td>
-                        <span style="font-weight: 500;">${p.itens} item(ns)</span>
-                    </td>
-                    <td>
-                        <span style="font-weight: 700; font-size: 0.95rem;">${formatMoney(p.total_final)}</span>
-                    </td>
-                    <td>
-                        <span style="color: #059669; font-weight: 500;">${formatMoney(p.total_pago)}</span>
-                    </td>
-                    <td>
-                        <span style="font-weight: 700; color: ${p.saldo > 0 ? '#dc2626' : '#059669'};">
-                            ${formatMoney(p.saldo)}
-                        </span>
-                    </td>
-                    <td>
-                        <select class="status-select ${statusClass}"
-                                data-pedido-id="${p.id}"
-                                onchange="updatePedidoStatus(${p.id}, this.value)"
-                                ${p.status === 'entregue' ? 'disabled' : ''}>
-                            ${statusOptions.map(opt =>
-                                `<option value="${opt.value}" ${opt.selected ? 'selected' : ''}>${opt.label}</option>`
-                            ).join('')}
-                        </select>
-                    </td>
-                    <td>
-                        <span class="badge-pagamento ${pagamentoClass}">
-                            ${p.status_pagamento_label}
-                        </span>
-                    </td>
-                    <td>
-                        <div class="action-btns">
-                            <button onclick="viewOrder(${p.id})" class="btn-action btn-action-view" title="Visualizar">
-                                <i class="ri-eye-line"></i>
-                            </button>
-                            <button onclick="printReceipt(${p.id})" class="btn-action btn-action-print" title="Imprimir Recibo">
-                                <i class="ri-printer-line"></i>
-                            </button>
-                            <button onclick="openPaymentModal(${p.id}, ${p.saldo})" class="btn-action btn-action-pay" title="Registrar Pagamento">
-                                <i class="ri-money-dollar-circle-line"></i>
-                            </button>
+                        <div class="cliente-details">
+                            <span class="cliente-nome" title="${p.cliente_nome}">${p.cliente_nome}</span>
+                            <span class="cliente-telefone">${p.cliente_telefone || '—'}</span>
                         </div>
-                    </td>
-                </tr>
-            `;
-        }).join('');
-    }
+                    </div>
+                </td>
+                <td>
+                    <span style="font-weight: 500;">${p.itens} item(ns)</span>
+                </td>
+                <td>
+                    <span style="font-weight: 700; font-size: 0.95rem;">${formatMoney(p.total_final)}</span>
+                </td>
+                <td>
+                    <span style="color: #059669; font-weight: 500;">${formatMoney(p.total_pago)}</span>
+                </td>
+                <td>
+                    <span style="font-weight: 700; color: ${p.saldo > 0 ? '#dc2626' : '#059669'};">
+                        ${formatMoney(p.saldo)}
+                    </span>
+                </td>
+                <td>
+                    <select class="status-select ${statusClass}"
+                            data-pedido-id="${p.id}"
+                            onchange="updatePedidoStatus(${p.id}, this.value)"
+                            ${p.status === 'entregue' ? 'disabled' : ''}>
+                        ${statusOptions.map(opt =>
+                            `<option value="${opt.value}" ${opt.selected ? 'selected' : ''}>${opt.label}</option>`
+                        ).join('')}
+                    </select>
+                </td>
+                <td>
+                    <span class="badge-pagamento ${pagamentoClass}">
+                        ${p.status_pagamento_label}
+                    </span>
+                </td>
+                <td>
+                    <div class="action-btns">
+                        <!-- Visualizar -->
+                        <button onclick="viewOrder(${p.id})"
+                                class="btn-action btn-action-view"
+                                title="Visualizar detalhes">
+                            <i class="ri-eye-line"></i>
+                        </button>
+
+                        <!-- Imprimir Recibo -->
+                        <button onclick="printReceipt(${p.id})"
+                                class="btn-action btn-action-print"
+                                title="Imprimir recibo">
+                            <i class="ri-printer-line"></i>
+                        </button>
+
+                        <!-- Registrar Pagamento -->
+                        <button onclick="openPaymentModal(${p.id}, ${p.saldo})"
+                                class="btn-action btn-action-pay"
+                                title="Registrar pagamento">
+                            <i class="ri-money-dollar-circle-line"></i>
+                        </button>
+
+                        <!-- Histórico de Pagamentos -->
+                        <button onclick="viewPaymentsHistory(${p.id})"
+                                class="btn-action btn-action-payments"
+                                title="Histórico de pagamentos">
+                            <i class="ri-bank-card-line"></i>
+                        </button>
+
+                        <!-- Deletar Pedido -->
+                        <button onclick="deletePedido(${p.id}, '${p.id_formatado}')"
+                                class="btn-action btn-action-delete"
+                                title="Excluir pedido">
+                            <i class="ri-delete-bin-line"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
 
     function renderPaginationButtons() {
         const paginationDiv = document.getElementById('paginationButtons');
@@ -2144,6 +2214,175 @@
             return false;
         }
     }
+    // ============ HISTÓRICO DE PAGAMENTOS ============
+    async function viewPaymentsHistory(pedidoId) {
+    try {
+        showNotification('Carregando histórico de pagamentos...', 'info');
+
+        const data = await apiFetch(`/api/pedidos/${pedidoId}/pagamentos/`);
+
+        if (data.success && data.pagamentos) {
+            renderPaymentsModal(pedidoId, data.pagamentos);
+        } else {
+            throw new Error(data.error || 'Erro ao carregar pagamentos');
+        }
+    } catch (error) {
+        console.error('❌ Erro ao carregar pagamentos:', error);
+        showNotification(error.message || 'Erro ao carregar histórico de pagamentos', 'error');
+    }
+}
+
+    function renderPaymentsModal(pedidoId, pagamentos) {
+    // Criar modal dinâmico se não existir
+    let modal = document.getElementById('paymentsHistoryModal');
+
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'paymentsHistoryModal';
+        modal.className = 'modal-overlay hidden';
+        modal.innerHTML = `
+            <div class="modal-content modal-lg">
+                <div class="modal-header">
+                    <h3>Histórico de Pagamentos</h3>
+                    <button onclick="closeModal('paymentsHistoryModal')" class="btn-modal-close">
+                        <i class="ri-close-line text-xl"></i>
+                    </button>
+                </div>
+                <div class="modal-body" id="paymentsHistoryContent"></div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    }
+
+    const pedido = pedidos.find(p => p.id === pedidoId);
+    const pedidoInfo = pedido ? `
+        <div style="background: #f0f9ff; border-radius: 0.75rem; padding: 1rem; margin-bottom: 1.5rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <span style="font-weight: 700; color: #3b82f6;">Pedido #${pedido.id_formatado}</span>
+                    <span style="margin-left: 0.75rem; color: #6b7280;">${pedido.cliente_nome}</span>
+                </div>
+                <div style="text-align: right;">
+                    <div style="font-size: 0.8rem; color: #6b7280;">Total: ${formatMoney(pedido.total_final)}</div>
+                    <div style="font-size: 0.8rem; color: #059669;">Pago: ${formatMoney(pedido.total_pago)}</div>
+                    ${pedido.saldo > 0 ? `<div style="font-size: 0.8rem; color: #dc2626;">Saldo: ${formatMoney(pedido.saldo)}</div>` : ''}
+                </div>
+            </div>
+        </div>
+    ` : '';
+
+    const content = document.getElementById('paymentsHistoryContent');
+
+    if (pagamentos.length === 0) {
+        content.innerHTML = `
+            ${pedidoInfo}
+            <div class="empty-state">
+                <i class="ri-money-dollar-circle-line"></i>
+                <p>Nenhum pagamento registrado para este pedido</p>
+                <button onclick="closeModal('paymentsHistoryModal'); openPaymentModal(${pedidoId}, ${pedido?.saldo || 0})"
+                        class="btn-primary"
+                        style="margin-top: 1rem; display: inline-flex; align-items: center; gap: 0.5rem;">
+                    <i class="ri-add-line"></i> Registrar Pagamento
+                </button>
+            </div>
+        `;
+    } else {
+        content.innerHTML = `
+            ${pedidoInfo}
+            <div style="overflow-x: auto;">
+                <table class="itens-table" style="width: 100%;">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Valor</th>
+                            <th>Método</th>
+                            <th>Referência</th>
+                            <th>Registrado por</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${pagamentos.map(pag => `
+                            <tr>
+                                <td style="font-size: 0.85rem;">${pag.data || '—'}</td>
+                                <td style="font-weight: 600; color: #059669;">${formatMoney(pag.valor)}</td>
+                                <td>
+                                    <span style="background: #f3f4f6; padding: 0.25rem 0.5rem; border-radius: 0.5rem; font-size: 0.75rem;">
+                                        ${getMetodoLabel(pag.metodo)}
+                                    </span>
+                                </td>
+                                <td style="font-size: 0.85rem; color: #6b7280;">${pag.referencia || '—'}</td>
+                                <td style="font-size: 0.85rem;">${pag.registrado_por || '—'}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+            <div style="margin-top: 1.5rem; display: flex; justify-content: flex-end; gap: 0.75rem;">
+                <button onclick="closeModal('paymentsHistoryModal')" class="btn-secondary">Fechar</button>
+                <button onclick="closeModal('paymentsHistoryModal'); openPaymentModal(${pedidoId}, ${pedido?.saldo || 0})"
+                        class="btn-primary"
+                        style="background: #059669;">
+                    <i class="ri-add-line"></i> Novo Pagamento
+                </button>
+            </div>
+        `;
+    }
+
+    openModal('paymentsHistoryModal');
+}
+
+    function getMetodoLabel(metodo) {
+    const metodos = {
+        'numerario': '💵 Numerário',
+        'pos': '💳 POS',
+        'mpesa': '📱 M-Pesa',
+        'emola': '📱 e-Mola',
+        'conta_movel': '📱 Conta Móvel',
+        'transferencia': '🏦 Transferência'
+    };
+    return metodos[metodo] || metodo;
+}
+
+    // ============ DELETAR PEDIDO ============
+    async function deletePedido(pedidoId, pedidoFormatado) {
+    const confirmed = await confirmAction(
+        `⚠️ Tem certeza que deseja excluir o pedido ${pedidoFormatado}?\n\n` +
+        `Esta ação não pode ser desfeita! Todos os dados do pedido, incluindo itens e pagamentos, serão permanentemente removidos.`
+    );
+
+    if (!confirmed) return;
+
+    // Segunda confirmação para ações destrutivas
+    const doubleConfirmed = await confirmAction(
+        `🚨 Confirmação final: Deseja realmente EXCLUIR o pedido ${pedidoFormatado}?`
+    );
+
+    if (!doubleConfirmed) return;
+
+    try {
+        showNotification(`Excluindo pedido ${pedidoFormatado}...`, 'info');
+
+        const data = await apiFetch(`/api/pedidos/${pedidoId}/deletar/`, {
+            method: 'DELETE'
+        });
+
+        if (data.success) {
+            showNotification(data.message || `Pedido ${pedidoFormatado} excluído com sucesso!`, 'success');
+
+            // Remover da seleção se estiver selecionado
+            selectedPedidos.delete(pedidoId);
+            updateBulkActionsBar();
+
+            // Recarregar a página atual
+            await loadPedidos(currentPage);
+        } else {
+            throw new Error(data.error || 'Erro ao excluir pedido');
+        }
+    } catch (error) {
+        console.error('❌ Erro ao excluir pedido:', error);
+        showNotification(error.message || 'Erro ao excluir pedido', 'error');
+    }
+}
 
     // ============ EVENT LISTENERS ============
     document.addEventListener('DOMContentLoaded', () => {
@@ -2224,6 +2463,7 @@
         loadArtigos();
         loadPedidos(1);
     });
+
 </script>
 
 {% endblock %}
