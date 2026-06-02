@@ -28,30 +28,52 @@ class Funcionario(models.Model):
     """
     Representa um funcionário associado a uma lavandaria.
     """
+    GRUPO_CHOICES = [
+        ('vendedor', 'Vendedor'),  # Nível 1 - Caixa
+        ('gerente', 'Gerente'),  # Nível 2 - Gerente
+        ('admin', 'Admin'),  # Nível 3 - Admin
+        ('superuser', 'SuperUser'),  # Nível 4 - SuperUser
+    ]
+
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='funcionario')
     lavandaria = models.ForeignKey(Lavandaria, on_delete=models.CASCADE, related_name='funcionarios')
     telefone = models.CharField(max_length=20, blank=True, null=True)
     grupo = models.CharField(
-        max_length=255,
-        choices=[('gerente', 'Gerente'), ('caixa', 'Caixa')],
-        help_text="Define o grupo do usuário."
+        max_length=20,
+        choices=GRUPO_CHOICES,
+        default='vendedor',
+        help_text="Define o nível de acesso do funcionário."
+    )
+    nivel_acesso = models.PositiveSmallIntegerField(
+        default=1,
+        help_text="1=Vendedor, 2=Gerente, 3=Admin, 4=SuperUser"
     )
 
-    def __str__(self):
-        return f"{self.user.username} - {self.grupo}"
-
     def save(self, *args, **kwargs):
-        criar_grupos_com_permissoes()
+        # Mapear grupo para nível de acesso
+        niveis = {
+            'vendedor': 1,
+            'gerente': 2,
+            'admin': 3,
+            'superuser': 4,
+        }
+        self.nivel_acesso = niveis.get(self.grupo, 1)
+
         super().save(*args, **kwargs)
 
         # Associa o usuário ao grupo correto
         if self.grupo:
-            grupo = Group.objects.get(name=self.grupo)
+            grupo, _ = Group.objects.get_or_create(name=self.grupo)
             self.user.groups.set([grupo])
 
-        self.user.is_staff = True
+        # Sincroniza flags do Django com o cargo funcional.
+        self.user.is_staff = self.grupo in ['admin', 'superuser']
+        self.user.is_superuser = self.grupo == 'superuser'
+
         self.user.save()
 
+    def __str__(self):
+        return f"{self.user.username} - {self.get_grupo_display()}"
 
 # Modelo para Tipos de Artigos (Itens de Serviço)
 class ItemServico(models.Model):
@@ -617,40 +639,6 @@ class PagamentoPedido(models.Model):
         ordering = ["-pago_em"]
 
 
-# Função para criar grupos e associar permissões
-def criar_grupos_com_permissoes():
-    """
-    Cria grupos predefinidos (gerente, caixa) e associa as permissões específicas.
-    """
-    grupos_permissoes = {
-        "gerente": [
-            "view_funcionario",
-            "add_itemservico", "change_itemservico", "delete_itemservico", "view_itemservico",
-            "add_servico", "change_servico", "view_servico",
-            "add_pedido", "change_pedido", "view_pedido",
-            "add_cliente", "change_cliente","view_cliente",
-            "add_itempedido", "view_itempedido",
-            "add_pagamentopedido", "view_pagamentopedido",
-        ],
-        "caixa": [
-            "add_pedido", "change_pedido",  "view_pedido",
-            "add_cliente", "change_cliente", "view_cliente",
-            "add_itempedido", "change_itempedido", "view_itempedido",
-            "add_pagamentopedido", "view_pagamentopedido",
-        ],
-    }
-
-    for grupo_nome, permissoes_codigos in grupos_permissoes.items():
-        grupo, criado = Group.objects.get_or_create(name=grupo_nome)
-        if criado:
-            print(f"Grupo '{grupo_nome}' criado.")
-
-        for permissao_codigo in permissoes_codigos:
-            permissao = Permission.objects.filter(codename=permissao_codigo).first()
-            if permissao:
-                grupo.permissions.add(permissao)
-
-        print(f"Permissões associadas ao grupo '{grupo_nome}': {permissoes_codigos}")
 
 
 class Recibo(models.Model):
@@ -674,7 +662,6 @@ class Recibo(models.Model):
 
     def __str__(self):
         return f"Recibo {self.id} - Pedido {self.pedido_id} - Total: {self.total_pago}"
-
 
 
 

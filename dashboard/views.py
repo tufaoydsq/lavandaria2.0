@@ -1,13 +1,17 @@
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 from django.db.models import Sum, Count, Q, Avg, F, Value, DecimalField, OuterRef, Subquery
 from django.db.models.functions import Coalesce
 from django.utils import timezone
 from datetime import timedelta
 from decimal import Decimal
+
+from core.decorators import vendedor_required
 from core.models import Pedido, Cliente, ItemServico, Funcionario, PagamentoPedido, MovimentacaoPontos
 
 
-def dashboard(request):
+@vendedor_required
+def ver_dashboard(request):
     # ========== 1. USUÁRIO E LAVANDARIA ==========
     usuario_logado = request.user
     lavandaria_usuario = None

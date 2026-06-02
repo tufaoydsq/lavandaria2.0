@@ -1,3 +1,4 @@
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -19,6 +20,7 @@ from django.conf import settings
 from django.template.loader import render_to_string
 from PIL import Image, ImageDraw, ImageFont
 
+from core.decorators import admin_required, vendedor_required
 from core.models import (
     Pedido, ItemPedido, Cliente, ItemServico,
     PagamentoPedido, MovimentacaoPontos, Lavandaria, Funcionario
@@ -26,7 +28,8 @@ from core.models import (
 
 
 # ========== VIEWS PRINCIPAIS ==========
-
+@login_required
+@vendedor_required
 def ver_pedidos(request):
     """
     View para página de gerenciamento de pedidos
@@ -35,12 +38,13 @@ def ver_pedidos(request):
 
 
 # ========== API DE PEDIDOS ==========
-
+@login_required
+@vendedor_required
 @csrf_exempt
 @require_http_methods(["GET"])
 def listar_pedidos(request):
     """
-    API: Listar todos os pedidos com filtros (OTIMIZADA)
+    API: Listar todos os pedidos com filtros (VERSÃO OTIMIZADA)
     """
     try:
         # Filtrar por lavandaria do funcionário
@@ -55,6 +59,7 @@ def listar_pedidos(request):
         data_inicio = request.GET.get('data_inicio', '')
         data_fim = request.GET.get('data_fim', '')
         cliente_search = request.GET.get('cliente', '')
+        pedido_id_search = request.GET.get('pedido_id', '')  # 🔥 NOVO
         page = int(request.GET.get('page', 1))
         per_page = int(request.GET.get('per_page', 50))
 
@@ -79,6 +84,18 @@ def listar_pedidos(request):
 
         if cliente_search:
             pedidos = pedidos.filter(cliente__nome__icontains=cliente_search)
+
+        # 🔥 NOVO FILTRO: Buscar por ID do pedido
+        if pedido_id_search:
+            # Verificar se é um número
+            if pedido_id_search.isdigit():
+                pedidos = pedidos.filter(id=int(pedido_id_search))
+            else:
+                # Tentar extrair número do formato #123456
+                import re
+                match = re.search(r'\d+', pedido_id_search)
+                if match:
+                    pedidos = pedidos.filter(id=int(match.group()))
 
         # Ordenar e anotar totais
         pedidos = pedidos.order_by('-criado_em')
@@ -133,7 +150,8 @@ def listar_pedidos(request):
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=400)
 
-
+@login_required
+@vendedor_required
 @csrf_exempt
 @require_http_methods(["GET"])
 def detalhes_pedido(request, id):
@@ -200,7 +218,8 @@ def detalhes_pedido(request, id):
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=400)
 
-
+@login_required
+@vendedor_required
 @csrf_exempt
 @require_http_methods(["GET"])
 def listar_clientes(request):
@@ -210,7 +229,8 @@ def listar_clientes(request):
     clientes = Cliente.objects.all().values('id', 'nome', 'telefone')
     return JsonResponse({'success': True, 'clientes': list(clientes)})
 
-
+@login_required
+@vendedor_required
 @csrf_exempt
 @require_http_methods(["GET"])
 def listar_artigos(request):
@@ -220,7 +240,8 @@ def listar_artigos(request):
     artigos = ItemServico.objects.filter(disponivel=True).values('id', 'nome', 'preco_base')
     return JsonResponse({'success': True, 'artigos': list(artigos)})
 
-
+@login_required
+@vendedor_required
 @csrf_exempt
 @require_http_methods(["POST"])
 def criar_pedido(request):
@@ -283,7 +304,8 @@ def criar_pedido(request):
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=400)
 
-
+@login_required
+@admin_required
 @csrf_exempt
 @require_http_methods(["PUT"])
 def editar_pedido(request, id):
@@ -318,7 +340,8 @@ def editar_pedido(request, id):
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=400)
 
-
+@login_required
+@vendedor_required
 @csrf_exempt
 @require_http_methods(["POST"])
 @transaction.atomic
@@ -371,7 +394,8 @@ def registrar_pagamento(request, id):
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=400)
 
-
+@login_required
+@vendedor_required
 @csrf_exempt
 @require_http_methods(["PATCH"])
 def atualizar_status_pedido(request, id):
@@ -448,7 +472,8 @@ def atualizar_status_pedido(request, id):
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
-
+@login_required
+@admin_required
 @csrf_exempt
 @require_http_methods(["DELETE"])
 def excluir_pedido(request, id):
@@ -480,11 +505,15 @@ def excluir_pedido(request, id):
 
 # ========== RECIBO TÉRMICO ==========
 
+@login_required
+@vendedor_required
 def recibo_termico_view(request, id):
     """
     View para gerar página HTML do recibo térmico
     """
     pedido = get_object_or_404(Pedido, id=id)
+    if hasattr(request.user, 'funcionario') and pedido.lavandaria != request.user.funcionario.lavandaria:
+        return JsonResponse({'success': False, 'error': 'Acesso negado'}, status=403)
 
     pagos_subq = (
         PagamentoPedido.objects
@@ -577,11 +606,15 @@ def recibo_termico_view(request, id):
     return render(request, 'pedidos/recibo_termico.html', context)
 
 
+@login_required
+@vendedor_required
 def imprimir_recibo_imagem(request, id):
     """
     API: Gerar imagem do recibo térmico
     """
     pedido = get_object_or_404(Pedido, id=id)
+    if hasattr(request.user, 'funcionario') and pedido.lavandaria != request.user.funcionario.lavandaria:
+        return JsonResponse({'success': False, 'error': 'Acesso negado'}, status=403)
 
     pagos_subq = (
         PagamentoPedido.objects
@@ -787,12 +820,16 @@ def enviar_sms_mozesms(numero, mensagem, pedido=None, cliente=None):
 
 @csrf_exempt
 @require_http_methods(["POST"])
+@login_required
+@vendedor_required
 def enviar_sms_pedido_pronto(request, pedido_id):
     """
     API: Enviar SMS notificando que o pedido está pronto
     """
     try:
         pedido = get_object_or_404(Pedido, id=pedido_id)
+        if hasattr(request.user, 'funcionario') and pedido.lavandaria != request.user.funcionario.lavandaria:
+            return JsonResponse({'success': False, 'error': 'Acesso negado'}, status=403)
         cliente = pedido.cliente
 
         if pedido.status != 'pronto':

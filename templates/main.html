@@ -1,3 +1,4 @@
+{% load permissions %}
 <!DOCTYPE html>
 <html lang="pt" id="html-root">
 
@@ -7,7 +8,6 @@
     <title>PowerWash - Sistema de Gestão</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        // Configurar Tailwind para suportar dark mode antes do carregamento
         tailwind.config = {
             darkMode: 'class',
         }
@@ -19,17 +19,10 @@
         }
 
         @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(10px); }
+            to   { opacity: 1; transform: translateY(0); }
         }
 
-        /* Transição suave para modo escuro */
         * {
             transition: background-color 0.3s ease, border-color 0.3s ease, color 0.2s ease;
         }
@@ -39,8 +32,13 @@
 <body class="bg-gray-50">
 
     <div class="flex h-screen">
-        <!-- Sidebar -->
-        <aside id="sidebar" class="sidebar w-72 bg-gradient-to-br from-blue-900 to-indigo-900 text-white flex-shrink-0 overflow-y-auto shadow-2xl">
+
+        <!-- ═══════════════════════════════════════════
+             SIDEBAR
+        ════════════════════════════════════════════ -->
+        <aside id="sidebar" class="w-72 bg-gradient-to-br from-blue-900 to-indigo-900 text-white flex-shrink-0 overflow-y-auto shadow-2xl flex flex-col">
+
+            <!-- Logo -->
             <div class="p-6 border-b border-blue-800">
                 <div class="flex items-center space-x-3">
                     <div class="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center">
@@ -53,14 +51,22 @@
                 </div>
             </div>
 
-            <nav class="p-4">
+            <!-- Navegação -->
+            <nav class="p-4 flex-1">
+
+                <!-- MENU PRINCIPAL -->
                 <div class="mb-6">
                     <p class="text-xs text-blue-300 uppercase tracking-wider mb-3 px-3">Menu Principal</p>
-                    <a href="{% url 'dashboard' %}"
+
+                    <!-- Dashboard: todos -->
+                    <a href="{% url 'ver_dashboard' %}"
                         class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-blue-200 hover:bg-blue-800 hover:text-white transition mb-1">
                         <i class="ri-dashboard-line text-xl"></i>
                         <span>Dashboard</span>
                     </a>
+
+                    <!-- Nível 1+: Vendedor, Gerente, Admin, Superuser -->
+                    {% if user|has_level:1 %}
                     <a href="{% url 'ver_pedidos' %}"
                         class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-blue-200 hover:bg-blue-800 hover:text-white transition mb-1">
                         <i class="ri-shopping-bag-line text-xl"></i>
@@ -71,30 +77,34 @@
                         <i class="ri-user-line text-xl"></i>
                         <span>Clientes</span>
                     </a>
+                    {% endif %}
+
+                    <!-- Nível 2+: Gerente, Admin, Superuser -->
+                    {% if user|has_level:2 %}
                     <a href="{% url 'ver_artigo' %}"
                         class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-blue-200 hover:bg-blue-800 hover:text-white transition mb-1">
                         <i class="ri-shirt-line text-xl"></i>
                         <span>Artigos</span>
                     </a>
-{#                    <a href="#"#}
-{#                        class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-blue-200 hover:bg-blue-800 hover:text-white transition mb-1">#}
-{#                        <i class="ri-wallet-line text-xl"></i>#}
-{#                        <span>Pagamentos</span>#}
-{#                    </a>#}
                     <a href="{% url 'ver_relatorios' %}"
                         class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-blue-200 hover:bg-blue-800 hover:text-white transition mb-1">
                         <i class="ri-bar-chart-line text-xl"></i>
                         <span>Relatórios</span>
                     </a>
+                    {% endif %}
                 </div>
 
+                <!-- ADMINISTRAÇÃO: Nível 3+ -->
+                {% if user|has_level:3 %}
                 <div class="mb-6">
                     <p class="text-xs text-blue-300 uppercase tracking-wider mb-3 px-3">Administração</p>
+
                     <a href="{% url 'ver_funcionarios' %}"
                         class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-blue-200 hover:bg-blue-800 hover:text-white transition mb-1">
                         <i class="ri-group-line text-xl"></i>
                         <span>Funcionários</span>
                     </a>
+
                     <a href="{% url 'ver_lavandarias' %}"
                         class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-blue-200 hover:bg-blue-800 hover:text-white transition mb-1">
                         <i class="ri-store-line text-xl"></i>
@@ -105,134 +115,163 @@
                         <i class="ri-user-settings-line text-xl"></i>
                         <span>Utilizadores</span>
                     </a>
-{#                    <a href="#"#}
-{#                        class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-blue-200 hover:bg-blue-800 hover:text-white transition mb-1">#}
-{#                        <i class="ri-settings-line text-xl"></i>#}
-{#                        <span>Configurações</span>#}
-{#                    </a>#}
+
+                    <!-- Nível 4: Apenas Superuser -->
+                    {% if is_superuser %}
+                    <a href="{% url 'core:ver_permissoes' %}"
+                        class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-blue-200 hover:bg-blue-800 hover:text-white transition mb-1">
+                        <i class="ri-key-2-line text-xl"></i>
+                        <span>Permissões</span>
+                    </a>
+                    {% endif %}
                 </div>
+                {% endif %}
+
             </nav>
 
-            <div class=" bottom-0 left-0 right-0 p-5 border-t border-blue-800 bg-blue-900/50">
+            <!-- Rodapé do Sidebar: utilizador -->
+            <div class="p-4 border-t border-blue-800 bg-blue-900/50">
                 <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 bg-blue-700 rounded-full flex items-center justify-center">
+                    <div class="w-10 h-10 bg-blue-700 rounded-full flex items-center justify-center flex-shrink-0">
                         <i class="ri-user-line text-white"></i>
                     </div>
-                    <div class="flex-1">
-                        <p class="text-sm font-semibold">{{ request.user.get_full_name|default:request.user.username }}</p>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-semibold truncate">
+                            {{ request.user.get_full_name|default:request.user.username }}
+                        </p>
+                        <!-- ✅ CORRIGIDO: usa variáveis do context processor -->
                         <p class="text-xs text-blue-300">
-                            {% if request.user.funcionario.grupo == 'gerente' %}
+                            {% if is_superuser %}
+                                Super Admin
+                            {% elif is_admin %}
+                                Administrador
+                            {% elif is_gerente %}
                                 Gerente
-                            {% elif request.user.funcionario.grupo == 'caixa' %}
-                                Caixa
+                            {% elif is_vendedor %}
+                                Vendedor
                             {% else %}
-                                Super Administrador
+                                Utilizador
                             {% endif %}
                         </p>
                     </div>
-                    <!-- Botão Dark Mode -->
-                    <button id="darkModeToggle" class="text-blue-300 hover:text-white transition p-2 rounded-lg hover:bg-blue-800">
+                    <button id="darkModeToggle"
+                        class="text-blue-300 hover:text-white transition p-2 rounded-lg hover:bg-blue-800 flex-shrink-0"
+                        title="Modo escuro">
                         <i id="darkModeIcon" class="ri-moon-line text-xl"></i>
                     </button>
-                    <i class="ri-logout-box-line text-xl text-blue-300 cursor-pointer hover:text-white"></i>
+                    <button onclick="confirmLogout()"
+                        class="text-blue-300 hover:text-white transition p-2 rounded-lg hover:bg-blue-800 flex-shrink-0"
+                        title="Sair">
+                        <i class="ri-logout-box-line text-xl"></i>
+                    </button>
                 </div>
             </div>
+
         </aside>
 
-        <!-- Main Content -->
+        <!-- ═══════════════════════════════════════════
+             CONTEÚDO PRINCIPAL
+        ════════════════════════════════════════════ -->
         <main id="mainContent" class="flex-1 overflow-y-auto">
+
+            <!-- Top Bar -->
+            <div class="bg-white dark:bg-gray-800 border-b dark:border-gray-700 sticky top-0 z-10 shadow-sm">
+                <div class="px-8 py-4 flex justify-between items-center">
+                    <h2 class="text-2xl font-semibold text-gray-800 dark:text-white">{% block page_title %}{% endblock %}</h2>
+                    <div class="flex items-center space-x-4">
+                        <div class="text-right">
+                            <p class="text-sm font-semibold dark:text-white">{{ lavandaria_nome }}</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">
+                                Olá, {{ user.username }} | {% now "H:i" %}
+                            </p>
+                        </div>
+                        <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full flex items-center justify-center text-white font-bold">
+                            {% if funcionario_nome %}
+                                {{ funcionario_nome|slice:":2"|upper }}
+                            {% else %}
+                                {{ user.username|slice:":2"|upper }}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Conteúdo da página -->
             {% block content %}
             {% endblock %}
+
         </main>
     </div>
 
+    <!-- Scripts -->
     <script>
-        // Dark Mode Toggle - Versão Corrigida
+        function confirmLogout() {
+            if (confirm('Tem certeza que deseja sair do sistema?')) {
+                window.location.href = "{% url 'logout' %}";
+            }
+        }
+
         function initDarkMode() {
             const darkModeToggle = document.getElementById('darkModeToggle');
-            const darkModeIcon = document.getElementById('darkModeIcon');
-            const htmlElement = document.documentElement;
-            const bodyElement = document.body;
-            const mainContent = document.getElementById('mainContent');
-            const sidebar = document.getElementById('sidebar');
+            const darkModeIcon   = document.getElementById('darkModeIcon');
+            const htmlElement    = document.documentElement;
+            const bodyElement    = document.body;
+            const mainContent    = document.getElementById('mainContent');
 
-            // Verificar preferência salva
             let isDark = localStorage.getItem('darkMode') === 'true';
-
-            // Verificar preferência do sistema se não houver preferência salva
             if (localStorage.getItem('darkMode') === null) {
                 isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
             }
 
-            // Função para aplicar dark mode
             function applyDarkMode(enabled) {
                 if (enabled) {
                     htmlElement.classList.add('dark');
-                    if (darkModeIcon) {
-                        darkModeIcon.classList.remove('ri-moon-line');
-                        darkModeIcon.classList.add('ri-sun-line');
-                    }
-                    // Aplicar estilos adicionais para elementos que não usam Tailwind
-                    if (bodyElement) bodyElement.style.backgroundColor = '#111827';
-                    if (mainContent) mainContent.style.backgroundColor = '#111827';
+                    darkModeIcon.classList.replace('ri-moon-line', 'ri-sun-line');
+                    if (bodyElement)   bodyElement.style.backgroundColor   = '#111827';
+                    if (mainContent)   mainContent.style.backgroundColor   = '#111827';
                 } else {
                     htmlElement.classList.remove('dark');
-                    if (darkModeIcon) {
-                        darkModeIcon.classList.remove('ri-sun-line');
-                        darkModeIcon.classList.add('ri-moon-line');
-                    }
-                    if (bodyElement) bodyElement.style.backgroundColor = '#f9fafb';
-                    if (mainContent) mainContent.style.backgroundColor = '#f9fafb';
+                    darkModeIcon.classList.replace('ri-sun-line', 'ri-moon-line');
+                    if (bodyElement)   bodyElement.style.backgroundColor   = '#f9fafb';
+                    if (mainContent)   mainContent.style.backgroundColor   = '#f9fafb';
                 }
             }
 
-            // Aplicar estado inicial
             applyDarkMode(isDark);
 
-            // Evento de clique no botão
             if (darkModeToggle) {
-                darkModeToggle.addEventListener('click', function() {
+                darkModeToggle.addEventListener('click', function () {
                     isDark = !isDark;
                     localStorage.setItem('darkMode', isDark);
                     applyDarkMode(isDark);
-
-                    // Disparar evento personalizado para atualizar gráficos
-                    window.dispatchEvent(new CustomEvent('darkmodechange', { detail: { isDark: isDark } }));
+                    window.dispatchEvent(new CustomEvent('darkmodechange', { detail: { isDark } }));
                 });
             }
 
-            // Observar mudanças na classe 'dark' para sincronizar
-            const observer = new MutationObserver(function(mutations) {
-                mutations.forEach(function(mutation) {
+            new MutationObserver(function (mutations) {
+                mutations.forEach(function (mutation) {
                     if (mutation.attributeName === 'class') {
                         const isDarkNow = htmlElement.classList.contains('dark');
                         if (isDarkNow !== isDark) {
                             isDark = isDarkNow;
                             localStorage.setItem('darkMode', isDark);
-                            if (darkModeIcon) {
-                                if (isDark) {
-                                    darkModeIcon.classList.remove('ri-moon-line');
-                                    darkModeIcon.classList.add('ri-sun-line');
-                                } else {
-                                    darkModeIcon.classList.remove('ri-sun-line');
-                                    darkModeIcon.classList.add('ri-moon-line');
-                                }
+                            if (isDark) {
+                                darkModeIcon.classList.replace('ri-moon-line', 'ri-sun-line');
+                            } else {
+                                darkModeIcon.classList.replace('ri-sun-line', 'ri-moon-line');
                             }
                         }
                     }
                 });
-            });
-
-            observer.observe(htmlElement, { attributes: true });
+            }).observe(htmlElement, { attributes: true });
         }
 
-        // Inicializar quando o DOM estiver pronto
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', initDarkMode);
         } else {
             initDarkMode();
         }
     </script>
-</body>
 
+</body>
 </html>

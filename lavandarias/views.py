@@ -1,3 +1,4 @@
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -5,17 +6,21 @@ from django.views.decorators.http import require_http_methods
 from django.utils import timezone
 from decimal import Decimal
 import json
+
+from core.decorators import admin_required
 from core.models import Lavandaria, Funcionario, Pedido
 from django.db.models import Sum, Count, Q
 
-
+@login_required
+@admin_required
 def ver_lavandarias(request):
     """
     View para página de gerenciamento de lavandarias
     """
     return render(request, 'lavandarias/lavandarias.html')
 
-
+@login_required
+@admin_required
 @csrf_exempt
 @require_http_methods(["GET"])
 def listar_lavandarias(request):
@@ -55,7 +60,8 @@ def listar_lavandarias(request):
 
     return JsonResponse({'success': True, 'lavandarias': lavandarias_data})
 
-
+@login_required
+@admin_required
 @csrf_exempt
 @require_http_methods(["POST"])
 def criar_lavandaria(request):
@@ -101,7 +107,8 @@ def criar_lavandaria(request):
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=400)
 
-
+@login_required
+@admin_required
 @csrf_exempt
 @require_http_methods(["PUT"])
 def editar_lavandaria(request, id):
@@ -153,7 +160,8 @@ def editar_lavandaria(request, id):
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=400)
 
-
+@login_required
+@admin_required
 @csrf_exempt
 @require_http_methods(["DELETE"])
 def excluir_lavandaria(request, id):
@@ -183,7 +191,8 @@ def excluir_lavandaria(request, id):
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=400)
 
-
+@login_required
+@admin_required
 @csrf_exempt
 @require_http_methods(["GET"])
 def estatisticas_lavandarias(request):
@@ -218,7 +227,8 @@ def estatisticas_lavandarias(request):
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=400)
 
-
+@login_required
+@admin_required
 @csrf_exempt
 @require_http_methods(["GET"])
 def detalhes_lavandaria(request, id):

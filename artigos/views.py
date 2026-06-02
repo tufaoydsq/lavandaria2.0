@@ -1,3 +1,4 @@
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -5,16 +6,20 @@ from django.views.decorators.http import require_http_methods
 from django.utils import timezone
 from decimal import Decimal
 import json
+
+from core.decorators import vendedor_required, gerente_required, admin_required
 from core.models import ItemServico
 
-
+@login_required
+@gerente_required
 def ver_artigo(request):
     """
     View para página de gerenciamento de artigos
     """
     return render(request, "artigos/artigos.html")
 
-
+@login_required
+@gerente_required
 @csrf_exempt
 @require_http_methods(["GET"])
 def listar_artigos(request):
@@ -38,7 +43,8 @@ def listar_artigos(request):
 
     return JsonResponse({'success': True, 'artigos': artigos_data})
 
-
+@login_required
+@gerente_required
 @csrf_exempt
 @require_http_methods(["POST"])
 def criar_artigo(request):
@@ -76,7 +82,8 @@ def criar_artigo(request):
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=400)
 
-
+@login_required
+@gerente_required
 @csrf_exempt
 @require_http_methods(["PUT"])
 def editar_artigo(request, id):
@@ -112,7 +119,8 @@ def editar_artigo(request, id):
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=400)
 
-
+@login_required
+@gerente_required
 @csrf_exempt
 @require_http_methods(["PATCH"])
 def alternar_status_artigo(request, id):
@@ -132,7 +140,8 @@ def alternar_status_artigo(request, id):
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=400)
 
-
+@login_required
+@admin_required
 @csrf_exempt
 @require_http_methods(["DELETE"])
 def excluir_artigo(request, id):
@@ -151,7 +160,8 @@ def excluir_artigo(request, id):
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=400)
 
-
+@login_required
+@admin_required
 @csrf_exempt
 @require_http_methods(["DELETE"])
 def excluir_multiplos_artigos(request):

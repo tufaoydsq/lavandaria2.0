@@ -4,9 +4,13 @@ from django.db.models import Sum
 from django.utils import timezone
 from datetime import timedelta
 from decimal import Decimal
+from django.contrib.auth.decorators import login_required
+from core.decorators import vendedor_required
 from core.models import Pedido
 
 
+@login_required
+@vendedor_required
 def receita_por_periodo(request):
     """API para buscar dados de receita por período"""
     dias = int(request.GET.get('dias', 7))
@@ -20,9 +24,13 @@ def receita_por_periodo(request):
         inicio_dia = timezone.make_aware(timezone.datetime.combine(dia, timezone.datetime.min.time()))
         fim_dia = timezone.make_aware(timezone.datetime.combine(dia, timezone.datetime.max.time()))
 
-        receita = Pedido.objects.filter(
+        pedidos = Pedido.objects.filter(
             criado_em__range=[inicio_dia, fim_dia]
-        ).aggregate(total=Sum('total_pago'))['total'] or Decimal('0.00')
+        )
+        if hasattr(request.user, 'funcionario'):
+            pedidos = pedidos.filter(lavandaria=request.user.funcionario.lavandaria)
+
+        receita = pedidos.aggregate(total=Sum('total_pago'))['total'] or Decimal('0.00')
 
         dados.append({
             'dia': dia.strftime('%a'),

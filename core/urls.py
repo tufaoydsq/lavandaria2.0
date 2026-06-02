@@ -7,4 +7,5 @@ urlpatterns = [
     path('imprimir-recibo-imagem/<int:pedido_id>/', views.imprimir_recibo_imagem, name='imprimir_recibo_imagem'),
     path('meu-pedido/', views.meu_pedido, name='order-track'),
     path('meu-pedido/<int:pedido_id>', views.meu_pedido_details, name='order-details'),
+    path('permissoes/', views.ver_permissoes, name='ver_permissoes'),
 ]

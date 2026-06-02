@@ -1,5 +1,7 @@
 from django.shortcuts import get_object_or_404, redirect, render, reverse
 from django.http import HttpResponseBadRequest
+from django.contrib.auth.decorators import login_required
+from core.decorators import vendedor_required, superuser_required
 from .models import Pedido, Cliente, Lavandaria, ItemPedido, PagamentoPedido
 from django.template.loader import render_to_string
 import json
@@ -29,8 +31,12 @@ datas_intervalo = [(data_inicial + timedelta(days=i)) for i in range(7)]
 font_path = os.path.join(settings.BASE_DIR, "static/font/Roboto.ttf")
 
 
+@login_required
+@vendedor_required
 def imprimir_recibo_imagem(request, pedido_id):
     pedido = get_object_or_404(Pedido, id=pedido_id)
+    if hasattr(request.user, 'funcionario') and pedido.lavandaria != request.user.funcionario.lavandaria:
+        return HttpResponseBadRequest("Acesso negado.")
 
     # Subquery: soma pagamentos por pedido
     pagos_subq = (
@@ -389,3 +395,32 @@ def dashboard_callback(request, context):
         }
     )
     return context
+
+
+# core/views.py (adicione no final do arquivo)
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+
+
+@login_required
+@superuser_required
+def ver_permissoes(request):
+    """
+    View para visualizar permissões do usuário
+    """
+    user_perms = []
+
+    # Permissões diretas do usuário
+    for perm in request.user.user_permissions.all():
+        user_perms.append(f"{perm.content_type.app_label}.{perm.codename}")
+
+    # Permissões dos grupos
+    for group in request.user.groups.all():
+        for perm in group.permissions.all():
+            perm_str = f"{perm.content_type.app_label}.{perm.codename}"
+            if perm_str not in user_perms:
+                user_perms.append(perm_str)
+
+    return render(request, 'perfil/permissoes.html', {
+        'perms': sorted(user_perms)
+    })

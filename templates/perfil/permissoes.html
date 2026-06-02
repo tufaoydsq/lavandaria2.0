@@ -1,0 +1,56 @@
+{% extends 'main.html' %}
+{% block content %}
+<div class="p-8">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm">
+        <h2 class="text-2xl font-semibold text-gray-800 dark:text-white mb-4">Minhas Permissões</h2>
+
+        <div class="mb-6">
+            <h3 class="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">Informações do Utilizador</h3>
+            <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                <p><strong>Nome:</strong> {{ request.user.get_full_name|default:request.user.username }}</p>
+                <p><strong>Username:</strong> {{ request.user.username }}</p>
+                <p><strong>Email:</strong> {{ request.user.email }}</p>
+                <p><strong>Staff:</strong> {{ request.user.is_staff|yesno:"Sim,Não" }}</p>
+                <p><strong>Superusuário:</strong> {{ request.user.is_superuser|yesno:"Sim,Não" }}</p>
+                {% if request.user.funcionario %}
+                <p><strong>Cargo:</strong> {{ request.user.funcionario.get_grupo_display }}</p>
+                <p><strong>Lavandaria:</strong> {{ request.user.funcionario.lavandaria.nome }}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div>
+            <h3 class="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">Grupos</h3>
+            <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                {% if request.user.groups.all %}
+                    <ul class="list-disc list-inside">
+                    {% for group in request.user.groups.all %}
+                        <li>{{ group.name }}</li>
+                    {% endfor %}
+                    </ul>
+                {% else %}
+                    <p>Nenhum grupo associado</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="mt-6">
+            <h3 class="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">Permissões</h3>
+            <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                {% if perms %}
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    {% for perm in perms %}
+                        <div class="flex items-center">
+                            <i class="ri-checkbox-circle-line text-green-500 mr-2"></i>
+                            <span>{{ perm }}</span>
+                        </div>
+                    {% endfor %}
+                    </div>
+                {% else %}
+                    <p>Nenhuma permissão específica</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

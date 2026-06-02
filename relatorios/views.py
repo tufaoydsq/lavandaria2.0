@@ -1,3 +1,4 @@
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -7,18 +8,22 @@ from datetime import datetime, timedelta
 from decimal import Decimal
 from django.db.models import Sum, Count, Q, Avg
 from django.db.models.functions import TruncDay, TruncMonth
+
+from core.decorators import gerente_required
 from core.models import Pedido, PagamentoPedido
 from core.models import Cliente
 from core.models import ItemServico
 
-
+@login_required
+@gerente_required
 def ver_relatorios(request):
     """
     View para página de relatórios
     """
     return render(request, 'relatorios/relatorios.html')
 
-
+@login_required
+@gerente_required
 @csrf_exempt
 @require_http_methods(["GET"])
 def dados_relatorios(request):
@@ -92,7 +97,9 @@ def dados_relatorios(request):
 
         # Filtrar pedidos
         pedidos_query = Pedido.objects.all()
-        if lavandaria_id != 'all':
+        if hasattr(request.user, 'funcionario') and not request.user.is_staff and not request.user.is_superuser:
+            pedidos_query = pedidos_query.filter(lavandaria=request.user.funcionario.lavandaria)
+        elif lavandaria_id != 'all':
             pedidos_query = pedidos_query.filter(lavandaria_id=lavandaria_id)
 
         # Pedidos do período atual

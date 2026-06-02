@@ -2,11 +2,14 @@ from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django.contrib.auth.hashers import make_password
+from core.decorators import admin_required
 import json
 
 
+@login_required
+@admin_required
 def ver_user(request):
     """
     View para página de gestão de utilizadores
@@ -16,6 +19,8 @@ def ver_user(request):
 
 @csrf_exempt
 @require_http_methods(["GET"])
+@login_required
+@admin_required
 def listar_usuarios(request):
     """
     API: Listar todos os utilizadores
@@ -41,6 +46,8 @@ def listar_usuarios(request):
 
 @csrf_exempt
 @require_http_methods(["POST"])
+@login_required
+@admin_required
 def criar_usuario(request):
     """
     API: Criar novo utilizador (apenas dados básicos)
@@ -51,8 +58,8 @@ def criar_usuario(request):
         username = data.get('username')
         email = data.get('email')
         is_active = data.get('is_active', True)
-        is_staff = data.get('is_staff', False)
-        is_superuser = data.get('is_superuser', False)
+        is_staff = data.get('is_staff', False) if request.user.is_superuser else False
+        is_superuser = data.get('is_superuser', False) if request.user.is_superuser else False
         password = data.get('password', '')
 
         # Validações
@@ -114,6 +121,8 @@ def criar_usuario(request):
 
 @csrf_exempt
 @require_http_methods(["PUT"])
+@login_required
+@admin_required
 def editar_usuario(request, id):
     """
     API: Editar utilizador existente
@@ -121,6 +130,8 @@ def editar_usuario(request, id):
     try:
         user = get_object_or_404(User, id=id)
         data = json.loads(request.body)
+        if user.is_superuser and not request.user.is_superuser:
+            return JsonResponse({'success': False, 'error': 'Apenas superusuarios podem editar outro superusuario'}, status=403)
 
         # Atualizar dados básicos
         if 'name' in data:
@@ -140,9 +151,9 @@ def editar_usuario(request, id):
 
         if 'is_active' in data:
             user.is_active = data['is_active']
-        if 'is_staff' in data:
+        if 'is_staff' in data and request.user.is_superuser:
             user.is_staff = data['is_staff']
-        if 'is_superuser' in data:
+        if 'is_superuser' in data and request.user.is_superuser:
             user.is_superuser = data['is_superuser']
 
         if 'password' in data and data['password']:
@@ -169,12 +180,16 @@ def editar_usuario(request, id):
 
 @csrf_exempt
 @require_http_methods(["POST"])
+@login_required
+@admin_required
 def resetar_senha_usuario(request, id):
     """
     API: Resetar senha do utilizador
     """
     try:
         user = get_object_or_404(User, id=id)
+        if user.is_superuser and not request.user.is_superuser:
+            return JsonResponse({'success': False, 'error': 'Apenas superusuarios podem resetar senha de outro superusuario'}, status=403)
 
         import secrets
         import string
@@ -195,12 +210,18 @@ def resetar_senha_usuario(request, id):
 
 @csrf_exempt
 @require_http_methods(["PATCH"])
+@login_required
+@admin_required
 def toggle_status_usuario(request, id):
     """
     API: Alternar status do utilizador (ativar/desativar)
     """
     try:
         user = get_object_or_404(User, id=id)
+        if user == request.user:
+            return JsonResponse({'success': False, 'error': 'Nao pode alterar o estado do proprio utilizador'}, status=400)
+        if user.is_superuser and not request.user.is_superuser:
+            return JsonResponse({'success': False, 'error': 'Apenas superusuarios podem alterar outro superusuario'}, status=403)
         data = json.loads(request.body)
         is_active = data.get('is_active', False)
 
@@ -218,12 +239,18 @@ def toggle_status_usuario(request, id):
 
 @csrf_exempt
 @require_http_methods(["DELETE"])
+@login_required
+@admin_required
 def excluir_usuario(request, id):
     """
     API: Excluir utilizador
     """
     try:
         user = get_object_or_404(User, id=id)
+        if user == request.user:
+            return JsonResponse({'success': False, 'error': 'Nao pode excluir o proprio utilizador'}, status=400)
+        if user.is_superuser and not request.user.is_superuser:
+            return JsonResponse({'success': False, 'error': 'Apenas superusuarios podem excluir outro superusuario'}, status=403)
         username = user.username
         user.delete()
 
@@ -237,6 +264,8 @@ def excluir_usuario(request, id):
 
 @csrf_exempt
 @require_http_methods(["GET"])
+@login_required
+@admin_required
 def estatisticas_usuarios(request):
     """
     API: Obter estatísticas dos utilizadores

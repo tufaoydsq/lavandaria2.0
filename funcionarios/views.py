@@ -1,28 +1,29 @@
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from django.contrib.auth.models import User, Group
-from django.utils import timezone
 import json
+
+from core.decorators import admin_required
 from core.models import Funcionario, Lavandaria
 
 
+@csrf_exempt
+@require_http_methods(["GET"])
+@login_required
+@admin_required
 def ver_funcionarios(request):
-    """
-    View para página de gerenciamento de funcionários
-    """
     return render(request, 'funcionarios/funcionarios.html')
 
 
 @csrf_exempt
 @require_http_methods(["GET"])
+@login_required
+@admin_required
 def listar_funcionarios(request):
-    """
-    API: Listar todos os funcionários
-    """
     funcionarios = Funcionario.objects.select_related('user', 'lavandaria').all().order_by('-id')
-
     funcionarios_data = []
     for func in funcionarios:
         funcionarios_data.append({
@@ -38,20 +39,16 @@ def listar_funcionarios(request):
             'ultimo_acesso': func.user.last_login.strftime('%Y-%m-%d %H:%M:%S') if func.user.last_login else None,
             'criado_em': func.user.date_joined.strftime('%Y-%m-%d')
         })
-
     return JsonResponse({'success': True, 'funcionarios': funcionarios_data})
 
 
 @csrf_exempt
 @require_http_methods(["GET"])
+@login_required
+@admin_required
 def listar_usuarios_disponiveis(request):
-    """
-    API: Listar usuários disponíveis para associar como funcionário
-    """
-    # Usuários que não são funcionários ainda
     usuarios_funcionarios = Funcionario.objects.values_list('user_id', flat=True)
-    usuarios_disponiveis = User.objects.exclude(id__in=usuarios_funcionarios).filter(is_staff=True)
-
+    usuarios_disponiveis = User.objects.exclude(id__in=usuarios_funcionarios).filter(is_active=True)
     usuarios_data = []
     for user in usuarios_disponiveis:
         usuarios_data.append({
@@ -60,26 +57,23 @@ def listar_usuarios_disponiveis(request):
             'username': user.username,
             'email': user.email
         })
-
     return JsonResponse({'success': True, 'usuarios': usuarios_data})
 
 
 @csrf_exempt
 @require_http_methods(["GET"])
+@login_required
+@admin_required
 def listar_lavandarias_options(request):
-    """
-    API: Listar lavandarias para o select
-    """
     lavandarias = Lavandaria.objects.all().values('id', 'nome')
     return JsonResponse({'success': True, 'lavandarias': list(lavandarias)})
 
 
 @csrf_exempt
 @require_http_methods(["POST"])
+@login_required
+@admin_required
 def criar_funcionario(request):
-    """
-    API: Associar um usuário existente a uma lavandaria como funcionário
-    """
     try:
         data = json.loads(request.body)
         user_id = data.get('user_id')
@@ -87,25 +81,29 @@ def criar_funcionario(request):
         telefone = data.get('telefone', '')
         grupo = data.get('grupo')
 
-        # Validações
         if not user_id:
-            return JsonResponse({'success': False, 'error': 'Usuário é obrigatório'}, status=400)
+            return JsonResponse({'success': False, 'error': 'Usuario é obrigatorio'}, status=400)
         if not grupo:
-            return JsonResponse({'success': False, 'error': 'Cargo é obrigatório'}, status=400)
+            return JsonResponse({'success': False, 'error': 'Cargo é obrigatorio'}, status=400)
         if not lavandaria_id:
-            return JsonResponse({'success': False, 'error': 'Lavandaria é obrigatória'}, status=400)
+            return JsonResponse({'success': False, 'error': 'Lavandaria é obrigatoria'}, status=400)
 
-        # Verificar se usuário existe
+        # Validar grupo permitido
+        grupos_permitidos = ['vendedor', 'gerente', 'admin', 'superuser']
+        if grupo not in grupos_permitidos:
+            return JsonResponse({'success': False, 'error': f'Cargo inválido. Use: {grupos_permitidos}'}, status=400)
+        if grupo == 'superuser' and not request.user.is_superuser:
+            return JsonResponse({'success': False, 'error': 'Apenas superusuarios podem criar outro superusuario'}, status=403)
+
         user = get_object_or_404(User, id=user_id)
 
-        # Verificar se usuário já é funcionário
         if Funcionario.objects.filter(user=user).exists():
-            return JsonResponse({'success': False, 'error': 'Usuário já é funcionário'}, status=400)
+            return JsonResponse({'success': False, 'error': 'Usuario ja é funcionario'}, status=400)
 
-        # Obter lavandaria
         lavandaria = get_object_or_404(Lavandaria, id=lavandaria_id)
+        group, _ = Group.objects.get_or_create(name=grupo)
+        user.groups.set([group])
 
-        # Criar funcionário
         funcionario = Funcionario.objects.create(
             user=user,
             lavandaria=lavandaria,
@@ -115,18 +113,12 @@ def criar_funcionario(request):
 
         return JsonResponse({
             'success': True,
-            'message': f'Funcionário {user.get_full_name() or user.username} criado com sucesso!',
+            'message': f'Funcionario {user.get_full_name() or user.username} criado com sucesso',
             'funcionario': {
                 'id': funcionario.id,
-                'user_id': user.id,
                 'nome': user.get_full_name() or user.username,
-                'username': user.username,
-                'telefone': funcionario.telefone,
                 'cargo': funcionario.grupo,
-                'lavandaria_id': lavandaria.id,
                 'lavandaria_nome': lavandaria.nome,
-                'ativo': user.is_active,
-                'criado_em': user.date_joined.strftime('%Y-%m-%d')
             }
         })
     except Exception as e:
@@ -135,10 +127,9 @@ def criar_funcionario(request):
 
 @csrf_exempt
 @require_http_methods(["PUT"])
+@login_required
+@admin_required
 def editar_funcionario(request, id):
-    """
-    API: Editar funcionário existente
-    """
     try:
         funcionario = get_object_or_404(Funcionario, id=id)
         data = json.loads(request.body)
@@ -146,10 +137,15 @@ def editar_funcionario(request, id):
         if 'telefone' in data:
             funcionario.telefone = data['telefone']
 
-        if 'grupo' in data:
-            funcionario.grupo = data['grupo']
-            # Atualizar grupo do usuário
-            grupo = Group.objects.get(name=data['grupo'])
+        if 'grupo' in data and data['grupo']:
+            grupo_nome = data['grupo']
+            grupos_permitidos = ['vendedor', 'gerente', 'admin', 'superuser']
+            if grupo_nome not in grupos_permitidos:
+                return JsonResponse({'success': False, 'error': f'Cargo invalido. Use: {grupos_permitidos}'}, status=400)
+            if grupo_nome == 'superuser' and not request.user.is_superuser:
+                return JsonResponse({'success': False, 'error': 'Apenas superusuarios podem atribuir esse cargo'}, status=403)
+            grupo, _ = Group.objects.get_or_create(name=grupo_nome)
+            funcionario.grupo = grupo_nome
             funcionario.user.groups.set([grupo])
 
         if 'lavandaria_id' in data:
@@ -162,57 +158,40 @@ def editar_funcionario(request, id):
 
         funcionario.save()
 
-        return JsonResponse({
-            'success': True,
-            'message': 'Funcionário atualizado com sucesso!',
-            'funcionario': {
-                'id': funcionario.id,
-                'user_id': funcionario.user.id,
-                'nome': funcionario.user.get_full_name() or funcionario.user.username,
-                'username': funcionario.user.username,
-                'telefone': funcionario.telefone,
-                'cargo': funcionario.grupo,
-                'lavandaria_id': funcionario.lavandaria.id,
-                'lavandaria_nome': funcionario.lavandaria.nome,
-                'ativo': funcionario.user.is_active,
-                'criado_em': funcionario.user.date_joined.strftime('%Y-%m-%d')
-            }
-        })
+        return JsonResponse({'success': True, 'message': 'Funcionario atualizado com sucesso'})
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=400)
 
 
 @csrf_exempt
 @require_http_methods(["DELETE"])
+@login_required
+@admin_required
 def excluir_funcionario(request, id):
-    """
-    API: Excluir funcionário (apenas a associação, não o usuário)
-    """
     try:
         funcionario = get_object_or_404(Funcionario, id=id)
         nome = funcionario.user.get_full_name() or funcionario.user.username
         funcionario.delete()
-
-        return JsonResponse({
-            'success': True,
-            'message': f'Funcionário "{nome}" removido com sucesso'
-        })
+        return JsonResponse({'success': True, 'message': f'Funcionario "{nome}" removido com sucesso'})
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=400)
 
 
 @csrf_exempt
 @require_http_methods(["GET"])
+@login_required
+@admin_required
 def estatisticas_funcionarios(request):
-    """
-    API: Obter estatísticas dos funcionários
-    """
     try:
         total_funcionarios = Funcionario.objects.count()
         ativos = Funcionario.objects.filter(user__is_active=True).count()
         inativos = total_funcionarios - ativos
+
+        # ✅ Grupos correctos conforme o seu sistema
+        vendedores = Funcionario.objects.filter(grupo='vendedor').count()
         gerentes = Funcionario.objects.filter(grupo='gerente').count()
-        caixas = Funcionario.objects.filter(grupo='caixa').count()
+        admins = User.objects.filter(is_staff=True, is_superuser=False).count()
+        superusers = User.objects.filter(is_superuser=True).count()
 
         return JsonResponse({
             'success': True,
@@ -220,9 +199,44 @@ def estatisticas_funcionarios(request):
                 'total': total_funcionarios,
                 'ativos': ativos,
                 'inativos': inativos,
+                'vendedores': vendedores,
                 'gerentes': gerentes,
-                'caixas': caixas
+                'admins': admins,
+                'superusers': superusers
             }
         })
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=400)
+
+
+@csrf_exempt
+@require_http_methods(["GET"])
+@login_required
+@admin_required
+def listar_cargos(request):
+    try:
+        grupos = Group.objects.all().values('id', 'name')
+        return JsonResponse({'success': True, 'cargos': list(grupos)})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=400)
+
+
+@csrf_exempt
+@require_http_methods(["GET"])
+@login_required
+@admin_required
+def listar_permissoes_por_cargo(request):
+    try:
+        cargo_nome = request.GET.get('cargo')
+        if not cargo_nome:
+            return JsonResponse({'success': False, 'error': 'Cargo é obrigatorio'}, status=400)
+
+        try:
+            grupo = Group.objects.get(name=cargo_nome)
+            permissoes = list(grupo.permissions.values_list('name', flat=True))
+        except Group.DoesNotExist:
+            permissoes = []
+
+        return JsonResponse({'success': True, 'permissoes': permissoes})
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=400)

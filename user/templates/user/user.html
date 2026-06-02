@@ -238,6 +238,7 @@
                         </label>
                     </div>
 
+                    {% if user.is_superuser %}
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="font-medium text-gray-700 dark:text-gray-300">Staff (Acesso Admin)</p>
@@ -249,6 +250,7 @@
                         </label>
                     </div>
 
+                    {% if user.is_superuser %}
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="font-medium text-gray-700 dark:text-gray-300">Super Utilizador</p>
@@ -259,6 +261,8 @@
                             <span class="slider"></span>
                         </label>
                     </div>
+                    {% endif %}
+                    {% endif %}
                 </div>
 
                 <div class="flex justify-end space-x-3 mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
@@ -608,8 +612,10 @@
         document.getElementById('userId').value = '';
         document.getElementById('userPassword').required = true;
         document.getElementById('userIsActive').checked = true;
-        document.getElementById('userIsStaff').checked = false;
-        document.getElementById('userIsSuperuser').checked = false;
+        const staffField = document.getElementById('userIsStaff');
+        if (staffField) staffField.checked = false;
+        const superuserField = document.getElementById('userIsSuperuser');
+        if (superuserField) superuserField.checked = false;
 
         if (user) {
             modalTitle.textContent = 'Editar Utilizador';
@@ -618,8 +624,8 @@
             document.getElementById('userUsername').value = user.username;
             document.getElementById('userEmail').value = user.email;
             document.getElementById('userIsActive').checked = user.is_active;
-            document.getElementById('userIsStaff').checked = user.is_staff;
-            document.getElementById('userIsSuperuser').checked = user.is_superuser;
+            if (staffField) staffField.checked = user.is_staff;
+            if (superuserField) superuserField.checked = user.is_superuser;
             document.getElementById('userPassword').required = false;
             document.getElementById('userPassword').placeholder = 'Deixe em branco para manter a mesma';
         } else {
@@ -655,8 +661,8 @@
             username: document.getElementById('userUsername').value,
             email: document.getElementById('userEmail').value,
             is_active: document.getElementById('userIsActive').checked,
-            is_staff: document.getElementById('userIsStaff').checked,
-            is_superuser: document.getElementById('userIsSuperuser').checked
+            is_staff: document.getElementById('userIsStaff')?.checked || false,
+            is_superuser: document.getElementById('userIsSuperuser')?.checked || false
         };
 
         if (userId) {

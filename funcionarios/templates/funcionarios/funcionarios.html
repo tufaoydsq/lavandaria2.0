@@ -1,5 +1,9 @@
+
 {% extends 'main.html' %}
+{% load permissions %}
 {% load static %}
+
+
 {% block content %}
 
 <style>
@@ -22,7 +26,6 @@
         to { opacity: 1; transform: translateX(0); }
     }
 
-    /* Transição suave para troca de tema */
     * {
         transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
     }
@@ -59,13 +62,6 @@
     .toast {
         animation: slideIn 0.3s ease-out;
     }
-
-    .avatar-initials {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 600;
-    }
 </style>
 
 <!-- Main Content -->
@@ -77,18 +73,21 @@
                 <h2 class="text-2xl font-semibold text-gray-800 dark:text-white">Funcionários</h2>
                 <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Gerencie os funcionários e suas permissões</p>
             </div>
+            <!-- Botão Novo Funcionário - Apenas Admin e SuperUser -->
+            {% if user|has_level:3 %}
             <button id="newFuncionarioBtn"
                     class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-5 py-2.5 rounded-lg flex items-center space-x-2 shadow-lg transition transform hover:scale-105">
                 <i class="ri-add-line text-xl"></i>
                 <span>Novo Funcionário</span>
             </button>
+            {% endif %}
         </div>
     </div>
 
     <div class="p-8 fade-in">
-        <!-- Stats Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-5 gap-6 mb-6">
-            <div class="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border-l-4 border-blue-500 transition-colors duration-200">
+        <!-- Stats Cards - Todos podem ver as estatísticas básicas -->
+        <div class="grid grid-cols-1 md:grid-cols-6 gap-6 mb-6">
+            <div class="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border-l-4 border-blue-500">
                 <div class="flex justify-between items-start">
                     <div>
                         <p class="text-gray-500 dark:text-gray-400 text-sm">Total Funcionários</p>
@@ -100,7 +99,7 @@
                 </div>
             </div>
 
-            <div class="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border-l-4 border-green-500 transition-colors duration-200">
+            <div class="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border-l-4 border-green-500">
                 <div class="flex justify-between items-start">
                     <div>
                         <p class="text-gray-500 dark:text-gray-400 text-sm">Ativos</p>
@@ -112,7 +111,7 @@
                 </div>
             </div>
 
-            <div class="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border-l-4 border-red-500 transition-colors duration-200">
+            <div class="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border-l-4 border-red-500">
                 <div class="flex justify-between items-start">
                     <div>
                         <p class="text-gray-500 dark:text-gray-400 text-sm">Inativos</p>
@@ -124,7 +123,19 @@
                 </div>
             </div>
 
-            <div class="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border-l-4 border-purple-500 transition-colors duration-200">
+            <div class="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border-l-4 border-yellow-500">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-gray-500 dark:text-gray-400 text-sm">Vendedores</p>
+                        <p class="text-2xl font-bold text-gray-800 dark:text-white" id="vendedoresCount">0</p>
+                    </div>
+                    <div class="w-10 h-10 bg-yellow-100 dark:bg-yellow-900/30 rounded-full flex items-center justify-center">
+                        <i class="ri-user-line text-yellow-600 dark:text-yellow-400 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border-l-4 border-purple-500">
                 <div class="flex justify-between items-start">
                     <div>
                         <p class="text-gray-500 dark:text-gray-400 text-sm">Gerentes</p>
@@ -136,22 +147,25 @@
                 </div>
             </div>
 
-            <div class="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border-l-4 border-yellow-500 transition-colors duration-200">
+            <!-- Card Admins - Apenas Admin e SuperUser veem -->
+            {% if user|has_level:3 %}
+            <div class="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border-l-4 border-indigo-500">
                 <div class="flex justify-between items-start">
                     <div>
-                        <p class="text-gray-500 dark:text-gray-400 text-sm">Caixas</p>
-                        <p class="text-2xl font-bold text-gray-800 dark:text-white" id="caixasCount">0</p>
+                        <p class="text-gray-500 dark:text-gray-400 text-sm">Administradores</p>
+                        <p class="text-2xl font-bold text-gray-800 dark:text-white" id="adminsCount">0</p>
                     </div>
-                    <div class="w-10 h-10 bg-yellow-100 dark:bg-yellow-900/30 rounded-full flex items-center justify-center">
-                        <i class="ri-cash-line text-yellow-600 dark:text-yellow-400 text-xl"></i>
+                    <div class="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/30 rounded-full flex items-center justify-center">
+                        <i class="ri-admin-line text-indigo-600 dark:text-indigo-400 text-xl"></i>
                     </div>
                 </div>
             </div>
+            {% endif %}
         </div>
 
-        <!-- Filters -->
+        <!-- Filters - Vendedor vê apenas filtros básicos, Admin vê todos -->
         <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm mb-6 transition-colors duration-200">
-            <div class="grid grid-cols-1 md:grid-cols-6 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-7 gap-4">
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Buscar</label>
                     <div class="relative">
@@ -164,17 +178,24 @@
                                       transition-colors duration-200">
                     </div>
                 </div>
+
+                <!-- Filtro de Nível - Admin e SuperUser veem todos os níveis -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Cargo</label>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nível</label>
                     <select id="cargoFilter"
                             class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2
                                    bg-white dark:bg-gray-700 text-gray-800 dark:text-white
                                    focus:ring-2 focus:ring-blue-500 transition-colors duration-200">
                         <option value="all">Todos</option>
+                        <option value="vendedor">Vendedor</option>
                         <option value="gerente">Gerente</option>
-                        <option value="caixa">Caixa</option>
+                        {% if user|has_level:3 %}
+                        <option value="admin">Administrador</option>
+                        <option value="superuser">Super Usuário</option>
+                        {% endif %}
                     </select>
                 </div>
+
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Status</label>
                     <select id="statusFilter"
@@ -192,7 +213,7 @@
                             class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2
                                    bg-white dark:bg-gray-700 text-gray-800 dark:text-white
                                    focus:ring-2 focus:ring-blue-500 transition-colors duration-200">
-                        <option value="all">Todas</option>
+                        <option value="all">{% if user|has_level:3 %}Todas{% else %}Minha Lavandaria{% endif %}</option>
                     </select>
                 </div>
                 <div class="flex items-end">
@@ -221,11 +242,13 @@
             </div>
             <h3 class="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">Nenhum funcionário encontrado</h3>
             <p class="text-gray-500 dark:text-gray-400 mb-4">Comece cadastrando um novo funcionário</p>
+            {% if user|has_level:3 %}
             <button onclick="document.getElementById('newFuncionarioBtn').click()"
                     class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg inline-flex items-center space-x-2">
                 <i class="ri-add-line"></i>
                 <span>Novo Funcionário</span>
             </button>
+            {% endif %}
         </div>
 
         <!-- Pagination -->
@@ -236,7 +259,8 @@
     </div>
 </main>
 
-<!-- Modal Criar/Editar Funcionário -->
+<!-- Modal Criar/Editar Funcionário - Apenas Admin e SuperUser podem ver -->
+{% if user|has_level:3 %}
 <div id="funcionarioModal" class="modal hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
     <div class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto transition-colors duration-200">
         <div class="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex justify-between items-center">
@@ -253,10 +277,8 @@
                 <input type="hidden" id="funcionarioUserId">
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Coluna Esquerda - Dados Pessoais -->
                     <div class="space-y-4">
                         <h4 class="font-semibold text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700 pb-2">Dados do Usuário</h4>
-
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Usuário *</label>
                             <select id="funcionarioUsuario" required
@@ -265,9 +287,7 @@
                                            focus:ring-2 focus:ring-blue-500 transition-colors duration-200">
                                 <option value="">Selecione um usuário</option>
                             </select>
-                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Selecione um usuário existente no sistema</p>
                         </div>
-
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Telefone</label>
                             <input type="tel" id="funcionarioTelefone"
@@ -278,22 +298,25 @@
                         </div>
                     </div>
 
-                    <!-- Coluna Direita - Configurações -->
                     <div class="space-y-4">
                         <h4 class="font-semibold text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700 pb-2">Configurações</h4>
-
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Cargo *</label>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nível de Acesso *</label>
                             <select id="funcionarioCargo" required
                                     class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2
                                            bg-white dark:bg-gray-700 text-gray-800 dark:text-white
                                            focus:ring-2 focus:ring-blue-500 transition-colors duration-200">
-                                <option value="">Selecione um cargo</option>
-                                <option value="gerente">👔 Gerente</option>
-                                <option value="caixa">💰 Caixa</option>
+                                <option value="">Selecione um nível</option>
+                                <option value="vendedor">Vendedor</option>
+                                <option value="gerente">Gerente</option>
+                                {% if user|has_level:3 %}
+                                <option value="admin">Administrador</option>
+                                {% endif %}
+                                {% if user.is_superuser %}
+                                <option value="superuser">Super Usuário</option>
+                                {% endif %}
                             </select>
                         </div>
-
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Lavandaria *</label>
                             <select id="funcionarioLavandaria" required
@@ -303,7 +326,6 @@
                                 <option value="">Selecione uma lavandaria</option>
                             </select>
                         </div>
-
                         <div class="flex items-center justify-between pt-2">
                             <div>
                                 <p class="font-medium text-gray-700 dark:text-gray-300">Funcionário Ativo</p>
@@ -317,7 +339,6 @@
                     </div>
                 </div>
 
-                <!-- Permissões do Cargo -->
                 <div class="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
                     <h4 class="font-semibold text-gray-700 dark:text-gray-300 mb-3 flex items-center">
                         <i class="ri-key-2-line mr-2 text-blue-600 dark:text-blue-400"></i>
@@ -328,7 +349,6 @@
                     </div>
                 </div>
 
-                <!-- Botões -->
                 <div class="flex justify-end space-x-3 mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
                     <button type="button" onclick="closeFuncionarioModal()"
                             class="px-6 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
@@ -345,8 +365,9 @@
         </div>
     </div>
 </div>
+{% endif %}
 
-<!-- Modal Ver Detalhes -->
+<!-- Modal Ver Detalhes - Todos podem ver -->
 <div id="detailsModal" class="modal hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
     <div class="bg-white dark:bg-gray-800 rounded-2xl max-w-2xl w-full max-h-[80vh] overflow-y-auto transition-colors duration-200">
         <div class="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex justify-between items-center">
@@ -355,13 +376,12 @@
                 <i class="ri-close-line text-2xl"></i>
             </button>
         </div>
-        <div class="p-6" id="detailsContent">
-            <!-- Conteúdo será inserido via JS -->
-        </div>
+        <div class="p-6" id="detailsContent"></div>
     </div>
 </div>
 
-<!-- Modal Excluir -->
+<!-- Modal Excluir - Apenas Admin e SuperUser podem ver -->
+{% if user|has_level:3 %}
 <div id="deleteModal" class="modal hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
     <div class="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full p-6 text-center transition-colors duration-200">
         <div class="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -369,7 +389,7 @@
         </div>
         <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-2">Confirmar Remoção</h3>
         <p class="text-gray-600 dark:text-gray-400 mb-4" id="deleteMessage">Tem certeza que deseja remover este funcionário?</p>
-        <p class="text-sm text-red-600 dark:text-red-400 mb-6">⚠️ O usuário continuará existindo no sistema, apenas a associação com a lavandaria será removida.</p>
+        <p class="text-sm text-red-600 dark:text-red-400 mb-6">O usuário continuará existindo no sistema, apenas a associação com a lavandaria será removida.</p>
         <div class="flex space-x-3">
             <button onclick="closeDeleteModal()"
                     class="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
@@ -383,12 +403,12 @@
         </div>
     </div>
 </div>
+{% endif %}
 
 <!-- Toast Container -->
 <div id="toastContainer" class="fixed bottom-4 right-4 z-50 space-y-2"></div>
 
 <script>
-    // CSRF Token helper
     function getCSRFToken() {
         return document.querySelector('[name=csrfmiddlewaretoken]')?.value ||
                document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
@@ -397,29 +417,18 @@
     let funcionarios = [];
     let lavandarias = [];
     let usuariosDisponiveis = [];
+    let cargos = [];
     let currentPage = 1;
     let itemsPerPage = 8;
     let funcionarioToDelete = null;
 
-    // Permissões por cargo
-    const permissoesPorCargo = {
-        'gerente': [
-            '👥 Visualizar Funcionários',
-            '👕 Gerenciar Artigos (CRUD completo)',
-            '🔧 Gerenciar Serviços (CRUD completo)',
-            '📦 Gerenciar Pedidos (CRUD completo)',
-            '👤 Gerenciar Clientes (CRUD completo)',
-            '📋 Gerenciar Itens de Pedido',
-            '💰 Gerenciar Pagamentos'
-        ],
-        'caixa': [
-            '📦 Visualizar e gerenciar Pedidos',
-            '👤 Visualizar e gerenciar Clientes',
-            '📋 Gerenciar Itens de Pedido'
-        ]
+    // Mapeamento de cores e ícones por nível
+    const nivelConfig = {
+        'vendedor': { cor: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400', icone: 'ri-user-line', nome: 'Vendedor' },
+        'gerente': { cor: 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400', icone: 'ri-shield-star-line', nome: 'Gerente' },
+        'admin': { cor: 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400', icone: 'ri-admin-line', nome: 'Administrador' },
+        'superuser': { cor: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400', icone: 'ri-star-line', nome: 'Super Usuário' }
     };
-
-    // ========== API CALLS ==========
 
     async function loadUsuariosDisponiveis() {
         try {
@@ -427,12 +436,41 @@
             const data = await response.json();
             if (data.success) {
                 usuariosDisponiveis = data.usuarios;
-                const select = document.getElementById('funcionarioUsuario');
-                select.innerHTML = '<option value="">Selecione um usuário</option>' +
+                document.getElementById('funcionarioUsuario').innerHTML = '<option value="">Selecione um usuario</option>' +
                     usuariosDisponiveis.map(u => `<option value="${u.id}">${u.nome} (${u.username})</option>`).join('');
             }
         } catch (error) {
             console.error('Erro:', error);
+        }
+    }
+
+    async function loadCargos() {
+        try {
+            const response = await fetch('/api/funcionarios/cargos/');
+            const data = await response.json();
+            if (data.success) {
+                cargos = data.cargos;
+                const cargoSelect = document.getElementById('funcionarioCargo');
+                cargoSelect.innerHTML = '<option value="">Selecione um nivel</option>' +
+                    cargos.map(c => `<option value="${c.nome}">${nivelConfig[c.nome]?.nome || c.nome}</option>`).join('');
+
+                const cargoFilter = document.getElementById('cargoFilter');
+                cargoFilter.innerHTML = '<option value="all">Todos</option>' +
+                    cargos.map(c => `<option value="${c.nome}">${nivelConfig[c.nome]?.nome || c.nome}</option>`).join('');
+            }
+        } catch (error) {
+            console.error('Erro ao carregar cargos:', error);
+        }
+    }
+
+    async function loadPermissoesPorCargo(cargoNome) {
+        try {
+            const response = await fetch(`/api/funcionarios/cargos/permissoes/?cargo=${cargoNome}`);
+            const data = await response.json();
+            return data.success ? data.permissoes : [];
+        } catch (error) {
+            console.error('Erro ao carregar permissoes:', error);
+            return [];
         }
     }
 
@@ -445,10 +483,7 @@
                 const select = document.getElementById('funcionarioLavandaria');
                 select.innerHTML = '<option value="">Selecione uma lavandaria</option>' +
                     lavandarias.map(l => `<option value="${l.id}">${l.nome}</option>`).join('');
-
-                // Atualizar filtro de lavandaria
-                const filter = document.getElementById('lavandariaFilter');
-                filter.innerHTML = '<option value="all">Todas</option>' +
+                document.getElementById('lavandariaFilter').innerHTML = '<option value="all">Todas</option>' +
                     lavandarias.map(l => `<option value="${l.id}">${l.nome}</option>`).join('');
             }
         } catch (error) {
@@ -458,14 +493,14 @@
 
     async function loadFuncionarios() {
         try {
-            const response = await fetch('/api/funcionarios/');
+            const response = await fetch('/api/funcionarios/listar/');
             const data = await response.json();
             if (data.success) {
                 funcionarios = data.funcionarios;
                 render();
                 loadStats();
             } else {
-                showToast('Erro ao carregar funcionários', 'error');
+                showToast('Erro ao carregar funcionarios', 'error');
             }
         } catch (error) {
             console.error('Erro:', error);
@@ -482,8 +517,9 @@
                 document.getElementById('totalFuncionarios').textContent = stats.total;
                 document.getElementById('ativosCount').textContent = stats.ativos;
                 document.getElementById('inativosCount').textContent = stats.inativos;
-                document.getElementById('gerentesCount').textContent = stats.gerentes;
-                document.getElementById('caixasCount').textContent = stats.caixas;
+                document.getElementById('vendedoresCount').textContent = stats.vendedores || 0;
+                document.getElementById('gerentesCount').textContent = stats.gerentes || 0;
+                document.getElementById('adminsCount').textContent = stats.admins || 0;
             }
         } catch (error) {
             console.error('Erro:', error);
@@ -495,14 +531,19 @@
         const url = isEdit ? `/api/funcionarios/editar/${funcionarioData.id}/` : '/api/funcionarios/criar/';
         const method = isEdit ? 'PUT' : 'POST';
 
+        const dataToSend = {
+            grupo: funcionarioData.grupo,
+            lavandaria_id: parseInt(funcionarioData.lavandaria_id),
+            ativo: funcionarioData.ativo === true || funcionarioData.ativo === 'true'
+        };
+        if (funcionarioData.telefone) dataToSend.telefone = funcionarioData.telefone;
+        if (!isEdit && funcionarioData.user_id) dataToSend.user_id = parseInt(funcionarioData.user_id);
+
         try {
             const response = await fetch(url, {
                 method: method,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': getCSRFToken()
-                },
-                body: JSON.stringify(funcionarioData)
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCSRFToken() },
+                body: JSON.stringify(dataToSend)
             });
             const data = await response.json();
             if (data.success) {
@@ -519,13 +560,36 @@
         }
     }
 
+    async function saveFuncionario(event) {
+        event.preventDefault();
+        const id = document.getElementById('funcionarioId').value;
+        const user_id = document.getElementById('funcionarioUsuario').value;
+        const telefone = document.getElementById('funcionarioTelefone').value;
+        const grupo = document.getElementById('funcionarioCargo').value;
+        const lavandaria_id = document.getElementById('funcionarioLavandaria').value;
+        const ativo = document.getElementById('funcionarioAtivo').checked;
+
+        if (!id && !user_id) { showToast('Selecione um usuario', 'error'); return; }
+        if (!grupo) { showToast('Selecione um nivel', 'error'); return; }
+        if (!lavandaria_id) { showToast('Selecione uma lavandaria', 'error'); return; }
+
+        const funcionarioData = { grupo, lavandaria_id, ativo };
+        if (telefone) funcionarioData.telefone = telefone;
+        if (id) funcionarioData.id = parseInt(id);
+        else funcionarioData.user_id = parseInt(user_id);
+
+        const sucesso = await saveFuncionarioAPI(funcionarioData);
+        if (sucesso) {
+            closeFuncionarioModal();
+            document.getElementById('funcionarioUsuario').disabled = false;
+        }
+    }
+
     async function deleteFuncionarioAPI(id) {
         try {
             const response = await fetch(`/api/funcionarios/excluir/${id}/`, {
                 method: 'DELETE',
-                headers: {
-                    'X-CSRFToken': getCSRFToken()
-                }
+                headers: { 'X-CSRFToken': getCSRFToken() }
             });
             const data = await response.json();
             if (data.success) {
@@ -542,18 +606,33 @@
         }
     }
 
-    // ========== HELPER FUNCTIONS ==========
+    function editFuncionario(id) {
+        const func = funcionarios.find(f => f.id === id);
+        if (func) {
+            document.getElementById('modalTitle').textContent = 'Editar Funcionario';
+            document.getElementById('funcionarioId').value = func.id;
+            document.getElementById('funcionarioUserId').value = func.user_id;
+            document.getElementById('funcionarioTelefone').value = func.telefone || '';
+            document.getElementById('funcionarioCargo').value = func.cargo;
+            document.getElementById('funcionarioLavandaria').value = func.lavandaria_id;
+            document.getElementById('funcionarioAtivo').checked = func.ativo;
+
+            const userSelect = document.getElementById('funcionarioUsuario');
+            userSelect.disabled = true;
+            userSelect.innerHTML = `<option value="${func.user_id}">${func.nome}</option>`;
+            updatePermissoesPreview();
+            document.getElementById('funcionarioModal').classList.remove('hidden');
+        }
+    }
 
     function formatDate(dateString) {
         if (!dateString) return '—';
-        const date = new Date(dateString);
-        return date.toLocaleDateString('pt-PT');
+        return new Date(dateString).toLocaleDateString('pt-PT');
     }
 
     function formatDateTime(dateTimeString) {
         if (!dateTimeString) return 'Nunca';
-        const date = new Date(dateTimeString);
-        return date.toLocaleString('pt-PT');
+        return new Date(dateTimeString).toLocaleString('pt-PT');
     }
 
     function getInitials(name) {
@@ -561,33 +640,24 @@
     }
 
     function getAvatarColor(name) {
-        const colors = [
-            'bg-red-500', 'bg-blue-500', 'bg-green-500', 'bg-yellow-500',
-            'bg-purple-500', 'bg-pink-500', 'bg-indigo-500', 'bg-teal-500'
-        ];
-        const index = name.length % colors.length;
-        return colors[index];
+        const colors = ['bg-red-500', 'bg-blue-500', 'bg-green-500', 'bg-yellow-500', 'bg-purple-500', 'bg-pink-500', 'bg-indigo-500', 'bg-teal-500'];
+        return colors[name.length % colors.length];
     }
 
-    function updatePermissoesPreview() {
-        const cargo = document.getElementById('funcionarioCargo').value;
+    async function updatePermissoesPreview() {
+        const cargoNome = document.getElementById('funcionarioCargo').value;
         const container = document.getElementById('permissoesPreview');
-
-        if (!cargo) {
-            container.innerHTML = '<p class="flex items-center"><i class="ri-information-line mr-2"></i> Selecione um cargo para ver as permissões</p>';
+        if (!cargoNome) {
+            container.innerHTML = '<p><i class="ri-information-line mr-2"></i> Selecione um nivel para ver as permissoes</p>';
             return;
         }
-
-        const permissoes = permissoesPorCargo[cargo] || [];
-        container.innerHTML = `
-            <div class="space-y-1">
-                <p class="font-medium text-gray-700 dark:text-gray-300 mb-2">Permissões do cargo ${cargo === 'gerente' ? 'Gerente' : 'Caixa'}:</p>
-                ${permissoes.map(p => `<p class="text-sm flex items-center"><i class="ri-checkbox-circle-line text-green-500 mr-2"></i> ${p}</p>`).join('')}
-            </div>
-        `;
+        const permissoes = await loadPermissoesPorCargo(cargoNome);
+        if (permissoes.length > 0) {
+            container.innerHTML = `<div class="space-y-1"><p class="font-medium mb-2">Permissoes do nivel ${cargoNome}:</p>${permissoes.map(p => `<p><i class="ri-checkbox-circle-line text-green-500 mr-2"></i> ${p}</p>`).join('')}</div>`;
+        } else {
+            container.innerHTML = '<p>Nenhuma permissao definida para este nivel</p>';
+        }
     }
-
-    // ========== FILTER AND RENDER ==========
 
     function getFilteredFuncionarios() {
         const searchTerm = document.getElementById('searchFuncionario').value.toLowerCase();
@@ -595,28 +665,13 @@
         const statusFilter = document.getElementById('statusFilter').value;
         const lavandariaFilter = document.getElementById('lavandariaFilter').value;
 
-        let filtered = [...funcionarios];
-
-        if (searchTerm) {
-            filtered = filtered.filter(f =>
-                f.nome.toLowerCase().includes(searchTerm) ||
-                (f.telefone && f.telefone.includes(searchTerm))
-            );
-        }
-
-        if (cargoFilter !== 'all') {
-            filtered = filtered.filter(f => f.cargo === cargoFilter);
-        }
-
-        if (statusFilter !== 'all') {
-            filtered = filtered.filter(f => statusFilter === 'active' ? f.ativo : !f.ativo);
-        }
-
-        if (lavandariaFilter !== 'all') {
-            filtered = filtered.filter(f => f.lavandaria_id == lavandariaFilter);
-        }
-
-        return filtered;
+        return funcionarios.filter(f => {
+            const matchSearch = f.nome.toLowerCase().includes(searchTerm) || (f.telefone && f.telefone.includes(searchTerm));
+            const matchCargo = cargoFilter === 'all' || f.cargo === cargoFilter;
+            const matchStatus = statusFilter === 'all' || (statusFilter === 'active' ? f.ativo : !f.ativo);
+            const matchLavandaria = lavandariaFilter === 'all' || f.lavandaria_id == lavandariaFilter;
+            return matchSearch && matchCargo && matchStatus && matchLavandaria;
+        });
     }
 
     function renderGrid(funcionariosList) {
@@ -633,60 +688,33 @@
         emptyState.classList.add('hidden');
 
         container.innerHTML = funcionariosList.map(func => {
-            const avatarColor = getAvatarColor(func.nome);
-            const initials = getInitials(func.nome);
-
+            const config = nivelConfig[func.cargo] || nivelConfig.vendedor;
             return `
-                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden card-hover slide-in transition-colors duration-200">
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden card-hover">
                     <div class="p-5">
                         <div class="flex justify-between items-start mb-4">
                             <div class="flex items-center space-x-3">
-                                <div class="w-12 h-12 rounded-xl ${avatarColor} flex items-center justify-center text-white font-bold text-lg">
-                                    ${initials}
+                                <div class="w-12 h-12 rounded-xl ${getAvatarColor(func.nome)} flex items-center justify-center text-white font-bold text-lg">
+                                    ${getInitials(func.nome)}
                                 </div>
                                 <div>
                                     <h3 class="font-semibold text-gray-800 dark:text-white">${escapeHtml(func.nome)}</h3>
-                                    <p class="text-sm text-gray-500 dark:text-gray-400">${func.cargo === 'gerente' ? 'Gerente' : 'Caixa'}</p>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">${config.nome}</p>
                                 </div>
                             </div>
                             <div class="flex space-x-1">
-                                <button onclick="viewDetails(${func.id})"
-                                        class="p-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition"
-                                        title="Ver detalhes">
-                                    <i class="ri-eye-line"></i>
-                                </button>
-                                <button onclick="editFuncionario(${func.id})"
-                                        class="p-1.5 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30 rounded-lg transition"
-                                        title="Editar">
-                                    <i class="ri-edit-line"></i>
-                                </button>
-                                <button onclick="openDeleteModal(${func.id})"
-                                        class="p-1.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition"
-                                        title="Remover">
-                                    <i class="ri-delete-bin-line"></i>
-                                </button>
+                                <button onclick="viewDetails(${func.id})" class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg" title="Ver detalhes"><i class="ri-eye-line"></i></button>
+                                <button onclick="editFuncionario(${func.id})" class="p-1.5 text-green-600 hover:bg-green-50 rounded-lg" title="Editar"><i class="ri-edit-line"></i></button>
+                                <button onclick="openDeleteModal(${func.id})" class="p-1.5 text-red-600 hover:bg-red-50 rounded-lg" title="Remover"><i class="ri-delete-bin-line"></i></button>
                             </div>
                         </div>
-
                         <div class="space-y-2 mb-4">
-                            <p class="text-sm text-gray-600 dark:text-gray-400 flex items-center">
-                                <i class="ri-phone-line mr-2 text-gray-400"></i>
-                                ${func.telefone || '—'}
-                            </p>
-                            <p class="text-sm text-gray-600 dark:text-gray-400 flex items-center">
-                                <i class="ri-store-line mr-2 text-gray-400"></i>
-                                ${escapeHtml(func.lavandaria_nome)}
-                            </p>
+                            <p class="text-sm text-gray-600 flex items-center"><i class="ri-phone-line mr-2 text-gray-400"></i> ${func.telefone || '—'}</p>
+                            <p class="text-sm text-gray-600 flex items-center"><i class="ri-store-line mr-2 text-gray-400"></i> ${escapeHtml(func.lavandaria_nome)}</p>
                         </div>
-
-                        <div class="flex justify-between items-center pt-3 border-t border-gray-100 dark:border-gray-700">
-                            <span class="status-badge px-2 py-1 text-xs rounded-full ${func.cargo === 'gerente' ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400' : 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'}">
-                                <i class="ri-${func.cargo === 'gerente' ? 'shield-star-line' : 'cash-line'} mr-1"></i>
-                                ${func.cargo === 'gerente' ? 'Gerente' : 'Caixa'}
-                            </span>
-                            <span class="status-badge px-2 py-1 text-xs rounded-full ${func.ativo ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400'}">
-                                ${func.ativo ? '✓ Ativo' : '✗ Inativo'}
-                            </span>
+                        <div class="flex justify-between items-center pt-3 border-t border-gray-100">
+                            <span class="status-badge px-2 py-1 text-xs rounded-full ${config.cor}"><i class="${config.icone} mr-1"></i> ${config.nome}</span>
+                            <span class="status-badge px-2 py-1 text-xs rounded-full ${func.ativo ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}">${func.ativo ? 'Ativo' : 'Inativo'}</span>
                         </div>
                     </div>
                 </div>
@@ -696,229 +724,62 @@
 
     function renderPaginationButtons(totalPages) {
         const paginationDiv = document.getElementById('paginationButtons');
-        if (totalPages <= 1) {
-            paginationDiv.innerHTML = '';
-            return;
+        if (totalPages <= 1) { paginationDiv.innerHTML = ''; return; }
+        let html = `<button onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''} class="px-3 py-1 border rounded-lg"><i class="ri-arrow-left-s-line"></i></button>`;
+        for (let i = Math.max(1, currentPage - 2); i <= Math.min(totalPages, currentPage + 2); i++) {
+            html += `<button onclick="changePage(${i})" class="px-3 py-1 border rounded-lg ${currentPage === i ? 'bg-blue-600 text-white' : ''}">${i}</button>`;
         }
-
-        let paginationHtml = `
-            <button onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}
-                    class="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg
-                           hover:bg-gray-50 dark:hover:bg-gray-700
-                           ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''}
-                           transition-colors duration-200">
-                <i class="ri-arrow-left-s-line"></i>
-            </button>
-        `;
-
-        const maxButtons = 5;
-        let startPage = Math.max(1, currentPage - Math.floor(maxButtons / 2));
-        let endPage = Math.min(totalPages, startPage + maxButtons - 1);
-
-        if (endPage - startPage < maxButtons - 1) {
-            startPage = Math.max(1, endPage - maxButtons + 1);
-        }
-
-        for (let i = startPage; i <= endPage; i++) {
-            paginationHtml += `
-                <button onclick="changePage(${i})"
-                        class="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg
-                               ${currentPage === i ? 'bg-blue-600 text-white border-blue-600' : 'hover:bg-gray-50 dark:hover:bg-gray-700'}
-                               transition-colors duration-200">
-                    ${i}
-                </button>
-            `;
-        }
-
-        paginationHtml += `
-            <button onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}
-                    class="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg
-                           hover:bg-gray-50 dark:hover:bg-gray-700
-                           ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''}
-                           transition-colors duration-200">
-                <i class="ri-arrow-right-s-line"></i>
-            </button>
-        `;
-
-        paginationDiv.innerHTML = paginationHtml;
+        html += `<button onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''} class="px-3 py-1 border rounded-lg"><i class="ri-arrow-right-s-line"></i></button>`;
+        paginationDiv.innerHTML = html;
     }
 
     function render() {
         const filtered = getFilteredFuncionarios();
-        const totalItems = filtered.length;
-        const totalPages = Math.ceil(totalItems / itemsPerPage);
-
-        if (currentPage > totalPages && totalPages > 0) {
-            currentPage = totalPages;
-        }
-
-        const start = (currentPage - 1) * itemsPerPage;
-        const paginated = filtered.slice(start, start + itemsPerPage);
-
-        const startNum = totalItems === 0 ? 0 : start + 1;
-        document.getElementById('paginationInfo').innerHTML =
-            `Mostrando ${startNum} a ${Math.min(start + itemsPerPage, totalItems)} de ${totalItems} resultados`;
-
+        const totalPages = Math.ceil(filtered.length / itemsPerPage);
+        if (currentPage > totalPages && totalPages > 0) currentPage = totalPages;
+        const paginated = filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+        document.getElementById('paginationInfo').innerHTML = `Mostrando ${paginated.length} de ${filtered.length} resultados`;
         renderGrid(paginated);
         renderPaginationButtons(totalPages);
     }
 
-    function changePage(page) {
-        if (page < 1) return;
-        currentPage = page;
-        render();
-    }
-
-    function escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-    }
-
-    // ========== CRUD OPERATIONS ==========
+    function changePage(page) { if (page >= 1) { currentPage = page; render(); } }
+    function escapeHtml(text) { const div = document.createElement('div'); div.textContent = text; return div.innerHTML; }
 
     function openNovoFuncionarioModal() {
-        document.getElementById('modalTitle').textContent = 'Novo Funcionário';
+        document.getElementById('modalTitle').textContent = 'Novo Funcionario';
         document.getElementById('funcionarioForm').reset();
         document.getElementById('funcionarioId').value = '';
         document.getElementById('funcionarioUserId').value = '';
         document.getElementById('funcionarioAtivo').checked = true;
-        updatePermissoesPreview();
+        document.getElementById('permissoesPreview').innerHTML = '<p><i class="ri-information-line mr-2"></i> Selecione um nivel para ver as permissoes</p>';
         loadUsuariosDisponiveis();
         document.getElementById('funcionarioModal').classList.remove('hidden');
-    }
-
-    function editFuncionario(id) {
-        const func = funcionarios.find(f => f.id === id);
-        if (func) {
-            document.getElementById('modalTitle').textContent = 'Editar Funcionário';
-            document.getElementById('funcionarioId').value = func.id;
-            document.getElementById('funcionarioUserId').value = func.user_id;
-            document.getElementById('funcionarioTelefone').value = func.telefone || '';
-            document.getElementById('funcionarioCargo').value = func.cargo;
-            document.getElementById('funcionarioLavandaria').value = func.lavandaria_id;
-            document.getElementById('funcionarioAtivo').checked = func.ativo;
-
-            // Esconder o campo de seleção de usuário (não pode mudar)
-            const userSelect = document.getElementById('funcionarioUsuario');
-            userSelect.disabled = true;
-            userSelect.innerHTML = `<option value="${func.user_id}">${func.nome}</option>`;
-
-            updatePermissoesPreview();
-            document.getElementById('funcionarioModal').classList.remove('hidden');
-        }
-    }
-
-    async function saveFuncionario(event) {
-        event.preventDefault();
-
-        const id = document.getElementById('funcionarioId').value;
-        const user_id = document.getElementById('funcionarioUsuario').value;
-        const telefone = document.getElementById('funcionarioTelefone').value;
-        const grupo = document.getElementById('funcionarioCargo').value;
-        const lavandaria_id = document.getElementById('funcionarioLavandaria').value;
-        const ativo = document.getElementById('funcionarioAtivo').checked;
-
-        if (!id && !user_id) {
-            showToast('Selecione um usuário', 'error');
-            return;
-        }
-        if (!grupo) {
-            showToast('Selecione um cargo', 'error');
-            return;
-        }
-        if (!lavandaria_id) {
-            showToast('Selecione uma lavandaria', 'error');
-            return;
-        }
-
-        const funcionarioData = { grupo, lavandaria_id, ativo };
-        if (id) {
-            funcionarioData.id = parseInt(id);
-        } else {
-            funcionarioData.user_id = parseInt(user_id);
-        }
-        if (telefone) funcionarioData.telefone = telefone;
-
-        await saveFuncionarioAPI(funcionarioData);
-        closeFuncionarioModal();
-
-        // Reativar o select de usuário
-        document.getElementById('funcionarioUsuario').disabled = false;
     }
 
     async function viewDetails(id) {
         const func = funcionarios.find(f => f.id === id);
         if (func) {
-            document.getElementById('detailsTitle').textContent = func.nome;
+            const permissoes = await loadPermissoesPorCargo(func.cargo);
+            const config = nivelConfig[func.cargo] || nivelConfig.vendedor;
             document.getElementById('detailsContent').innerHTML = `
                 <div class="space-y-4">
-                    <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
+                    <div class="bg-blue-50 rounded-lg p-4">
                         <div class="flex items-center space-x-3">
-                            <div class="w-16 h-16 rounded-xl ${getAvatarColor(func.nome)} flex items-center justify-center text-white font-bold text-xl">
-                                ${getInitials(func.nome)}
-                            </div>
-                            <div>
-                                <h4 class="font-semibold text-gray-800 dark:text-white text-lg">${escapeHtml(func.nome)}</h4>
-                                <p class="text-sm text-gray-500 dark:text-gray-400">${func.username}</p>
-                                <div class="flex items-center space-x-2 mt-1">
-                                    <span class="status-badge px-2 py-0.5 text-xs rounded-full ${func.cargo === 'gerente' ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400' : 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'}">
-                                        ${func.cargo === 'gerente' ? 'Gerente' : 'Caixa'}
-                                    </span>
-                                    <span class="status-badge px-2 py-0.5 text-xs rounded-full ${func.ativo ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400'}">
-                                        ${func.ativo ? 'Ativo' : 'Inativo'}
-                                    </span>
-                                </div>
-                            </div>
+                            <div class="w-16 h-16 rounded-xl ${getAvatarColor(func.nome)} flex items-center justify-center text-white font-bold text-xl">${getInitials(func.nome)}</div>
+                            <div><h4 class="font-semibold text-lg">${escapeHtml(func.nome)}</h4><p class="text-sm text-gray-500">${func.username}</p>
+                            <div class="flex space-x-2 mt-1"><span class="status-badge px-2 py-0.5 text-xs rounded-full ${config.cor}">${config.nome}</span>
+                            <span class="status-badge px-2 py-0.5 text-xs rounded-full ${func.ativo ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}">${func.ativo ? 'Ativo' : 'Inativo'}</span></div></div>
                         </div>
                     </div>
-
                     <div class="grid grid-cols-2 gap-4">
-                        <div class="flex items-start space-x-2">
-                            <i class="ri-phone-line text-gray-400 mt-0.5"></i>
-                            <div>
-                                <p class="text-sm font-medium text-gray-700 dark:text-gray-300">Telefone</p>
-                                <p class="text-sm text-gray-600 dark:text-gray-400">${func.telefone || '—'}</p>
-                            </div>
-                        </div>
-                        <div class="flex items-start space-x-2">
-                            <i class="ri-store-line text-gray-400 mt-0.5"></i>
-                            <div>
-                                <p class="text-sm font-medium text-gray-700 dark:text-gray-300">Lavandaria</p>
-                                <p class="text-sm text-gray-600 dark:text-gray-400">${escapeHtml(func.lavandaria_nome)}</p>
-                            </div>
-                        </div>
-                        <div class="flex items-start space-x-2">
-                            <i class="ri-calendar-line text-gray-400 mt-0.5"></i>
-                            <div>
-                                <p class="text-sm font-medium text-gray-700 dark:text-gray-300">Cadastrado em</p>
-                                <p class="text-sm text-gray-600 dark:text-gray-400">${formatDate(func.criado_em)}</p>
-                            </div>
-                        </div>
-                        <div class="flex items-start space-x-2">
-                            <i class="ri-login-circle-line text-gray-400 mt-0.5"></i>
-                            <div>
-                                <p class="text-sm font-medium text-gray-700 dark:text-gray-300">Último acesso</p>
-                                <p class="text-sm text-gray-600 dark:text-gray-400">${formatDateTime(func.ultimo_acesso)}</p>
-                            </div>
-                        </div>
+                        <div><p class="text-sm font-medium">Telefone</p><p class="text-sm">${func.telefone || '—'}</p></div>
+                        <div><p class="text-sm font-medium">Lavandaria</p><p class="text-sm">${escapeHtml(func.lavandaria_nome)}</p></div>
+                        <div><p class="text-sm font-medium">Cadastrado em</p><p class="text-sm">${formatDate(func.criado_em)}</p></div>
+                        <div><p class="text-sm font-medium">Ultimo acesso</p><p class="text-sm">${formatDateTime(func.ultimo_acesso)}</p></div>
                     </div>
-
-                    <div class="border-t border-gray-200 dark:border-gray-700 pt-4">
-                        <h5 class="font-medium text-gray-800 dark:text-white mb-3">Permissões</h5>
-                        <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
-                            <div class="space-y-1">
-                                ${permissoesPorCargo[func.cargo] ? permissoesPorCargo[func.cargo].map(p => `<p class="text-sm text-gray-600 dark:text-gray-400 flex items-center"><i class="ri-checkbox-circle-line text-green-500 mr-2"></i> ${p}</p>`).join('') : '<p class="text-sm text-gray-500">Carregando permissões...</p>'}
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="flex justify-end space-x-3 pt-4">
-                        <button onclick="closeDetailsModal(); editFuncionario(${func.id})"
-                                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                            <i class="ri-edit-line"></i> Editar
-                        </button>
-                    </div>
+                    <div class="border-t pt-4"><h5 class="font-medium mb-3">Permissoes</h5><div class="bg-gray-50 rounded-lg p-3">${permissoes.length > 0 ? permissoes.map(p => `<p><i class="ri-checkbox-circle-line text-green-500 mr-2"></i> ${p}</p>`).join('') : '<p>Nenhuma permissao definida</p>'}</div></div>
+                    <div class="flex justify-end"><button onclick="closeDetailsModal(); editFuncionario(${func.id})" class="px-4 py-2 bg-blue-600 text-white rounded-lg">Editar</button></div>
                 </div>
             `;
             document.getElementById('detailsModal').classList.remove('hidden');
@@ -929,120 +790,48 @@
         const func = funcionarios.find(f => f.id === id);
         if (func) {
             funcionarioToDelete = id;
-            document.getElementById('deleteMessage').innerHTML = `Tem certeza que deseja remover <strong>${escapeHtml(func.nome)}</strong> da lista de funcionários?`;
+            document.getElementById('deleteMessage').innerHTML = `Tem certeza que deseja remover <strong>${escapeHtml(func.nome)}</strong> da lista de funcionarios?`;
             document.getElementById('deleteModal').classList.remove('hidden');
         }
     }
 
-    function closeDeleteModal() {
-        funcionarioToDelete = null;
-        document.getElementById('deleteModal').classList.add('hidden');
-    }
-
-    async function confirmDelete() {
-        if (funcionarioToDelete) {
-            await deleteFuncionarioAPI(funcionarioToDelete);
-            closeDeleteModal();
-        }
-    }
-
-    function closeFuncionarioModal() {
-        document.getElementById('funcionarioModal').classList.add('hidden');
-        document.getElementById('funcionarioUsuario').disabled = false;
-    }
-
-    function closeDetailsModal() {
-        document.getElementById('detailsModal').classList.add('hidden');
-    }
-
-    // ========== TOAST NOTIFICATIONS ==========
+    function closeDeleteModal() { funcionarioToDelete = null; document.getElementById('deleteModal').classList.add('hidden'); }
+    async function confirmDelete() { if (funcionarioToDelete) { await deleteFuncionarioAPI(funcionarioToDelete); closeDeleteModal(); } }
+    function closeFuncionarioModal() { document.getElementById('funcionarioModal').classList.add('hidden'); document.getElementById('funcionarioUsuario').disabled = false; }
+    function closeDetailsModal() { document.getElementById('detailsModal').classList.add('hidden'); }
 
     function showToast(message, type = 'info') {
-        const container = document.getElementById('toastContainer');
+        const icons = { success: 'ri-checkbox-circle-fill', error: 'ri-error-warning-fill', warning: 'ri-alert-fill', info: 'ri-information-fill' };
+        const colors = { success: 'bg-green-500', error: 'bg-red-500', warning: 'bg-yellow-500', info: 'bg-blue-500' };
         const toast = document.createElement('div');
-
-        const icons = {
-            success: 'ri-checkbox-circle-fill',
-            error: 'ri-error-warning-fill',
-            warning: 'ri-alert-fill',
-            info: 'ri-information-fill'
-        };
-
-        const colors = {
-            success: 'bg-green-500',
-            error: 'bg-red-500',
-            warning: 'bg-yellow-500',
-            info: 'bg-blue-500'
-        };
-
         toast.className = `toast ${colors[type]} text-white px-4 py-3 rounded-lg shadow-lg flex items-center space-x-3 min-w-[280px]`;
-        toast.innerHTML = `
-            <i class="${icons[type]} text-xl"></i>
-            <span class="flex-1 text-sm">${message}</span>
-            <button onclick="this.parentElement.remove()" class="hover:opacity-80">
-                <i class="ri-close-line"></i>
-            </button>
-        `;
-
-        container.appendChild(toast);
-
-        setTimeout(() => {
-            toast.style.opacity = '0';
-            toast.style.transform = 'translateX(100%)';
-            toast.style.transition = 'all 0.3s ease';
-            setTimeout(() => toast.remove(), 300);
-        }, 4000);
+        toast.innerHTML = `<i class="${icons[type]} text-xl"></i><span class="flex-1 text-sm">${message}</span><button onclick="this.parentElement.remove()"><i class="ri-close-line"></i></button>`;
+        document.getElementById('toastContainer').appendChild(toast);
+        setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 4000);
     }
-
-    // ========== EVENT LISTENERS ==========
 
     document.getElementById('newFuncionarioBtn').onclick = openNovoFuncionarioModal;
     document.getElementById('funcionarioForm').onsubmit = saveFuncionario;
     document.getElementById('confirmDeleteBtn').onclick = confirmDelete;
-
-    document.getElementById('searchFuncionario').addEventListener('input', () => {
-        currentPage = 1;
-        render();
-    });
-
-    document.getElementById('cargoFilter').addEventListener('change', () => {
-        currentPage = 1;
-        render();
-    });
-
-    document.getElementById('statusFilter').addEventListener('change', () => {
-        currentPage = 1;
-        render();
-    });
-
-    document.getElementById('lavandariaFilter').addEventListener('change', () => {
-        currentPage = 1;
-        render();
-    });
-
+    document.getElementById('searchFuncionario').addEventListener('input', () => { currentPage = 1; render(); });
+    document.getElementById('cargoFilter').addEventListener('change', () => { currentPage = 1; render(); });
+    document.getElementById('statusFilter').addEventListener('change', () => { currentPage = 1; render(); });
+    document.getElementById('lavandariaFilter').addEventListener('change', () => { currentPage = 1; render(); });
     document.getElementById('resetFilters').onclick = () => {
         document.getElementById('searchFuncionario').value = '';
         document.getElementById('cargoFilter').value = 'all';
         document.getElementById('statusFilter').value = 'all';
         document.getElementById('lavandariaFilter').value = 'all';
-        currentPage = 1;
-        render();
+        currentPage = 1; render();
     };
-
     document.getElementById('funcionarioCargo').addEventListener('change', updatePermissoesPreview);
-
-    // Fechar modais clicando fora
     window.onclick = (event) => {
-        const funcModal = document.getElementById('funcionarioModal');
-        const delModal = document.getElementById('deleteModal');
-        const detModal = document.getElementById('detailsModal');
-
-        if (event.target === funcModal) closeFuncionarioModal();
-        if (event.target === delModal) closeDeleteModal();
-        if (event.target === detModal) closeDetailsModal();
+        if (event.target === document.getElementById('funcionarioModal')) closeFuncionarioModal();
+        if (event.target === document.getElementById('deleteModal')) closeDeleteModal();
+        if (event.target === document.getElementById('detailsModal')) closeDetailsModal();
     };
 
-    // Inicializar
+    loadCargos();
     loadLavandarias();
     loadFuncionarios();
 </script>

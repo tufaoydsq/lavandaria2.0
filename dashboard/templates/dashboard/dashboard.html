@@ -1,26 +1,6 @@
 {% extends 'main.html' %}
 {% block content %}
-    <!-- Top Bar -->
-    <div class="bg-white dark:bg-gray-800 border-b dark:border-gray-700 sticky top-0 z-10 shadow-sm">
-        <div class="px-8 py-4 flex justify-between items-center">
-            <h2 class="text-2xl font-semibold text-gray-800 dark:text-white">Dashboard</h2>
-            <div class="flex items-center space-x-6">
-                <div class="relative">
-                    <i class="ri-notification-line text-2xl text-gray-600 dark:text-gray-300 cursor-pointer"></i>
-                    <span class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-white text-xs flex items-center justify-center">{{ alertas|length }}</span>
-                </div>
-                <div class="flex items-center space-x-2">
-                    <div class="text-right">
-                        <p class="text-sm font-semibold dark:text-white">{{ lavandaria_nome }}</p>
-                        <p class="text-xs text-gray-500 dark:text-gray-400">Olá, {{ funcionario_nome|default:usuario_logado.username }} | {% now "H:i" %}</p>
-                    </div>
-                    <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full flex items-center justify-center text-white font-bold">
-                        {{ funcionario_nome|slice:":2"|upper|default:usuario_logado.username|slice:":2"|upper }}
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+
 
     <!-- Dashboard Content -->
     <div class="p-8 fade-in">

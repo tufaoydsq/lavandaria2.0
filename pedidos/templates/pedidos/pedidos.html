@@ -300,6 +300,11 @@
         <!-- Filtros -->
         <div class="filter-card fade-in">
             <div class="filter-grid">
+                <!-- Adicione dentro do .filter-grid, após o campo de cliente -->
+                <div class="filter-group">
+                    <label>Nº Pedido</label>
+                    <input type="text" id="pedidoIdSearch" placeholder="Buscar por ID do pedido..." class="filter-input">
+                </div>
                 <div class="filter-group">
                     <label>Status</label>
                     <select id="statusFilter" class="filter-input">
@@ -797,7 +802,7 @@ function addItemRow(artigoId = null, artigoNome = '', quantidade = 1, preco = 0,
     tr.innerHTML = `
         <td style="padding:.5rem; min-width:220px;">
             <input type="text"   class="artigo-search form-input"
-                   placeholder="🔍 Pesquisar artigo..." autocomplete="off"
+                   placeholder=" Pesquisar artigo..." autocomplete="off"
                    value="${escapeHtml(artigoNome)}"
                    style="font-size:.875rem;">
             <input type="hidden" class="item-artigo-id" value="${artigoId || ''}">
@@ -879,12 +884,18 @@ async function loadPedidos(page = 1) {
     const dataIni   = document.getElementById('dataInicio').value;
     const dataFim   = document.getElementById('dataFim').value;
     const cliente   = document.getElementById('clienteSearch').value;
+    const pedidoId  = document.getElementById('pedidoIdSearch').value;  // 🔥 NOVO
 
-    const url = `/api/pedidos/?page=${page}&per_page=50&status=${status}&pagamento=${pagamento}&data_inicio=${dataIni}&data_fim=${dataFim}&cliente=${encodeURIComponent(cliente)}`;
+    let url = `/api/pedidos/?page=${page}&per_page=50&status=${status}&pagamento=${pagamento}&data_inicio=${dataIni}&data_fim=${dataFim}&cliente=${encodeURIComponent(cliente)}`;
+
+    // 🔥 ADICIONAR FILTRO POR ID DO PEDIDO
+    if (pedidoId) {
+        url += `&pedido_id=${encodeURIComponent(pedidoId)}`;
+    }
 
     try {
-        const r    = await fetch(url);
-        const data = await r.json();
+        const response = await fetch(url);
+        const data = await response.json();
         if (data.success) {
             pedidos     = data.pedidos;
             currentPage = data.page;
@@ -1365,9 +1376,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     /* Filtros */
     document.getElementById('applyFiltersBtn').addEventListener('click', () => loadPedidos(1));
+
     document.getElementById('resetFiltersBtn').addEventListener('click', () => {
-        ['statusFilter','pagamentoFilter'].forEach(id => document.getElementById(id).value = 'all');
-        ['dataInicio','dataFim','clienteSearch'].forEach(id => document.getElementById(id).value = '');
+        document.getElementById('statusFilter').value = 'all';
+        document.getElementById('pagamentoFilter').value = 'all';
+        document.getElementById('dataInicio').value = '';
+        document.getElementById('dataFim').value = '';
+        document.getElementById('clienteSearch').value = '';
+        document.getElementById('pedidoIdSearch').value = '';  // 🔥 NOVO
         loadPedidos(1);
     });
 

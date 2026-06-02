@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PowerWash - Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.6.0/fonts/remixicon.css" rel="stylesheet" />
+    <style>
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes slideInLeft {
+            from { opacity: 0; transform: translateX(-50px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(50px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        .fade-in-up { animation: fadeInUp 0.6s ease-out; }
+        .slide-in-left { animation: slideInLeft 0.6s ease-out; }
+        .slide-in-right { animation: slideInRight 0.6s ease-out; }
+        .loading-spinner {
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #3b82f6;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .toast { animation: slideInRight 0.3s ease-out; }
+        body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+    <div class="w-full max-w-6xl">
+        <div class="bg-white rounded-3xl shadow-2xl overflow-hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-2">
+                <!-- Lado Esquerdo - Formulário de Login -->
+                <div class="p-8 lg:p-12 fade-in-up">
+                    <!-- Logo -->
+                    <div class="flex items-center space-x-2 mb-8">
+                        <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
+                            <i class="ri-laundry-line text-white text-xl"></i>
+                        </div>
+                        <span class="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">PowerWash</span>
+                    </div>
+
+                    <!-- Título -->
+                    <div class="mb-8">
+                        <h1 class="text-2xl font-bold text-gray-800">Bem-vindo de volta</h1>
+                        <p class="text-gray-500 mt-2">Acesse sua conta para continuar</p>
+                    </div>
+
+                    <!-- Formulário de Login -->
+                    <form id="loginForm" method="post" action="{% url 'login' %}">
+                        {% csrf_token %}
+                        <div class="space-y-5">
+                            <!-- Campo Username -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Username</label>
+                                <div class="relative">
+                                    <i class="ri-user-line absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                    <input type="text" name="username" id="username" required
+                                        class="w-full border border-gray-300 rounded-xl pl-10 pr-3 py-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                                        placeholder="Digite seu username">
+                                </div>
+                            </div>
+
+                            <!-- Campo Senha -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Senha</label>
+                                <div class="relative">
+                                    <i class="ri-lock-line absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                    <input type="password" name="password" id="password" required
+                                        class="w-full border border-gray-300 rounded-xl pl-10 pr-12 py-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                                        placeholder="Digite sua senha">
+                                    <button type="button" onclick="togglePassword()"
+                                        class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                                        <i id="togglePasswordIcon" class="ri-eye-line"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Lembrar-me e Esqueceu Senha -->
+                            <div class="flex justify-between items-center">
+                                <label class="flex items-center space-x-2 cursor-pointer">
+                                    <input type="checkbox" name="remember_me" id="rememberMe"
+                                        class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                    <span class="text-sm text-gray-600">Lembrar-me</span>
+                                </label>
+                                <a href="javascript:void(0)" onclick="showForgotPassword()"
+                                    class="text-sm text-blue-600 hover:text-blue-700 font-medium">
+                                    Esqueceu a senha?
+                                </a>
+                            </div>
+
+                            <!-- Botão Login -->
+                            <button type="submit" id="loginBtn"
+                                class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 rounded-xl font-semibold hover:shadow-lg transition transform hover:scale-[1.02] flex items-center justify-center space-x-2">
+                                <span>Entrar</span>
+                                <i class="ri-arrow-right-line"></i>
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Mensagens de erro -->
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="mt-4 p-3 rounded-lg {% if message.tags == 'error' %}bg-red-100 text-red-700{% else %}bg-green-100 text-green-700{% endif %}">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+
+                <!-- Lado Direito - Banner -->
+                <div class="hidden lg:block bg-gradient-to-br from-blue-600 to-indigo-700 p-8 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-64 h-64 bg-white opacity-10 rounded-full -mr-32 -mt-32"></div>
+                    <div class="absolute bottom-0 left-0 w-96 h-96 bg-white opacity-10 rounded-full -ml-48 -mb-48"></div>
+
+                    <div class="relative z-10 h-full flex flex-col justify-center text-white slide-in-right">
+                        <div class="mb-8 text-center">
+                            <div class="w-24 h-24 bg-white bg-opacity-20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                                <i class="ri-laundry-line text-5xl"></i>
+                            </div>
+                            <h2 class="text-3xl font-bold mb-2">PowerWash</h2>
+                            <p class="text-blue-100">Sistema de Gestão de Lavandaria</p>
+                        </div>
+
+                        <div class="space-y-4 mt-8">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
+                                    <i class="ri-flashlight-line"></i>
+                                </div>
+                                <span>Gestão rápida e eficiente</span>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
+                                    <i class="ri-shield-check-line"></i>
+                                </div>
+                                <span>Sistema seguro e confiável</span>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
+                                    <i class="ri-bar-chart-line"></i>
+                                </div>
+                                <span>Relatórios completos</span>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
+                                    <i class="ri-star-line"></i>
+                                </div>
+                                <span>Sistema de fidelidade integrado</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toastContainer" class="fixed top-4 right-4 z-50 space-y-2"></div>
+
+    <!-- Modal Esqueceu Senha -->
+    <div id="forgotPasswordModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 fade-in-up">
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <i class="ri-lock-password-line text-2xl text-blue-600"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-800">Esqueceu a Senha?</h3>
+                <p class="text-gray-500 text-sm mt-1">Digite seu email para receber o link de recuperação</p>
+            </div>
+
+            <form id="forgotPasswordForm">
+                {% csrf_token %}
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Email cadastrado</label>
+                    <div class="relative">
+                        <i class="ri-mail-line absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                        <input type="email" id="recoveryEmail" required
+                            class="w-full border border-gray-300 rounded-xl pl-10 pr-3 py-3 focus:ring-2 focus:ring-blue-500"
+                            placeholder="seu@email.com">
+                    </div>
+                </div>
+
+                <div class="flex space-x-3">
+                    <button type="button" onclick="closeForgotPasswordModal()"
+                        class="flex-1 px-4 py-2 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 transition">
+                        Cancelar
+                    </button>
+                    <button type="submit"
+                        class="flex-1 bg-blue-600 text-white py-2 rounded-xl hover:bg-blue-700 transition">
+                        Enviar Link
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Alternar visibilidade da senha
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const icon = document.getElementById('togglePasswordIcon');
+
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                icon.classList.remove('ri-eye-line');
+                icon.classList.add('ri-eye-off-line');
+            } else {
+                passwordInput.type = 'password';
+                icon.classList.remove('ri-eye-off-line');
+                icon.classList.add('ri-eye-line');
+            }
+        }
+
+        // Toast Notifications
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+
+            const icons = {
+                success: 'ri-checkbox-circle-fill',
+                error: 'ri-error-warning-fill',
+                warning: 'ri-alert-fill',
+                info: 'ri-information-fill'
+            };
+
+            const colors = {
+                success: 'bg-green-500',
+                error: 'bg-red-500',
+                warning: 'bg-yellow-500',
+                info: 'bg-blue-500'
+            };
+
+            toast.className = `toast ${colors[type]} text-white px-4 py-3 rounded-lg shadow-lg flex items-center space-x-3 min-w-[300px]`;
+            toast.innerHTML = `
+                <i class="${icons[type]} text-xl"></i>
+                <span class="flex-1 text-sm">${message}</span>
+                <button onclick="this.parentElement.remove()" class="hover:opacity-80">
+                    <i class="ri-close-line"></i>
+                </button>
+            `;
+
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(100%)';
+                toast.style.transition = 'all 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 5000);
+        }
+
+        // Modal Esqueceu Senha
+        function showForgotPassword() {
+            document.getElementById('forgotPasswordModal').classList.remove('hidden');
+        }
+
+        function closeForgotPasswordModal() {
+            document.getElementById('forgotPasswordModal').classList.add('hidden');
+            document.getElementById('recoveryEmail').value = '';
+        }
+
+        // Handler para Esqueceu Senha
+        document.getElementById('forgotPasswordForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const email = document.getElementById('recoveryEmail').value;
+
+            if (!email) {
+                showToast('Digite um email válido', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/password-reset/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCSRFToken()
+                    },
+                    body: JSON.stringify({ email })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showToast('Link de recuperação enviado para seu email!', 'success');
+                    closeForgotPasswordModal();
+                } else {
+                    showToast(data.error || 'Erro ao enviar link de recuperação', 'error');
+                }
+            } catch (error) {
+                showToast('Erro ao conectar com o servidor', 'error');
+            }
+        });
+
+        // Função para obter CSRF token
+        function getCSRFToken() {
+            return document.querySelector('[name=csrfmiddlewaretoken]')?.value ||
+                   document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
+        }
+
+        // Fechar modais clicando fora
+        window.onclick = (event) => {
+            const forgotModal = document.getElementById('forgotPasswordModal');
+            if (event.target === forgotModal) closeForgotPasswordModal();
+        };
+
+        // Preencher campos salvos (remember me)
+        const savedUsername = localStorage.getItem('savedUsername');
+        if (savedUsername) {
+            document.getElementById('username').value = savedUsername;
+            document.getElementById('rememberMe').checked = true;
+        }
+
+        // Salvar username se "lembrar-me" estiver marcado
+        document.getElementById('loginForm').addEventListener('submit', function() {
+            const rememberMe = document.getElementById('rememberMe').checked;
+            const username = document.getElementById('username').value;
+
+            if (rememberMe && username) {
+                localStorage.setItem('savedUsername', username);
+            } else {
+                localStorage.removeItem('savedUsername');
+            }
+        });
+    </script>
+</body>
+</html>

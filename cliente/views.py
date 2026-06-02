@@ -1,3 +1,4 @@
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -5,6 +6,8 @@ from django.views.decorators.http import require_http_methods
 from django.utils import timezone
 from decimal import Decimal
 import json
+
+from core.decorators import vendedor_required, admin_required
 from core.models import Cliente, MovimentacaoPontos, Pedido
 from django.db.models import Sum, Count, Q, OuterRef, Subquery
 from django.db.models.functions import Coalesce
@@ -21,11 +24,13 @@ from decimal import Decimal
 import json
 from core.models import Cliente, MovimentacaoPontos, Pedido
 
-
+@login_required
+@vendedor_required
 def ver_cliente(request):
     return render(request, 'cliente/cliente.html')
 
-
+@login_required
+@vendedor_required
 @csrf_exempt
 @require_http_methods(["GET"])
 def listar_clientes(request):
@@ -116,7 +121,8 @@ def listar_clientes(request):
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=400)
 
-
+@login_required
+@vendedor_required
 @csrf_exempt
 @require_http_methods(["GET"])
 def estatisticas_clientes(request):
@@ -159,7 +165,8 @@ def estatisticas_clientes(request):
 
 
 
-
+@login_required
+@vendedor_required
 @csrf_exempt
 @require_http_methods(["POST"])
 def criar_cliente(request):
@@ -202,7 +209,8 @@ def criar_cliente(request):
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=400)
 
-
+@login_required
+@vendedor_required
 @csrf_exempt
 @require_http_methods(["PUT"])
 def editar_cliente(request, id):
@@ -248,7 +256,8 @@ def editar_cliente(request, id):
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=400)
 
-
+@login_required
+@admin_required
 @csrf_exempt
 @require_http_methods(["POST"])
 def ajustar_pontos_cliente(request, id):
@@ -287,7 +296,8 @@ def ajustar_pontos_cliente(request, id):
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=400)
 
-
+@login_required
+@admin_required
 @csrf_exempt
 @require_http_methods(["DELETE"])
 def excluir_cliente(request, id):
@@ -306,7 +316,8 @@ def excluir_cliente(request, id):
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=400)
 
-
+@login_required
+@admin_required
 @csrf_exempt
 @require_http_methods(["DELETE"])
 def excluir_multiplos_clientes(request):
@@ -334,7 +345,8 @@ def excluir_multiplos_clientes(request):
 
 
 
-
+@login_required
+@vendedor_required
 @csrf_exempt
 @require_http_methods(["GET"])
 def historico_pontos_cliente(request, id):
