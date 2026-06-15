@@ -1,6 +1,4 @@
-
 {% extends 'main.html' %}
-{% load permissions %}
 {% load static %}
 
 
@@ -74,13 +72,13 @@
                 <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Gerencie os funcionários e suas permissões</p>
             </div>
             <!-- Botão Novo Funcionário - Apenas Admin e SuperUser -->
-            {% if user|has_level:3 %}
+
             <button id="newFuncionarioBtn"
                     class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-5 py-2.5 rounded-lg flex items-center space-x-2 shadow-lg transition transform hover:scale-105">
                 <i class="ri-add-line text-xl"></i>
                 <span>Novo Funcionário</span>
             </button>
-            {% endif %}
+
         </div>
     </div>
 
@@ -147,8 +145,7 @@
                 </div>
             </div>
 
-            <!-- Card Admins - Apenas Admin e SuperUser veem -->
-            {% if user|has_level:3 %}
+
             <div class="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border-l-4 border-indigo-500">
                 <div class="flex justify-between items-start">
                     <div>
@@ -160,7 +157,7 @@
                     </div>
                 </div>
             </div>
-            {% endif %}
+
         </div>
 
         <!-- Filters - Vendedor vê apenas filtros básicos, Admin vê todos -->
@@ -189,10 +186,10 @@
                         <option value="all">Todos</option>
                         <option value="vendedor">Vendedor</option>
                         <option value="gerente">Gerente</option>
-                        {% if user|has_level:3 %}
+
                         <option value="admin">Administrador</option>
                         <option value="superuser">Super Usuário</option>
-                        {% endif %}
+
                     </select>
                 </div>
 
@@ -213,7 +210,7 @@
                             class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2
                                    bg-white dark:bg-gray-700 text-gray-800 dark:text-white
                                    focus:ring-2 focus:ring-blue-500 transition-colors duration-200">
-                        <option value="all">{% if user|has_level:3 %}Todas{% else %}Minha Lavandaria{% endif %}</option>
+
                     </select>
                 </div>
                 <div class="flex items-end">
@@ -242,13 +239,13 @@
             </div>
             <h3 class="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">Nenhum funcionário encontrado</h3>
             <p class="text-gray-500 dark:text-gray-400 mb-4">Comece cadastrando um novo funcionário</p>
-            {% if user|has_level:3 %}
+
             <button onclick="document.getElementById('newFuncionarioBtn').click()"
                     class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg inline-flex items-center space-x-2">
                 <i class="ri-add-line"></i>
                 <span>Novo Funcionário</span>
             </button>
-            {% endif %}
+
         </div>
 
         <!-- Pagination -->
@@ -260,7 +257,7 @@
 </main>
 
 <!-- Modal Criar/Editar Funcionário - Apenas Admin e SuperUser podem ver -->
-{% if user|has_level:3 %}
+
 <div id="funcionarioModal" class="modal hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
     <div class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto transition-colors duration-200">
         <div class="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex justify-between items-center">
@@ -309,12 +306,12 @@
                                 <option value="">Selecione um nível</option>
                                 <option value="vendedor">Vendedor</option>
                                 <option value="gerente">Gerente</option>
-                                {% if user|has_level:3 %}
+
                                 <option value="admin">Administrador</option>
-                                {% endif %}
-                                {% if user.is_superuser %}
+
+
                                 <option value="superuser">Super Usuário</option>
-                                {% endif %}
+
                             </select>
                         </div>
                         <div>
@@ -365,7 +362,7 @@
         </div>
     </div>
 </div>
-{% endif %}
+
 
 <!-- Modal Ver Detalhes - Todos podem ver -->
 <div id="detailsModal" class="modal hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
@@ -381,7 +378,7 @@
 </div>
 
 <!-- Modal Excluir - Apenas Admin e SuperUser podem ver -->
-{% if user|has_level:3 %}
+
 <div id="deleteModal" class="modal hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
     <div class="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full p-6 text-center transition-colors duration-200">
         <div class="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -403,7 +400,7 @@
         </div>
     </div>
 </div>
-{% endif %}
+
 
 <!-- Toast Container -->
 <div id="toastContainer" class="fixed bottom-4 right-4 z-50 space-y-2"></div>
@@ -445,23 +442,25 @@
     }
 
     async function loadCargos() {
-        try {
-            const response = await fetch('/api/funcionarios/cargos/');
-            const data = await response.json();
-            if (data.success) {
-                cargos = data.cargos;
-                const cargoSelect = document.getElementById('funcionarioCargo');
-                cargoSelect.innerHTML = '<option value="">Selecione um nivel</option>' +
-                    cargos.map(c => `<option value="${c.nome}">${nivelConfig[c.nome]?.nome || c.nome}</option>`).join('');
+    try {
+        const response = await fetch('/api/funcionarios/cargos/');
+        const data = await response.json();
 
-                const cargoFilter = document.getElementById('cargoFilter');
-                cargoFilter.innerHTML = '<option value="all">Todos</option>' +
-                    cargos.map(c => `<option value="${c.nome}">${nivelConfig[c.nome]?.nome || c.nome}</option>`).join('');
-            }
-        } catch (error) {
-            console.error('Erro ao carregar cargos:', error);
+        if (data.success) {
+            cargos = data.cargos;
+
+            const cargoSelect = document.getElementById('funcionarioCargo');
+            cargoSelect.innerHTML = '<option value="">Selecione um nivel</option>' +
+                cargos.map(c => `<option value="${c.name}">${nivelConfig[c.name]?.nome || c.name}</option>`).join('');
+
+            const cargoFilter = document.getElementById('cargoFilter');
+            cargoFilter.innerHTML = '<option value="all">Todos</option>' +
+                cargos.map(c => `<option value="${c.name}">${nivelConfig[c.name]?.nome || c.name}</option>`).join('');
         }
+    } catch (error) {
+        console.error('Erro ao carregar cargos:', error);
     }
+}
 
     async function loadPermissoesPorCargo(cargoNome) {
         try {

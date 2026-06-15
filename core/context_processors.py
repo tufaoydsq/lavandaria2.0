@@ -1,11 +1,7 @@
-# core/context_processors.py
 from core.decorators import get_user_level
 
 
 def user_level(request):
-    """
-    Context processor para disponibilizar o nível de acesso do usuário em todos os templates
-    """
     if request.user.is_authenticated:
         return {
             'user_level': get_user_level(request.user),

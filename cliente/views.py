@@ -1,18 +1,3 @@
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, get_object_or_404
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_http_methods
-from django.utils import timezone
-from decimal import Decimal
-import json
-
-from core.decorators import vendedor_required, admin_required
-from core.models import Cliente, MovimentacaoPontos, Pedido
-from django.db.models import Sum, Count, Q, OuterRef, Subquery
-from django.db.models.functions import Coalesce
-from django.core.paginator import Paginator
-
 from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -22,6 +7,8 @@ from django.db.models import Sum, Count, Q, Value, DecimalField, OuterRef, Subqu
 from django.db.models.functions import Coalesce
 from decimal import Decimal
 import json
+from django.contrib.auth.decorators import login_required
+from core.decorators import vendedor_required, admin_required
 from core.models import Cliente, MovimentacaoPontos, Pedido
 
 @login_required
@@ -29,10 +16,10 @@ from core.models import Cliente, MovimentacaoPontos, Pedido
 def ver_cliente(request):
     return render(request, 'cliente/cliente.html')
 
-@login_required
-@vendedor_required
 @csrf_exempt
 @require_http_methods(["GET"])
+@login_required
+@vendedor_required
 def listar_clientes(request):
     """
     API: Listar clientes (VERSÃO OTIMIZADA PARA ÍNDICES)
@@ -121,10 +108,10 @@ def listar_clientes(request):
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=400)
 
-@login_required
-@vendedor_required
 @csrf_exempt
 @require_http_methods(["GET"])
+@login_required
+@vendedor_required
 def estatisticas_clientes(request):
     """
     API: Estatísticas rápidas (com cache opcional)
@@ -165,10 +152,10 @@ def estatisticas_clientes(request):
 
 
 
-@login_required
-@vendedor_required
 @csrf_exempt
 @require_http_methods(["POST"])
+@login_required
+@vendedor_required
 def criar_cliente(request):
     """
     API: Criar novo cliente
@@ -209,10 +196,10 @@ def criar_cliente(request):
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=400)
 
-@login_required
-@vendedor_required
 @csrf_exempt
 @require_http_methods(["PUT"])
+@login_required
+@vendedor_required
 def editar_cliente(request, id):
     """
     API: Editar cliente existente
@@ -256,10 +243,10 @@ def editar_cliente(request, id):
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=400)
 
-@login_required
-@admin_required
 @csrf_exempt
 @require_http_methods(["POST"])
+@login_required
+@admin_required
 def ajustar_pontos_cliente(request, id):
     """
     API: Ajustar pontos do cliente
@@ -296,10 +283,10 @@ def ajustar_pontos_cliente(request, id):
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=400)
 
-@login_required
-@admin_required
 @csrf_exempt
 @require_http_methods(["DELETE"])
+@login_required
+@admin_required
 def excluir_cliente(request, id):
     """
     API: Excluir cliente
@@ -316,10 +303,10 @@ def excluir_cliente(request, id):
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=400)
 
-@login_required
-@admin_required
 @csrf_exempt
 @require_http_methods(["DELETE"])
+@login_required
+@admin_required
 def excluir_multiplos_clientes(request):
     """
     API: Excluir múltiplos clientes
@@ -345,10 +332,11 @@ def excluir_multiplos_clientes(request):
 
 
 
-@login_required
-@vendedor_required
+
 @csrf_exempt
 @require_http_methods(["GET"])
+@login_required
+@vendedor_required
 def historico_pontos_cliente(request, id):
     """
     API: Obter histórico de pontos do cliente

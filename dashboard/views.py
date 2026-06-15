@@ -10,6 +10,7 @@ from core.decorators import vendedor_required
 from core.models import Pedido, Cliente, ItemServico, Funcionario, PagamentoPedido, MovimentacaoPontos
 
 
+@login_required
 @vendedor_required
 def ver_dashboard(request):
     # ========== 1. USUÁRIO E LAVANDARIA ==========

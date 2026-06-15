@@ -28,6 +28,7 @@ from core.models import (
 
 
 # ========== VIEWS PRINCIPAIS ==========
+
 @login_required
 @vendedor_required
 def ver_pedidos(request):
@@ -38,6 +39,7 @@ def ver_pedidos(request):
 
 
 # ========== API DE PEDIDOS ==========
+
 @login_required
 @vendedor_required
 @csrf_exempt
@@ -150,6 +152,7 @@ def listar_pedidos(request):
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=400)
 
+
 @login_required
 @vendedor_required
 @csrf_exempt
@@ -218,6 +221,7 @@ def detalhes_pedido(request, id):
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=400)
 
+
 @login_required
 @vendedor_required
 @csrf_exempt
@@ -229,6 +233,7 @@ def listar_clientes(request):
     clientes = Cliente.objects.all().values('id', 'nome', 'telefone')
     return JsonResponse({'success': True, 'clientes': list(clientes)})
 
+
 @login_required
 @vendedor_required
 @csrf_exempt
@@ -239,6 +244,7 @@ def listar_artigos(request):
     """
     artigos = ItemServico.objects.filter(disponivel=True).values('id', 'nome', 'preco_base')
     return JsonResponse({'success': True, 'artigos': list(artigos)})
+
 
 @login_required
 @vendedor_required
@@ -304,6 +310,7 @@ def criar_pedido(request):
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=400)
 
+
 @login_required
 @admin_required
 @csrf_exempt
@@ -339,6 +346,7 @@ def editar_pedido(request, id):
         })
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=400)
+
 
 @login_required
 @vendedor_required
@@ -393,6 +401,7 @@ def registrar_pagamento(request, id):
         })
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=400)
+
 
 @login_required
 @vendedor_required
@@ -471,6 +480,7 @@ def atualizar_status_pedido(request, id):
         return JsonResponse({'success': False, 'error': 'Pedido não encontrado'}, status=404)
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
 
 @login_required
 @admin_required
@@ -604,6 +614,7 @@ def recibo_termico_view(request, id):
     }
 
     return render(request, 'pedidos/recibo_termico.html', context)
+
 
 
 @login_required

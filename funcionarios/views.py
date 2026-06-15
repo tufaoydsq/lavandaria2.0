@@ -79,7 +79,7 @@ def criar_funcionario(request):
         user_id = data.get('user_id')
         lavandaria_id = data.get('lavandaria_id')
         telefone = data.get('telefone', '')
-        grupo = data.get('grupo')
+        grupo = data.get('grupo', '').strip().lower()
 
         if not user_id:
             return JsonResponse({'success': False, 'error': 'Usuario é obrigatorio'}, status=400)
@@ -138,7 +138,7 @@ def editar_funcionario(request, id):
             funcionario.telefone = data['telefone']
 
         if 'grupo' in data and data['grupo']:
-            grupo_nome = data['grupo']
+            grupo_nome = data['grupo'].strip().lower()
             grupos_permitidos = ['vendedor', 'gerente', 'admin', 'superuser']
             if grupo_nome not in grupos_permitidos:
                 return JsonResponse({'success': False, 'error': f'Cargo invalido. Use: {grupos_permitidos}'}, status=400)

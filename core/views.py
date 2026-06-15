@@ -1,7 +1,8 @@
 from django.shortcuts import get_object_or_404, redirect, render, reverse
 from django.http import HttpResponseBadRequest
 from django.contrib.auth.decorators import login_required
-from core.decorators import vendedor_required, superuser_required
+from .decorators import vendedor_required, superuser_required
+
 from .models import Pedido, Cliente, Lavandaria, ItemPedido, PagamentoPedido
 from django.template.loader import render_to_string
 import json

@@ -7,8 +7,9 @@ from django.utils import timezone
 from decimal import Decimal
 import json
 
-from core.decorators import vendedor_required, gerente_required, admin_required
+from core.decorators import gerente_required, admin_required
 from core.models import ItemServico
+
 
 @login_required
 @gerente_required

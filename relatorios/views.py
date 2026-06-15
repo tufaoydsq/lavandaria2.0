@@ -8,7 +8,6 @@ from datetime import datetime, timedelta
 from decimal import Decimal
 from django.db.models import Sum, Count, Q, Avg
 from django.db.models.functions import TruncDay, TruncMonth
-
 from core.decorators import gerente_required
 from core.models import Pedido, PagamentoPedido
 from core.models import Cliente
